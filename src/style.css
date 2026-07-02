@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+@keyframes scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-25%); }
+}
+
+.animate-scroll {
+  animation: scroll 18s linear infinite;
+}
+
+.animate-scroll:hover {
+  animation-play-state: paused;
+}
+
+@keyframes scroll-reviews {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-33.33%); }
+}
+
+.animate-scroll-reviews {
+  animation: scroll-reviews 20s linear infinite;
+}
+
+.animate-scroll-reviews:hover {
+  animation-play-state: paused;
+}
