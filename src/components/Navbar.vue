@@ -6,7 +6,7 @@
     <!-- Left: Nav Links -->
     <div class="flex items-center gap-8">
       <div class="relative" @mouseenter="showShop = true" @mouseleave="showShop = false">
-        <button class="text-sm text-gray-700 hover:text-black">Shop</button>
+        <router-link to="/shop" class="text-sm text-gray-700 hover:text-black">Shop</router-link>
         <div v-if="showShop" class="absolute top-full left-0 mt-2 bg-white shadow-md rounded-md p-6 flex gap-10 w-72 z-50">
           <div>
             <p class="text-xs font-semibold text-gray-400 uppercase mb-2">Shop</p>
