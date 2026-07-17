@@ -40,10 +40,13 @@
 
           <!-- Add to Bag + Wishlist -->
           <div class="flex gap-3 mb-8">
-            <button class="flex-1 py-3 text-sm border rounded-md transition hover:bg-gray-50"
-              style="border-color: #C9A96E; color: #C9A96E;">
-              Add to Bag
+            <button 
+            @click="handleAddToCart" 
+            class="flex-1 py-3 text-sm border rounded-md transition hover:bg-gray-50"
+            style="border-color: #C9A96E; color: #C9A96E;">
+            {{ addedToCart ? 'Added to Bag ✓' : 'Add to Bag' }}
             </button>
+
             <button class="w-12 h-12 flex items-center justify-center border rounded-md hover:bg-gray-50 transition"
               style="border-color: #C9A96E;">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" style="color: #C9A96E;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -215,45 +218,22 @@
   </div>
 </template>
 
-<script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { addToCart } from '../cart.js'
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
 
-const router = useRouter()
-const activeImage = ref(0)
-const relatedCarousel = ref(null)
+const addedToCart = ref(false)
 
-// Dummy product data — replace with Supabase later
-const product = ref({
-  name: 'Kisslock Frame Bag 27',
-  brand: 'Coach',
-  price: 2000,
-  originalPrice: 3000,
-  color: 'Brown',
-  condition: 'Good as new',
-  material: 'Straw Woven',
-  images: [
-    new URL('../assets/bag1.png', import.meta.url).href,
-    new URL('../assets/shades.png', import.meta.url).href,
-    new URL('../assets/shoes.png', import.meta.url).href,
-  ]
-})
-
-const accordions = ref([
-  { title: 'Description', open: false, content: 'A beautifully crafted kisslock frame bag made from straw woven material. Perfect for both casual and formal occasions.' },
-  { title: 'Shipping', open: false, content: 'Standard shipping takes 3-5 business days. Express shipping available at checkout.' },
-  { title: 'Authenticity', open: false, content: 'This item has been verified by our in-house authentication team. Certificate of authenticity included.' },
-])
-
-const relatedProducts = [
-  { id: 1, name: 'Kisslock Frame Bag 27', brand: 'Coach', price: 2000, image: new URL('../assets/bag1.png', import.meta.url).href },
-  { id: 2, name: 'Blouse', brand: 'Dior', price: 9000, image: new URL('../assets/shirt.png', import.meta.url).href },
-  { id: 3, name: 'Triomphe Stamp 01 Sunglasses', brand: 'Celine', price: 2000, image: new URL('../assets/shades.png', import.meta.url).href },
-  { id: 4, name: "Women's Elite Active Sneakers", brand: 'Lacoste', price: 400, image: new URL('../assets/shoes.png', import.meta.url).href },
-]
-
-const relatedLeft = () => relatedCarousel.value.scrollBy({ left: -300, behavior: 'smooth' })
-const relatedRight = () => relatedCarousel.value.scrollBy({ left: 300, behavior: 'smooth' })
-</script>
+const handleAddToCart = () => {
+  addToCart({
+    id: product.value.id ?? 1,
+    name: product.value.name,
+    brand: product.value.brand,
+    price: product.value.price,
+    image: product.value.images[0]
+  })
+  addedToCart.value = true
+  setTimeout(() => addedToCart.value = false, 2000)
+}
