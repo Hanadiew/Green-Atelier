@@ -32,7 +32,7 @@
           </div>
         </div>
       </div>
-      <a href="#" class="text-sm text-gray-700 hover:text-black">Sell</a>
+      <RouterLink to="/sell" class="text-sm text-gray-700 hover:text-black">Sell</RouterLink>
       <a href="#" class="text-sm text-gray-700 hover:text-black">Sustain</a>
     </div>
 
