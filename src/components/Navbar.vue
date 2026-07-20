@@ -11,7 +11,7 @@
           <div>
             <p class="text-xs font-semibold text-gray-400 uppercase mb-2">Shop</p>
             <ul class="space-y-2 text-sm text-gray-700">
-              <li><a href="#">All</a></li>
+              <li><RouterLink to="/shop">All</RouterLink></li>
               <li><a href="#">New In</a></li>
             </ul>
           </div>

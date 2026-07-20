@@ -218,11 +218,49 @@
   </div>
 </template>
 
+<script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { addToCart } from '../cart.js'
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
+
+const router = useRouter()
+const activeImage = ref(0)
+const relatedCarousel = ref(null)
+
+// Dummy product data — replace with Supabase later
+const product = ref({
+  id: 1,
+  name: 'Kisslock Frame Bag 27',
+  brand: 'Coach',
+  price: 2000,
+  originalPrice: 3000,
+  color: 'Brown',
+  condition: 'Good as new',
+  material: 'Straw Woven',
+  images: [
+    new URL('../assets/bag1.png', import.meta.url).href,
+    new URL('../assets/shades.png', import.meta.url).href,
+    new URL('../assets/shoes.png', import.meta.url).href,
+  ]
+})
+
+const accordions = ref([
+  { title: 'Description', open: false, content: 'A beautifully crafted kisslock frame bag made from straw woven material. Perfect for both casual and formal occasions.' },
+  { title: 'Shipping', open: false, content: 'Standard shipping takes 3-5 business days. Express shipping available at checkout.' },
+  { title: 'Authenticity', open: false, content: 'This item has been verified by our in-house authentication team. Certificate of authenticity included.' },
+])
+
+const relatedProducts = [
+  { id: 1, name: 'Kisslock Frame Bag 27', brand: 'Coach', price: 2000, image: new URL('../assets/bag1.png', import.meta.url).href },
+  { id: 2, name: 'Blouse', brand: 'Dior', price: 9000, image: new URL('../assets/shirt.png', import.meta.url).href },
+  { id: 3, name: 'Triomphe Stamp 01 Sunglasses', brand: 'Celine', price: 2000, image: new URL('../assets/shades.png', import.meta.url).href },
+  { id: 4, name: "Women's Elite Active Sneakers", brand: 'Lacoste', price: 400, image: new URL('../assets/shoes.png', import.meta.url).href },
+]
+
+const relatedLeft = () => relatedCarousel.value.scrollBy({ left: -300, behavior: 'smooth' })
+const relatedRight = () => relatedCarousel.value.scrollBy({ left: 300, behavior: 'smooth' })
 
 const addedToCart = ref(false)
 
@@ -237,3 +275,4 @@ const handleAddToCart = () => {
   addedToCart.value = true
   setTimeout(() => addedToCart.value = false, 2000)
 }
+</script>
