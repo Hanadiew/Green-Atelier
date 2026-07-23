@@ -195,8 +195,11 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
+
+const router = useRouter()
 
 const form = ref({
   itemType: 'Bag',
@@ -210,8 +213,12 @@ const handleContinue = () => {
     alert('Please enter a brand name.')
     return
   }
-  // TODO: connect to Supabase to submit listing
-  console.log('Listing submitted:', form.value)
-  alert('Your item has been submitted for review!')
+  router.push({
+    path: '/sell/details',
+    query: {
+      brand: form.value.brand,
+      category: form.value.category,
+    }
+  })
 }
 </script>
