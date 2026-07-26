@@ -7,40 +7,39 @@
 
       <!-- ===== LEFT: Stepper ===== -->
       <div style="width: 200px;" class="flex-shrink-0">
-
-        <!-- Brand + category from previous step -->
         <p class="text-sm font-semibold text-gray-800 mb-0.5">{{ form.brand || 'Coach' }}</p>
         <p class="text-xs text-gray-400 mb-8">Women's {{ form.category || 'Tops' }}</p>
 
-        <!-- Steps -->
         <div class="relative flex flex-col gap-0">
           <div v-for="(step, i) in steps" :key="step.key" class="flex items-start gap-3">
-
-            <!-- Circle + line -->
             <div class="flex flex-col items-center">
-              <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition"
+
+              <!-- Clickable circle -->
+              <button
+                @click="goToStep(i)"
+                class="w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition"
                 :class="currentStep === i
                   ? 'border-yellow-600 bg-white'
                   : currentStep > i
                   ? 'border-yellow-600 bg-yellow-600'
                   : 'border-gray-200 bg-white'">
-                <!-- Active dot -->
                 <div v-if="currentStep === i" class="w-2 h-2 rounded-full" style="background-color: #C9A96E;"></div>
-                <!-- Completed check -->
                 <svg v-else-if="currentStep > i" xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
                 </svg>
-              </div>
-              <!-- Vertical line -->
-              <div v-if="i < steps.length - 1" class="w-px flex-1 my-1" style="height: 32px; background-color: #e5e7eb;"></div>
+              </button>
+
+              <div v-if="i < steps.length - 1" class="w-px my-1" style="height: 32px; background-color: #e5e7eb;"></div>
             </div>
 
-            <!-- Step label -->
-            <p class="text-xs pt-1 font-medium transition"
+            <!-- Clickable label -->
+            <button
+              @click="goToStep(i)"
+              class="text-xs pt-1 font-medium transition text-left"
               :class="currentStep === i ? 'text-yellow-700' : currentStep > i ? 'text-gray-500' : 'text-gray-300'"
               style="letter-spacing: 0.08em;">
               {{ step.label.toUpperCase() }}
-            </p>
+            </button>
 
           </div>
         </div>
@@ -52,13 +51,12 @@
       <!-- ===== RIGHT: Form ===== -->
       <div class="flex-1 max-w-lg">
 
-        <p class="text-xs font-semibold tracking-widest uppercase text-gray-600 mb-6">
+        <p class="text-xs font-semibold tracking-widest uppercase text-gray-700 mb-1">
           {{ steps[currentStep].label }}
         </p>
 
         <!-- ===== STEP 0: OVERVIEW ===== -->
-        <div v-if="currentStep === 0" class="space-y-5">
-
+        <div v-if="currentStep === 0" class="space-y-5 mt-6">
           <div>
             <label class="text-xs text-gray-400 mb-1 block">Category</label>
             <select v-model="details.category" class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white">
@@ -70,7 +68,6 @@
               <option>Shoes</option>
             </select>
           </div>
-
           <div>
             <label class="text-xs text-gray-400 mb-1 block">Condition</label>
             <select v-model="details.condition" class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white">
@@ -79,43 +76,25 @@
               <option>Fair</option>
             </select>
           </div>
-
           <div>
             <label class="text-xs text-gray-400 mb-1 block">Color</label>
             <select v-model="details.color" class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white">
-              <option>Brown</option>
-              <option>Black</option>
-              <option>White</option>
-              <option>Beige</option>
-              <option>Navy</option>
-              <option>Other</option>
+              <option>Brown</option><option>Black</option><option>White</option>
+              <option>Beige</option><option>Navy</option><option>Other</option>
             </select>
           </div>
-
           <div>
             <label class="text-xs text-gray-400 mb-1 block">Material</label>
             <select v-model="details.material" class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white">
-              <option>Brown</option>
-              <option>Leather</option>
-              <option>Canvas</option>
-              <option>Silk</option>
-              <option>Cotton</option>
-              <option>Straw Woven</option>
-              <option>Other</option>
+              <option>Leather</option><option>Canvas</option><option>Silk</option>
+              <option>Cotton</option><option>Straw Woven</option><option>Other</option>
             </select>
           </div>
-
           <div>
             <label class="text-xs text-gray-400 mb-1 block">Size</label>
-            <input
-              v-model="details.size"
-              type="text"
-              placeholder="Input text"
-              class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white placeholder-gray-300"
-            />
+            <input v-model="details.size" type="text" placeholder="Input text"
+              class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white placeholder-gray-300" />
           </div>
-
-          <!-- Vintage toggle -->
           <div class="flex items-start justify-between gap-4 pt-2">
             <div>
               <p class="text-sm text-gray-700 mb-1">Vintage (Optional)</p>
@@ -123,153 +102,560 @@
                 Select if this item is over 10 years old. Our experts will carefully review your listing to ensure it meets the standards for genuine vintage.
               </p>
             </div>
-            <button
-              @click="details.vintage = !details.vintage"
+            <button @click="details.vintage = !details.vintage"
               class="relative flex-shrink-0 w-12 h-6 rounded-full transition-colors duration-300 mt-1"
               :style="details.vintage ? 'background-color: #C9A96E;' : 'background-color: #e5e7eb;'">
-              <span
-                class="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-300"
-                :style="details.vintage ? 'transform: translateX(26px)' : 'transform: translateX(2px)'">
-              </span>
+              <span class="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-300"
+                :style="details.vintage ? 'transform: translateX(26px)' : 'transform: translateX(2px)'"></span>
             </button>
           </div>
-
         </div>
 
         <!-- ===== STEP 1: AUTHENTICITY ===== -->
-        <div v-if="currentStep === 1" class="space-y-5">
-          <div>
-            <label class="text-xs text-gray-400 mb-1 block">Serial Number (if any)</label>
-            <input v-model="details.serialNumber" type="text" placeholder="e.g. A1234567" class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white placeholder-gray-300" />
+        <div v-if="currentStep === 1" class="space-y-5 mt-4">
+          <p class="text-xs text-gray-400">Help us authenticate your item. This information remains private.
+            <span class="inline-flex items-center justify-center w-4 h-4 rounded-full border border-gray-300 text-gray-400 text-xs ml-1 cursor-help" title="Your documents are kept confidential and only used for verification purposes.">i</span>
+          </p>
+
+          <!-- Document upload box -->
+          <div
+            @click="triggerDocUpload"
+            class="border border-gray-200 rounded-xl px-5 py-4 flex items-center gap-3 cursor-pointer hover:border-gray-300 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            <span class="text-sm text-gray-500">Add receipt, authenticity card or invoice</span>
           </div>
-          <div>
-            <label class="text-xs text-gray-400 mb-1 block">Year of Purchase</label>
-            <input v-model="details.yearPurchased" type="text" placeholder="e.g. 2019" class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white placeholder-gray-300" />
+          <input ref="docInput" type="file" accept=".pdf,.jpg,.png" class="hidden" @change="handleDocUpload" />
+
+          <!-- Uploaded doc preview -->
+          <div v-if="details.authDoc" class="border border-gray-200 rounded-xl px-5 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+              <div>
+                <p class="text-xs text-gray-600">{{ details.authDoc.name }}</p>
+                <p class="text-xs text-gray-400">{{ (details.authDoc.size / 1024).toFixed(0) }} kB</p>
+              </div>
+            </div>
+            <button @click="details.authDoc = null" class="text-gray-300 hover:text-gray-500 transition">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
           </div>
-          <div>
-            <label class="text-xs text-gray-400 mb-1 block">Comes with original packaging?</label>
-            <select v-model="details.packaging" class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white">
-              <option>Yes — box and dustbag</option>
-              <option>Yes — dustbag only</option>
-              <option>Yes — box only</option>
-              <option>No packaging</option>
-            </select>
-          </div>
-          <div>
-            <label class="text-xs text-gray-400 mb-1 block">Authentication card included?</label>
-            <select v-model="details.authCard" class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white">
-              <option>Yes</option>
-              <option>No</option>
-            </select>
+
+          <!-- Serial number -->
+          <div class="pt-2">
+            <p class="text-sm text-gray-700 mb-0.5">Serial Number (Optional)</p>
+            <p class="text-xs text-gray-400 mb-2">This information will remain private.</p>
+            <input v-model="details.serialNumber" type="text" placeholder="Serial Number"
+              class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white placeholder-gray-300" />
           </div>
         </div>
 
         <!-- ===== STEP 2: DETAILS ===== -->
-        <div v-if="currentStep === 2" class="space-y-5">
-          <div>
-            <label class="text-xs text-gray-400 mb-1 block">Item Name</label>
-            <input v-model="details.itemName" type="text" placeholder="e.g. Kisslock Frame Bag 27" class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white placeholder-gray-300" />
-          </div>
-          <div>
-            <label class="text-xs text-gray-400 mb-1 block">Description</label>
-            <textarea v-model="details.description" rows="4" placeholder="Describe the item's story, notable features, or any flaws..." class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white placeholder-gray-300 resize-none"></textarea>
-          </div>
-          <div>
-            <label class="text-xs text-gray-400 mb-1 block">Original Retail Price (RM)</label>
-            <input v-model="details.originalPrice" type="number" placeholder="e.g. 3000" class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white placeholder-gray-300" />
-          </div>
-        </div>
+<div v-if="currentStep === 2" class="space-y-6 mt-4">
+
+  <!-- Description -->
+  <div>
+    <label class="text-sm text-gray-700 mb-2 block">Description</label>
+    <textarea
+      v-model="details.description"
+      rows="4"
+      placeholder="Describe your item or reasons to sell"
+      class="w-full border border-gray-200 rounded-md px-4 py-3 text-sm text-gray-700 outline-none bg-white placeholder-gray-300 resize-y"
+    ></textarea>
+
+    <!-- Hint box -->
+    <div class="mt-2 rounded-md px-4 py-3 flex gap-3" style="background-color: #F7F5F0;">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20A10 10 0 0012 2z"/>
+      </svg>
+      <div>
+        <p class="text-xs font-medium text-gray-600 mb-0.5">How should I describe?</p>
+        <p class="text-xs text-gray-400 leading-relaxed">
+          Tell buyers everything they should know about your item. Include its condition, measurements, any signs of wear or alterations. Complete and transparent descriptions help attract more buyers.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Year of Purchase -->
+  <div>
+    <label class="text-sm text-gray-700 mb-2 block">Year of Purchase</label>
+    <select v-model="details.yearPurchased" class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white">
+      <option value="" disabled>Choose</option>
+      <option v-for="year in years" :key="year" :value="year">{{ year }}</option>
+    </select>
+  </div>
+
+  <!-- Packaging -->
+  <div>
+    <label class="text-sm text-gray-700 mb-3 block">Packaging</label>
+    <div class="flex items-center gap-6">
+      <label class="flex items-center gap-2 cursor-pointer">
+        <input type="checkbox" v-model="details.packaging" value="Original Box" class="accent-gray-600 w-3.5 h-3.5" />
+        <span class="text-xs text-gray-600">Original Box</span>
+      </label>
+      <label class="flex items-center gap-2 cursor-pointer">
+        <input type="checkbox" v-model="details.packaging" value="Dustbag" class="accent-gray-600 w-3.5 h-3.5" />
+        <span class="text-xs text-gray-600">Dustbag</span>
+      </label>
+      <label class="flex items-center gap-2 cursor-pointer">
+        <input type="checkbox" v-model="details.packaging" value="Card or certificate" class="accent-gray-600 w-3.5 h-3.5" />
+        <span class="text-xs text-gray-600">Card or certificate</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Origin -->
+  <div>
+    <label class="text-sm text-gray-700 mb-2 block">Origin (Optional)</label>
+
+    <!-- Hint box -->
+    <div class="rounded-md px-4 py-3 flex gap-3 mb-4" style="background-color: #F7F5F0;">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20A10 10 0 0012 2z"/>
+      </svg>
+      <div>
+        <p class="text-xs font-medium text-gray-600 mb-0.5">Tell us where this item from</p>
+        <p class="text-xs text-gray-400 leading-relaxed">
+          This helps us verify eligibility for resale. Certain promotional or gifted items may not qualify.
+        </p>
+      </div>
+    </div>
+
+    <!-- Radio options -->
+    <div class="space-y-3">
+      <label v-for="option in originOptions" :key="option" class="flex items-center gap-3 cursor-pointer">
+        <input
+          type="radio"
+          v-model="details.origin"
+          :value="option"
+          class="accent-gray-600 w-3.5 h-3.5"
+        />
+        <span class="text-xs text-gray-600">{{ option }}</span>
+      </label>
+    </div>
+  </div>
+
+</div>
 
         <!-- ===== STEP 3: MEDIA ===== -->
-        <div v-if="currentStep === 3" class="space-y-5">
-          <p class="text-xs text-gray-400 leading-relaxed">Upload clear photos of your item. Include front, back, label, and any flaws.</p>
+        <div v-if="currentStep === 3" class="space-y-5 mt-4">
+          <p class="text-sm text-gray-600 flex items-center gap-1">
+            Upload at least 3 photos
+            <span class="inline-flex items-center justify-center w-4 h-4 rounded-full border border-gray-300 text-gray-400 text-xs cursor-help" title="Include front, back, label, and any flaws.">?</span>
+          </p>
+
+          <!-- Drag & drop zone -->
           <div
-            class="border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center py-12 cursor-pointer hover:border-gray-300 transition"
-            @click="triggerUpload">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            @click="triggerMediaUpload"
+            @dragover.prevent
+            @drop.prevent="handleDrop"
+            class="border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center py-10 cursor-pointer hover:border-gray-300 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
             </svg>
-            <p class="text-xs text-gray-400">Click to upload photos</p>
-            <p class="text-xs text-gray-300 mt-1">JPG, PNG up to 10MB each</p>
+            <p class="text-xs text-gray-400">Drag & drop up to 10 photos</p>
           </div>
-          <input ref="fileInput" type="file" multiple accept="image/*" class="hidden" @change="handleFiles" />
-          <!-- Preview uploaded images -->
-          <div v-if="details.images.length > 0" class="flex gap-3 flex-wrap">
-            <div v-for="(img, i) in details.images" :key="i" class="w-20 h-20 rounded-lg overflow-hidden border border-gray-200">
-              <img :src="img" class="w-full h-full object-cover" />
+          <input ref="mediaInput" type="file" multiple accept="image/*" class="hidden" @change="handleMediaFiles" />
+
+          <!-- 3 labeled upload slots -->
+          <div class="flex gap-4">
+            <div v-for="slot in mediaSlots" :key="slot.key"
+              @click="triggerMediaUpload"
+              class="flex-1 border border-gray-200 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-gray-300 transition"
+              style="height: 100px;">
+              <img v-if="details.images[slot.index]" :src="details.images[slot.index]" class="w-full h-full object-cover rounded-xl" />
+              <span v-else class="text-2xl text-gray-300">+</span>
+              <p v-if="!details.images[slot.index]" class="text-xs text-gray-400 mt-1 text-center px-2">{{ slot.label }}</p>
             </div>
           </div>
+
         </div>
 
         <!-- ===== STEP 4: LOCATION ===== -->
-        <div v-if="currentStep === 4" class="space-y-5">
-          <div>
-            <label class="text-xs text-gray-400 mb-1 block">State</label>
-            <select v-model="details.state" class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white">
-              <option>Johor</option>
-              <option>Kuala Lumpur</option>
-              <option>Selangor</option>
-              <option>Penang</option>
-              <option>Sabah</option>
-              <option>Sarawak</option>
-              <option>Perak</option>
-              <option>Kedah</option>
-              <option>Melaka</option>
-              <option>Negeri Sembilan</option>
-              <option>Pahang</option>
-              <option>Terengganu</option>
-              <option>Kelantan</option>
-              <option>Perlis</option>
-              <option>Putrajaya</option>
-              <option>Labuan</option>
+<div v-if="currentStep === 4" class="space-y-5 mt-4">
+
+  <p class="text-sm font-semibold text-gray-800 mb-4">Addresses</p>
+
+  <!-- Saved address card -->
+  <div v-if="details.savedAddress"
+    class="border border-gray-800 rounded-lg px-5 py-4 flex items-start justify-between">
+    <div class="flex items-start gap-3">
+      <input type="radio" checked class="mt-1 accent-gray-800 w-3.5 h-3.5 flex-shrink-0" />
+      <div>
+        <p class="text-xs text-gray-400 mb-1">Shipping from</p>
+        <p class="text-sm font-semibold text-gray-800">{{ details.savedAddress.name }}</p>
+        <p class="text-xs text-gray-500 mt-0.5">{{ details.savedAddress.street }}</p>
+        <p class="text-xs text-gray-500">{{ details.savedAddress.postcode }} {{ details.savedAddress.city }}, {{ details.savedAddress.country }}</p>
+      </div>
+    </div>
+    <button @click="openEditAddress" class="text-gray-400 hover:text-gray-600 transition mt-1">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 15H9v-2z"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Empty state if no address -->
+  <div v-else class="border border-dashed border-gray-200 rounded-lg px-5 py-6 text-center">
+    <p class="text-xs text-gray-400">No address saved yet. Add one below.</p>
+  </div>
+
+  <!-- Add new address button -->
+  <button @click="openAddAddress"
+    class="flex items-center gap-2 border border-gray-300 rounded-full px-5 py-2.5 text-xs text-gray-600 hover:border-gray-400 transition">
+    <span class="text-lg leading-none text-gray-400">+</span>
+    Add new address
+  </button>
+
+</div>
+
+<!-- ===== ADD ADDRESS MODAL ===== -->
+<Teleport to="body">
+  <div v-if="addressModal.open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 relative">
+
+      <!-- Modal header -->
+      <div class="flex items-center justify-between px-6 pt-6 pb-4">
+        <div class="flex items-center gap-3">
+          <button v-if="addressModal.step > 1" @click="addressModal.step--" class="text-gray-400 hover:text-gray-600 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+          </button>
+          <h3 class="text-base font-semibold text-gray-800">Add an address</h3>
+        </div>
+        <button @click="closeAddressModal" class="w-7 h-7 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-600 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal Step 1: Country + Search -->
+      <div v-if="addressModal.step === 1" class="px-6 pb-6 space-y-4">
+        <div>
+          <label class="text-xs font-semibold text-gray-700 mb-2 block">Country</label>
+          <select v-model="newAddress.country" class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white">
+            <option>Malaysia</option>
+            <option>Singapore</option>
+            <option>United States</option>
+            <option>United Kingdom</option>
+            <option>Australia</option>
+            <option>Japan</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-gray-700 mb-2 block">Your address</label>
+          <div class="flex items-center gap-2 border border-gray-200 rounded-md px-4 py-2.5 bg-gray-50">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-4.35-4.35M17 11A6 6 0 105 11a6 6 0 0012 0z"/>
+            </svg>
+            <input
+              v-model="newAddress.search"
+              type="text"
+              placeholder="Find your address"
+              class="text-sm text-gray-600 outline-none bg-transparent w-full placeholder-gray-400"
+            />
+          </div>
+        </div>
+        <button @click="addressModal.step = 2"
+          class="w-full py-2.5 text-sm text-white rounded-md mt-2"
+          style="background-color: #1a1a2e;">
+          Next
+        </button>
+      </div>
+
+      <!-- Modal Step 2: Full address form -->
+      <div v-if="addressModal.step === 2" class="px-6 pb-6 space-y-4">
+        <p class="text-xs font-semibold text-gray-700 mb-2">Location</p>
+
+        <div>
+          <label class="text-xs text-gray-500 mb-1 block">Country</label>
+          <select v-model="newAddress.country" class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white">
+            <option>Malaysia</option>
+            <option>Singapore</option>
+            <option>United States</option>
+            <option>United Kingdom</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="text-xs text-gray-500 mb-1 block">Street address</label>
+          <input v-model="newAddress.street" type="text" placeholder="e.g. 21st Street"
+            class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white placeholder-gray-300" />
+        </div>
+
+        <div>
+          <label class="text-xs text-gray-500 mb-1 block">Apartment, suite, building (optional)</label>
+          <input v-model="newAddress.apt" type="text"
+            class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white" />
+        </div>
+
+        <div>
+          <label class="text-xs text-gray-500 mb-1 block">City</label>
+          <input v-model="newAddress.city" type="text" placeholder="e.g. Kuala Lumpur"
+            class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white placeholder-gray-300" />
+        </div>
+
+        <div>
+          <label class="text-xs text-gray-500 mb-1 block">State</label>
+          <select v-model="newAddress.state" class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white">
+            <option>Johor</option><option>Kuala Lumpur</option><option>Selangor</option>
+            <option>Penang</option><option>Sabah</option><option>Sarawak</option>
+            <option>Perak</option><option>Kedah</option><option>Melaka</option>
+            <option>Negeri Sembilan</option><option>Pahang</option><option>Terengganu</option>
+            <option>Kelantan</option><option>Perlis</option><option>Putrajaya</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="text-xs text-gray-500 mb-1 block">ZIP code</label>
+          <input v-model="newAddress.postcode" type="text" placeholder="e.g. 80000"
+            class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white placeholder-gray-300" />
+        </div>
+
+        <button @click="addressModal.step = 3"
+          class="w-full py-2.5 text-sm text-white rounded-md mt-2"
+          style="background-color: #1a1a2e;">
+          Looks good
+        </button>
+      </div>
+
+      <!-- Modal Step 3: Contact form -->
+      <div v-if="addressModal.step === 3" class="px-6 pb-6 space-y-4">
+        <p class="text-xs font-semibold text-gray-700 mb-2">Contact</p>
+
+        <div>
+          <label class="text-xs text-gray-500 mb-1 block">First name</label>
+          <input v-model="newAddress.firstName" type="text" placeholder="First name"
+            class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white placeholder-gray-300" />
+        </div>
+
+        <div>
+          <label class="text-xs text-gray-500 mb-1 block">Surname</label>
+          <input v-model="newAddress.surname" type="text" placeholder="Surname"
+            class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white placeholder-gray-300" />
+        </div>
+
+        <div class="flex gap-3">
+          <div style="width: 140px;">
+            <label class="text-xs text-gray-500 mb-1 block">Phone code</label>
+            <select v-model="newAddress.phoneCode" class="w-full border border-gray-200 rounded-md px-3 py-2.5 text-sm text-gray-700 outline-none bg-white">
+              <option>+60 (Malaysia)</option>
+              <option>+65 (Singapore)</option>
+              <option>+1 (US)</option>
+              <option>+44 (UK)</option>
+              <option>+61 (Australia)</option>
             </select>
           </div>
-          <div>
-            <label class="text-xs text-gray-400 mb-1 block">Postcode</label>
-            <input v-model="details.postcode" type="text" placeholder="e.g. 80000" class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white placeholder-gray-300" />
+          <div class="flex-1">
+            <label class="text-xs text-gray-500 mb-1 block">Mobile number</label>
+            <input v-model="newAddress.phone" type="tel" placeholder="e.g. 1163477080"
+              class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white placeholder-gray-300" />
           </div>
         </div>
 
+        <div>
+          <label class="text-xs text-gray-500 mb-1 block">Company (optional)</label>
+          <input v-model="newAddress.company" type="text"
+            class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white" />
+        </div>
+
+        <button @click="confirmAddress"
+          class="w-full py-2.5 text-sm text-white rounded-md mt-2"
+          style="background-color: #1a1a2e;">
+          Confirm
+        </button>
+      </div>
+
+    </div>
+  </div>
+</Teleport>
+
         <!-- ===== STEP 5: PRICING ===== -->
-        <div v-if="currentStep === 5" class="space-y-5">
-          <div>
-            <label class="text-xs text-gray-400 mb-1 block">Listing Price (RM)</label>
-            <input v-model="details.listingPrice" type="number" placeholder="e.g. 2000" class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white placeholder-gray-300" />
+<div v-if="currentStep === 5" class="space-y-5 mt-4">
+
+  <p class="text-sm font-semibold text-gray-800 mb-4">Price</p>
+
+  <!-- Price input + You earn -->
+  <div class="flex gap-3">
+
+    <!-- Price input -->
+    <div class="flex-1 border border-gray-200 rounded-md px-4 py-3">
+      <p class="text-xs text-gray-400 mb-1">Price</p>
+      <div class="flex items-center gap-1">
+        <span class="text-sm text-gray-400">RM</span>
+        <input
+          v-model="details.listingPrice"
+          type="number"
+          placeholder="0"
+          class="text-xl font-semibold text-gray-800 outline-none bg-transparent w-full placeholder-gray-300"
+        />
+      </div>
+    </div>
+
+    <!-- You earn -->
+    <div class="flex-1 rounded-md px-4 py-3 flex items-start justify-between" style="background-color: #F7F5F0;">
+      <div>
+        <p class="text-xs text-gray-400 mb-1">You earn</p>
+        <p class="text-xl font-semibold text-gray-800">
+          RM {{ details.listingPrice ? (Number(details.listingPrice) * 0.85).toLocaleString() : '0' }}
+        </p>
+      </div>
+      <button @click="serviceFeeModal = true" class="text-gray-400 hover:text-gray-600 transition mt-0.5">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20A10 10 0 0012 2z"/>
+        </svg>
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Service fee note -->
+  <p class="text-xs text-gray-400">
+    The buyer will also pay a service fee.
+    <button @click="serviceFeeModal = true" class="underline hover:text-gray-600 transition">Learn more</button>
+  </p>
+
+  <!-- More details needed hint -->
+  <div class="rounded-md px-4 py-3 flex gap-3 items-start" style="background-color: #FEF3EC;">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 flex-shrink-0 mt-0.5" style="color: #C9A96E;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20A10 10 0 0012 2z"/>
+    </svg>
+    <div>
+      <p class="text-xs font-semibold text-gray-700 mb-0.5">More details needed</p>
+      <p class="text-xs text-gray-500">Add all required information for an accurate price recommendation.</p>
+    </div>
+  </div>
+
+  <!-- Accept Offers toggle -->
+  <div class="flex items-center justify-between pt-2">
+    <div>
+      <p class="text-sm text-gray-700 mb-0.5">Accept Offers</p>
+      <p class="text-xs text-gray-400">Allow buyers to negotiate the price with you.</p>
+    </div>
+    <button
+      @click="details.acceptOffers = details.acceptOffers === 'Yes' ? 'No' : 'Yes'"
+      class="relative flex-shrink-0 w-12 h-6 rounded-full transition-colors duration-300"
+      :style="details.acceptOffers === 'Yes' ? 'background-color: #C9A96E;' : 'background-color: #e5e7eb;'">
+      <span
+        class="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-300"
+        :style="details.acceptOffers === 'Yes' ? 'transform: translateX(26px)' : 'transform: translateX(2px)'">
+      </span>
+    </button>
+  </div>
+
+  <!-- Payout breakdown -->
+  <div v-if="details.listingPrice" class="border border-gray-100 rounded-xl p-4 text-xs text-gray-500 space-y-2">
+    <div class="flex justify-between">
+      <span>Listing price</span>
+      <span>RM {{ Number(details.listingPrice).toLocaleString() }}.00</span>
+    </div>
+    <div class="flex justify-between">
+      <span>Platform fee (15%)</span>
+      <span>- RM {{ (Number(details.listingPrice) * 0.15).toLocaleString() }}.00</span>
+    </div>
+    <div class="flex justify-between font-semibold text-gray-700 border-t border-gray-100 pt-2">
+      <span>You receive</span>
+      <span>RM {{ (Number(details.listingPrice) * 0.85).toLocaleString() }}.00</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== BUYER SERVICE FEE MODAL ===== -->
+<Teleport to="body">
+  <div v-if="serviceFeeModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 relative px-8 py-8">
+
+      <!-- Close -->
+      <button @click="serviceFeeModal = false" class="absolute top-5 right-5 text-gray-400 hover:text-gray-600 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+
+      <h3 class="text-base font-semibold text-gray-800 mb-2">Buyer service fee</h3>
+      <p class="text-xs text-gray-400 mb-6">This fee gives buyers</p>
+
+      <!-- Fee benefits -->
+      <div class="space-y-5 mb-6">
+
+        <div class="flex items-start gap-4">
+          <div class="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center flex-shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+            </svg>
           </div>
           <div>
-            <label class="text-xs text-gray-400 mb-1 block">Accept Offers?</label>
-            <select v-model="details.acceptOffers" class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white">
-              <option>Yes</option>
-              <option>No</option>
-            </select>
-          </div>
-          <div v-if="details.listingPrice">
-            <div class="bg-gray-50 rounded-xl p-4 text-xs text-gray-500 space-y-2">
-              <div class="flex justify-between">
-                <span>Listing price</span>
-                <span>RM {{ Number(details.listingPrice).toLocaleString() }}.00</span>
-              </div>
-              <div class="flex justify-between">
-                <span>Platform fee (20%)</span>
-                <span>- RM {{ (Number(details.listingPrice) * 0.2).toLocaleString() }}.00</span>
-              </div>
-              <div class="flex justify-between font-semibold text-gray-700 border-t border-gray-200 pt-2">
-                <span>You receive</span>
-                <span>RM {{ (Number(details.listingPrice) * 0.8).toLocaleString() }}.00</span>
-              </div>
-            </div>
+            <p class="text-sm font-medium text-gray-800 mb-0.5">Guaranteed delivery</p>
+            <p class="text-xs text-gray-400">It ships safely, or we refund your buyer</p>
           </div>
         </div>
+
+        <div class="flex items-start gap-4">
+          <div class="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center flex-shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-gray-800 mb-0.5">Online inspection</p>
+            <p class="text-xs text-gray-400">Our experts reviewed this listing in detail</p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-4">
+          <div class="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center flex-shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-gray-800 mb-0.5">Free relist</p>
+            <p class="text-xs text-gray-400">Buyers can relist within 72h of delivery</p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-4">
+          <div class="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center flex-shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-gray-800 mb-0.5">Customer support</p>
+            <p class="text-xs text-gray-400">Chat or email, we're here for you</p>
+          </div>
+        </div>
+
+      </div>
+
+      <p class="text-xs mb-6">
+        <a href="#" class="underline text-gray-500 hover:text-gray-700 transition">Learn more about our buyer service fee</a>
+      </p>
+
+      <button
+        @click="serviceFeeModal = false"
+        class="w-full py-3 text-sm text-white rounded-md transition hover:opacity-90"
+        style="background-color: #1a1a2e;">
+        Got it
+      </button>
+
+    </div>
+  </div>
+</Teleport>
 
         <!-- Buttons -->
         <div class="flex items-center justify-end gap-4 mt-10">
-          <button
-            @click="handleReset"
-            class="text-sm text-gray-400 hover:text-gray-600 transition">
-            Reset
-          </button>
-          <button
-            @click="handleContinue"
+          <button @click="handleReset" class="text-sm text-gray-400 hover:text-gray-600 transition">Reset</button>
+          <button @click="handleContinue"
             class="px-8 py-2.5 text-sm text-white rounded-md transition hover:opacity-90"
             style="background-color: #7A9E8E;">
             {{ currentStep === steps.length - 1 ? 'Submit Listing' : 'Continue' }}
@@ -294,9 +680,9 @@ const router = useRouter()
 const route = useRoute()
 
 const currentStep = ref(0)
-const fileInput = ref(null)
+const docInput = ref(null)
+const mediaInput = ref(null)
 
-// Pre-fill from sell page query params if available
 const form = ref({
   brand: route.query.brand || '',
   category: route.query.category || 'Tops',
@@ -311,32 +697,122 @@ const steps = [
   { key: 'pricing', label: 'Pricing' },
 ]
 
-const details = ref({
+const years = Array.from({ length: 30 }, (_, i) => new Date().getFullYear() - i)
+
+const originOptions = [
+  'Direct from the brand',
+  'Private or staff sale',
+  'Bought on Vestiaire Collective',
+  'Other',
+]
+
+const mediaSlots = [
+  { key: 'main', label: 'Main photo', index: 0 },
+  { key: 'brand', label: 'Brand label (inside/out)', index: 1 },
+  { key: 'size', label: 'Size label', index: 2 },
+]
+
+const defaultDetails = {
   category: 'Blouses',
   condition: 'Good as new',
   color: 'Brown',
-  material: 'Brown',
+  material: 'Leather',
   size: '',
   vintage: false,
+  authDoc: null,
   serialNumber: '',
-  yearPurchased: '',
-  packaging: 'Yes — box and dustbag',
-  authCard: 'Yes',
-  itemName: '',
   description: '',
-  originalPrice: '',
+  yearPurchased: '',
+  packaging: [],
+  origin: 'Direct from the brand',
   images: [],
-  state: 'Johor',
-  postcode: '',
   listingPrice: '',
   acceptOffers: 'Yes',
+  savedAddress: null,
+}
+
+const details = ref({ ...defaultDetails })
+
+// Address modal state
+const addressModal = ref({ open: false, step: 1, editMode: false })
+
+const serviceFeeModal = ref(false)
+
+const newAddress = ref({
+  country: 'Malaysia',
+  search: '',
+  street: '',
+  apt: '',
+  city: '',
+  state: 'Johor',
+  postcode: '',
+  firstName: '',
+  surname: '',
+  phoneCode: '+60 (Malaysia)',
+  phone: '',
+  company: '',
 })
 
-const triggerUpload = () => fileInput.value.click()
+const openAddAddress = () => {
+  addressModal.value = { open: true, step: 1, editMode: false }
+  newAddress.value = {
+    country: 'Malaysia', search: '', street: '', apt: '',
+    city: '', state: 'Johor', postcode: '',
+    firstName: '', surname: '', phoneCode: '+60 (Malaysia)',
+    phone: '', company: '',
+  }
+}
 
-const handleFiles = (e) => {
+const openEditAddress = () => {
+  if (details.value.savedAddress) {
+    newAddress.value = { ...details.value.savedAddress, search: '' }
+  }
+  addressModal.value = { open: true, step: 2, editMode: true }
+}
+
+const closeAddressModal = () => {
+  addressModal.value.open = false
+}
+
+const confirmAddress = () => {
+  details.value.savedAddress = {
+    name: `${newAddress.value.firstName} ${newAddress.value.surname}`,
+    street: `${newAddress.value.street}${newAddress.value.apt ? ', ' + newAddress.value.apt : ''}`,
+    city: newAddress.value.city,
+    state: newAddress.value.state,
+    postcode: newAddress.value.postcode,
+    country: newAddress.value.country,
+    phone: `${newAddress.value.phoneCode} ${newAddress.value.phone}`,
+  }
+  closeAddressModal()
+}
+
+const goToStep = (i) => {
+  if (i <= currentStep.value) {
+    currentStep.value = i
+  }
+}
+
+const triggerDocUpload = () => docInput.value.click()
+const handleDocUpload = (e) => {
+  details.value.authDoc = e.target.files[0] || null
+}
+
+const triggerMediaUpload = () => mediaInput.value.click()
+const handleMediaFiles = (e) => {
   const files = Array.from(e.target.files)
   files.forEach(file => {
+    if (details.value.images.length >= 10) return
+    const reader = new FileReader()
+    reader.onload = (ev) => details.value.images.push(ev.target.result)
+    reader.readAsDataURL(file)
+  })
+}
+
+const handleDrop = (e) => {
+  const files = Array.from(e.dataTransfer.files)
+  files.forEach(file => {
+    if (details.value.images.length >= 10) return
     const reader = new FileReader()
     reader.onload = (ev) => details.value.images.push(ev.target.result)
     reader.readAsDataURL(file)
@@ -347,7 +823,6 @@ const handleContinue = () => {
   if (currentStep.value < steps.length - 1) {
     currentStep.value++
   } else {
-    // TODO: submit to Supabase
     console.log('Listing submitted:', { ...form.value, ...details.value })
     alert('Your listing has been submitted for review!')
     router.push('/sell')
@@ -356,25 +831,6 @@ const handleContinue = () => {
 
 const handleReset = () => {
   currentStep.value = 0
-  details.value = {
-    category: 'Blouses',
-    condition: 'Good as new',
-    color: 'Brown',
-    material: 'Brown',
-    size: '',
-    vintage: false,
-    serialNumber: '',
-    yearPurchased: '',
-    packaging: 'Yes — box and dustbag',
-    authCard: 'Yes',
-    itemName: '',
-    description: '',
-    originalPrice: '',
-    images: [],
-    state: 'Johor',
-    postcode: '',
-    listingPrice: '',
-    acceptOffers: 'Yes',
-  }
+  details.value = { ...defaultDetails, packaging: [], images: [] }
 }
 </script>
