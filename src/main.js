@@ -14,6 +14,8 @@ const router = createRouter({
     { path: '/product/:id', component: () => import('./pages/Product.vue') },
     { path: '/sell', component: () => import('./pages/Sell.vue') },
     { path: '/sell/details', component: () => import('./pages/SellDetails.vue') },
+    { path: '/profile', component: () => import('./pages/Profile.vue') },
+    { path: '/account', component: () => import('./pages/Account.vue') },
   ]
 })
 

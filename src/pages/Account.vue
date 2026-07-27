@@ -1,0 +1,258 @@
+<template>
+  <div style="background-color: #FAFAF8;">
+    <Navbar />
+
+    <div class="px-16 pt-24 pb-16 flex gap-16">
+
+      <!-- ===== LEFT SIDEBAR ===== -->
+      <div class="flex-shrink-0" style="width: 200px;">
+        <nav class="flex flex-col">
+          <button v-for="item in sidebarItems" :key="item.key"
+            @click="activeSection = item.key"
+            class="text-left px-4 py-3 text-sm rounded-md transition"
+            :class="activeSection === item.key
+              ? 'bg-gray-100 font-semibold text-gray-800'
+              : 'text-gray-500 hover:text-gray-700'">
+            {{ item.label }}
+          </button>
+        </nav>
+      </div>
+
+      <!-- ===== RIGHT CONTENT ===== -->
+      <div class="flex-1 max-w-2xl">
+
+        <!-- ===== ACCOUNT SECTION ===== -->
+        <div v-if="activeSection === 'account'">
+
+          <!-- Avatar -->
+          <div class="flex items-center gap-4 mb-10">
+            <div class="w-20 h-20 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center cursor-pointer hover:opacity-80 transition">
+              <img v-if="user.avatar" :src="user.avatar" class="w-full h-full object-cover" />
+              <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M5.121 17.804A8.966 8.966 0 0112 15c2.21 0 4.232.797 5.879 2.11M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-700">{{ user.firstName }} {{ user.lastName }}</p>
+              <p class="text-xs text-gray-400">@{{ user.username }}</p>
+            </div>
+          </div>
+
+          <!-- Personal Information -->
+          <div class="mb-8">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-base font-semibold text-gray-800">Personal information</h2>
+              <button v-if="!editPersonal" @click="editPersonal = true"
+                class="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 15H9v-2z"/>
+                </svg>
+                Edit
+              </button>
+            </div>
+
+            <div v-if="!editPersonal" class="space-y-4">
+              <div class="flex items-center">
+                <span class="text-xs text-gray-400 w-32">First name</span>
+                <span class="text-sm font-medium text-gray-800">{{ user.firstName }}</span>
+              </div>
+              <div class="flex items-center">
+                <span class="text-xs text-gray-400 w-32">Last name</span>
+                <span class="text-sm font-medium text-gray-800">{{ user.lastName }}</span>
+              </div>
+              <div class="flex items-center">
+                <span class="text-xs text-gray-400 w-32">Username</span>
+                <span class="text-sm font-medium text-gray-800">{{ user.username }}</span>
+              </div>
+              <div class="flex items-center">
+                <span class="text-xs text-gray-400 w-32">Bio</span>
+                <span class="text-sm text-gray-400">{{ user.bio || '-' }}</span>
+              </div>
+            </div>
+
+            <div v-else class="space-y-4">
+              <div>
+                <label class="text-xs text-gray-400 mb-1 block">First name</label>
+                <input v-model="user.firstName" type="text" class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white" />
+              </div>
+              <div>
+                <label class="text-xs text-gray-400 mb-1 block">Last name</label>
+                <input v-model="user.lastName" type="text" class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white" />
+              </div>
+              <div>
+                <label class="text-xs text-gray-400 mb-1 block">Username</label>
+                <input v-model="user.username" type="text" class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white" />
+              </div>
+              <div>
+                <label class="text-xs text-gray-400 mb-1 block">Bio</label>
+                <textarea v-model="user.bio" rows="3" class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white resize-none"></textarea>
+              </div>
+              <div class="flex gap-3">
+                <button @click="editPersonal = false"
+                  class="px-6 py-2 text-xs text-white rounded-md"
+                  style="background-color: #1B3A2D;">
+                  Save
+                </button>
+                <button @click="editPersonal = false" class="px-6 py-2 text-xs text-gray-500 hover:text-gray-700 transition">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="border-t border-gray-100 mb-8"></div>
+
+          <!-- Account Information -->
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-base font-semibold text-gray-800">Account information</h2>
+              <button v-if="!editAccount" @click="editAccount = true"
+                class="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 15H9v-2z"/>
+                </svg>
+                Edit
+              </button>
+            </div>
+
+            <div v-if="!editAccount" class="space-y-4">
+              <div class="flex items-center">
+                <span class="text-xs text-gray-400 w-32">Email</span>
+                <span class="text-sm font-medium text-gray-800">{{ user.email }}</span>
+              </div>
+              <div class="flex items-center">
+                <span class="text-xs text-gray-400 w-32">Password</span>
+                <span class="text-sm text-gray-800">••••••••</span>
+              </div>
+            </div>
+
+            <div v-else class="space-y-4">
+              <div>
+                <label class="text-xs text-gray-400 mb-1 block">Email</label>
+                <input v-model="user.email" type="email" class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white" />
+              </div>
+              <div>
+                <label class="text-xs text-gray-400 mb-1 block">New Password</label>
+                <input v-model="newPassword" type="password" placeholder="Leave blank to keep current"
+                  class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white placeholder-gray-300" />
+              </div>
+              <div class="flex gap-3">
+                <button @click="editAccount = false"
+                  class="px-6 py-2 text-xs text-white rounded-md"
+                  style="background-color: #1B3A2D;">
+                  Save
+                </button>
+                <button @click="editAccount = false" class="px-6 py-2 text-xs text-gray-500 hover:text-gray-700 transition">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ===== EMAIL PREFERENCES SECTION ===== -->
+        <div v-if="activeSection === 'email'">
+          <h2 class="text-base font-semibold text-gray-800 mb-6">Email preferences</h2>
+          <div class="space-y-5">
+            <div v-for="pref in emailPrefs" :key="pref.key" class="flex items-start justify-between">
+              <div>
+                <p class="text-sm text-gray-700 mb-0.5">{{ pref.label }}</p>
+                <p class="text-xs text-gray-400">{{ pref.desc }}</p>
+              </div>
+              <button
+                @click="pref.enabled = !pref.enabled"
+                class="relative flex-shrink-0 w-12 h-6 rounded-full transition-colors duration-300 ml-6 mt-1"
+                :style="pref.enabled ? 'background-color: #C9A96E;' : 'background-color: #e5e7eb;'">
+                <span class="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-300"
+                  :style="pref.enabled ? 'transform: translateX(26px)' : 'transform: translateX(2px)'"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== ADDRESSES SECTION ===== -->
+        <div v-if="activeSection === 'addresses'">
+          <h2 class="text-base font-semibold text-gray-800 mb-6">Addresses</h2>
+
+          <div class="space-y-3 mb-5">
+            <div v-for="(addr, i) in addresses" :key="i"
+              class="border border-gray-200 rounded-lg px-5 py-4 flex items-start justify-between">
+              <div>
+                <p class="text-sm font-semibold text-gray-800 mb-1">{{ addr.name }}</p>
+                <p class="text-xs text-gray-500">{{ addr.street }}</p>
+                <p class="text-xs text-gray-500">{{ addr.postcode }} {{ addr.city }}, {{ addr.country }}</p>
+                <button v-if="i > 0" @click="addresses.splice(i, 1)"
+                  class="text-xs text-gray-400 hover:text-red-400 transition mt-2">Delete</button>
+              </div>
+              <button class="text-gray-400 hover:text-gray-600 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 15H9v-2z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <button class="flex items-center gap-2 border border-gray-300 rounded-full px-5 py-2.5 text-xs text-gray-600 hover:border-gray-400 transition">
+            <span class="text-lg leading-none text-gray-400">+</span>
+            Add new address
+          </button>
+        </div>
+
+        <!-- ===== PAYMENT METHODS SECTION ===== -->
+        <div v-if="activeSection === 'payment'">
+          <h2 class="text-base font-semibold text-gray-800 mb-6">Payment methods</h2>
+          <div class="border border-dashed border-gray-200 rounded-xl py-12 flex flex-col items-center justify-center text-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-200 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+            </svg>
+            <p class="text-sm text-gray-400 mb-1">No payment methods saved</p>
+            <p class="text-xs text-gray-300">Add a card to make checkout faster</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <Footer />
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import Navbar from '../components/Navbar.vue'
+import Footer from '../components/Footer.vue'
+
+const activeSection = ref('account')
+const editPersonal = ref(false)
+const editAccount = ref(false)
+const newPassword = ref('')
+
+const sidebarItems = [
+  { key: 'account', label: 'Account' },
+  { key: 'email', label: 'Email preferences' },
+  { key: 'addresses', label: 'Addresses' },
+  { key: 'payment', label: 'Payment methods' },
+]
+
+// TODO: replace with Supabase user data
+const user = ref({
+  firstName: 'Mierza',
+  lastName: 'Azmi',
+  username: 'hana35362376',
+  email: 'noorhan4a@gmail.com',
+  bio: '',
+  avatar: null,
+})
+
+const emailPrefs = ref([
+  { key: 'offers', label: 'Offers & promotions', desc: 'Receive news about sales and exclusive deals.', enabled: true },
+  { key: 'orders', label: 'Order updates', desc: 'Get notified about your order status.', enabled: true },
+  { key: 'messages', label: 'Messages', desc: 'Be notified when you receive a new message.', enabled: true },
+  { key: 'newsletter', label: 'Newsletter', desc: 'Receive our weekly curated fashion digest.', enabled: false },
+])
+
+const addresses = ref([
+  { name: 'Mierza Azmi', street: '7080, Jalan Sri Putri 14/2', postcode: '81000', city: 'Kulai', country: 'Malaysia' },
+])
+</script>
