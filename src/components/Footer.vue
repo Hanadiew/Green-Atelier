@@ -25,11 +25,11 @@
     <div class="flex items-center justify-center gap-10 py-6">
       <RouterLink to="/home" class="text-xs hover:text-white transition" style="color: #C9A96E;">Home</RouterLink>
       <RouterLink to="/shop" class="text-xs hover:text-white transition" style="color: #C9A96E;">Shop</RouterLink>
-      <a href="#" class="text-xs hover:text-white transition" style="color: #C9A96E;">Sell</a>
+      <RouterLink to="/sell" class="text-xs hover:text-white transition" style="color: #C9A96E;">Sell</RouterLink>
       <a href="#" class="text-xs hover:text-white transition" style="color: #C9A96E;">Rent</a>
-      <a href="#" class="text-xs hover:text-white transition" style="color: #C9A96E;">About Us</a>
-      <a href="#" class="text-xs hover:text-white transition" style="color: #C9A96E;">Contact Us</a>
-      <a href="#" class="text-xs hover:text-white transition" style="color: #C9A96E;">FAQs</a>
+      <RouterLink to="/about" class="text-xs hover:text-white transition" style="color: #C9A96E;">About Us</RouterLink>
+      <RouterLink to="/contact" class="text-xs hover:text-white transition" style="color: #C9A96E;">Contact Us</RouterLink>
+      <RouterLink to="/contact#faq" class="text-xs hover:text-white transition" style="color: #C9A96E;">FAQs</RouterLink>
     </div>
 
     <!-- Copyright + Social -->

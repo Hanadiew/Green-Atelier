@@ -16,7 +16,19 @@ const router = createRouter({
     { path: '/sell/details', component: () => import('./pages/SellDetails.vue') },
     { path: '/profile', component: () => import('./pages/Profile.vue') },
     { path: '/account', component: () => import('./pages/Account.vue') },
-  ]
+    { path: '/checkout', component: () => import('./pages/Checkout.vue') },
+    { path: '/about', component: () => import('./pages/About.vue') },
+    { path: '/contact', component: () => import('./pages/Contact.vue') },
+  ],
+  scrollBehavior(to, from, savedPosition) {
+    if (to.hash) {
+      return {
+        el: to.hash,
+        behavior: 'smooth',
+      }
+    }
+    return { top: 0 }
+  }
 })
 
 const app = createApp(App)
