@@ -218,6 +218,8 @@ const handleContinue = () => {
     query: {
       brand: form.value.brand,
       category: form.value.category,
+      itemType: form.value.itemType,
+      condition: form.value.condition,
     }
   })
 }

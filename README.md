@@ -39,11 +39,26 @@ GAFS/
 │   │   ├── signup.vue        # Multi-step signup form (Email -> OTP Verification -> Password)
 │   │   ├── Profile.vue       # Public user profile (stats, active listings, orders)
 │   │   └── Account.vue       # Settings panel (profile editing, preferences, addresses)
+│   ├── lib/                  # Data-access layer (all Supabase queries live here)
+│   │   ├── auth.js           # Reactive session + profile, sign up / in / out
+│   │   ├── listings.js       # Catalogue queries, Storage uploads, listing creation
+│   │   ├── profiles.js       # Profile editing, avatars, stats, follows
+│   │   ├── addresses.js      # Address CRUD
+│   │   ├── wishlist.js       # Saved items
+│   │   ├── orders.js         # Checkout RPC, order & sales history
+│   │   ├── brands.js         # Brand reference data
+│   │   └── contact.js        # Contact form submissions
 │   ├── router/
-│   │   └── index.js          # App path routing definitions
-│   ├── cart.js               # Reactive utility module for shopping cart state
-│   ├── supabase.js           # Supabase client instantiation
-│   └── main.js               # Application bootstrap entrypoint
+│   │   └── index.js          # Unused — routes are defined in main.js
+│   ├── cart.js               # Cart state: DB-backed when signed in, localStorage as guest
+│   ├── supabase.js           # Supabase client, configured from .env
+│   └── main.js               # Routes, auth guards, app bootstrap
+├── supabase/
+│   ├── migrations/           # Versioned schema, RLS and Storage definitions
+│   ├── seed.sql              # Brands, promo codes, demo seller and catalogue
+│   └── config.toml           # Supabase CLI project config
+├── public/demo/              # Images for the seeded demo listings
+├── .env.example              # Template for local credentials
 ├── index.html                # App template shell
 ├── package.json              # Script directives & node module dependencies
 └── vite.config.js            # Build plugin configurations
@@ -63,11 +78,52 @@ npm install
 ```
 
 ### 2. Configure Supabase
-Create a `.env` file or update [src/supabase.js](file:///c:/Users/mierz/OneDrive/FYP/GAFS/src/supabase.js) with your project URL and credentials:
-```javascript
-const supabaseUrl = 'YOUR_SUPABASE_PROJECT_URL'
-const supabaseKey = 'YOUR_SUPABASE_ANON_KEY'
+Copy the template and fill in the values from **Supabase Dashboard → Project Settings → API**:
+```sh
+cp .env.example .env
 ```
+```ini
+VITE_SUPABASE_URL=https://your-project-ref.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-public-key
+```
+Vite only exposes variables prefixed with `VITE_`, and it reads `.env` at startup — restart the dev server after editing it.
+
+> The anon key is **not a secret**. It is compiled into the browser bundle and is public by design. What actually protects your data is the Row Level Security policies in `supabase/migrations/`. Never put a `service_role` key in a `VITE_` variable.
+
+### 3. Create the database
+Apply the migrations and seed data with the [Supabase CLI](https://supabase.com/docs/guides/cli):
+```sh
+npx supabase link --project-ref your-project-ref
+npx supabase db push
+```
+Then load the reference data and demo catalogue:
+```sh
+npx supabase db push --include-seed
+```
+Alternatively, paste the contents of each file into the dashboard **SQL Editor**, in this order:
+
+| Order | File | Creates |
+|---|---|---|
+| 1 | `supabase/migrations/20260730090000_schema.sql` | Tables, enums, indexes, triggers, RPCs |
+| 2 | `supabase/migrations/20260730090100_rls.sql` | Row Level Security policies and column guards |
+| 3 | `supabase/migrations/20260730090200_storage.sql` | Storage buckets and their policies |
+| 4 | `supabase/seed.sql` | Brands, promo codes, demo seller and catalogue |
+
+Every file is idempotent, so re-running one is safe.
+
+### 4. Turn off email confirmation (for development)
+In **Authentication → Sign In / Providers → Email**, switch **"Confirm email" OFF**.
+
+New accounts then work instantly with no email involved, which is what you want locally and for demos. Supabase's built-in email service only delivers to addresses belonging to your Supabase organisation and is rate-limited to a handful of sends per hour, so relying on it during a demo will fail.
+
+Signup adapts to whichever setting is active:
+
+| "Confirm email" | What happens |
+|---|---|
+| **OFF** | Account is created and signed in immediately → lands on `/home`. |
+| **ON** | Account is created, then the page asks the user to check their inbox for the confirmation link. |
+
+For production, leave confirmation **ON** and configure custom SMTP under **Project Settings → Authentication → SMTP Settings**.
 
 ### 3. Run Development Server
 Start the local server with hot-reload support:
@@ -84,41 +140,67 @@ npm run build
 
 ---
 
-## 📊 Database Schema Design
+## 📊 Database
 
-To successfully transition from mock datasets to the Supabase backend database, implement the following **5 core tables** in your Supabase workspace:
+17 tables, all with Row Level Security enabled. The full definition lives in `supabase/migrations/`.
 
-### 1. `profiles`
-* **Purpose:** Stores user profile attributes mapped 1:1 with Supabase Auth users.
-* **Fields:** `id` (UUID Primary Key), `email` (Text), `full_name` (Text), `created_at` (Timestamp).
+| Table | Purpose |
+|---|---|
+| `profiles` | Public user profile, 1:1 with `auth.users`. Deliberately holds **nothing private** — it is world-readable so seller cards and public profiles work for signed-out visitors. |
+| `user_settings` | Email notification preferences. Owner-only. |
+| `user_roles` | Grants `admin` / `moderator`. Has **no write policy at all**, so a role can only be granted with the `service_role` key. |
+| `brands` | Reference list of luxury houses. Public read, admin write. |
+| `listings` | Items for sale. Includes a generated `co2_saved_kg` (the sustainability calculator) and a generated `search_vector` with a GIN index powering the shop search. |
+| `listing_verification` | Serial numbers and authenticity documents. **Separate table with no public read policy**, because the Sell wizard promises sellers this stays private. |
+| `addresses` | Shipping and billing addresses. A partial unique index plus a trigger enforce one default per user. |
+| `wishlists` / `cart_items` | Saved and in-bag items. No quantity column — resale items are one-of-a-kind. |
+| `follows` | Follower graph. Publicly readable so counts render on profiles. |
+| `offers` | Price negotiation when a seller enables "Accept Offers". |
+| `promo_codes` | Discount codes with expiry, minimum spend and usage limits. |
+| `orders` / `order_items` | Purchases. Items carry a **snapshot** of title, brand and image so history survives a listing being edited or deleted, and each item has its own status because a multi-seller order ships in separate parcels. |
+| `conversations` / `messages` | Buyer↔seller messaging (schema only — no chat UI yet). |
+| `contact_messages` | Contact form submissions. Anyone may insert; only the sender and staff can read. |
 
-### 2. `listings` (or `products`)
-* **Purpose:** Stores all clothes, bags, and accessories uploaded for verification and sale.
-* **Fields:**
-  * `id` (UUID Primary Key)
-  * `seller_id` (UUID referencing `profiles.id`)
-  * `brand` (Text), `category` (Text), `item_type` (Text), `condition` (Text)
-  * `color` (Text), `material` (Text), `size` (Text), `vintage` (Boolean)
-  * `serial_number` (Text, optional)
-  * `description` (Text), `year_purchased` (Integer), `origin` (Text)
-  * `packaging` (Text[] - list of checkboxes e.g. Box, Dustbag)
-  * `images` (Text[] - URLs of images uploaded to Supabase Storage)
-  * `authenticity_document_url` (Text - URL for proof of purchase / certs)
-  * `listing_price` (Numeric), `accept_offers` (Boolean)
-  * `status` (Text - `'pending_review'`, `'active'`, `'sold'`, `'rejected'`)
-  * `created_at` (Timestamp)
+Plus the `profile_stats` view (listing, sale and follower counts, `security_invoker`).
 
-### 3. `addresses`
-* **Purpose:** Stores seller shipping address points and buyer billing locations.
-* **Fields:** `id` (UUID Primary Key), `user_id` (UUID referencing `profiles.id`), `first_name` (Text), `surname` (Text), `phone` (Text), `street_address` (Text), `apartment` (Text), `city` (Text), `state` (Text), `postcode` (Text), `country` (Text), `is_default` (Boolean).
+### Security model
 
-### 5. `offers`
-* **Purpose:** Logs negotiations between buyers and sellers when "Accept Offers" is checked.
-* **Fields:** `id` (UUID Primary Key), `listing_id` (UUID referencing `listings.id`), `buyer_id` (UUID referencing `profiles.id`), `offer_amount` (Numeric), `status` (Text: `'pending'`, `'accepted'`, `'declined'`).
+The anon key is public, so **RLS is the security boundary.** Two things RLS alone cannot express are enforced with triggers, since RLS is row-level and cannot protect individual columns:
 
-### 6. `orders`
-* **Purpose:** Tracks purchases, transaction amounts, shipping status, and platform fees.
-* **Fields:** `id` (UUID Primary Key), `buyer_id` (UUID), `listing_id` (UUID), `price_paid` (Numeric), `service_fee` (Numeric), `shipping_address_id` (UUID), `shipping_status` (Text).
+* A seller cannot award themselves the **Trusted Seller** badge (`guard_profile_privileges`).
+* A seller cannot publish their own listing or mark it sold — going live requires review, and `sold` is reachable only through checkout (`guard_listing_status`, `force_new_listing_pending`).
+
+### Checkout
+
+Ordering goes through the `place_order()` database function rather than direct inserts — `orders` has no INSERT policy at all. The function:
+
+1. re-computes every amount from **stored** listing prices, so a tampered client cannot set its own total;
+2. verifies the shipping address belongs to the buyer;
+3. locks each listing `FOR UPDATE`, so two buyers racing for the same one-of-a-kind item cannot both succeed;
+4. refuses to let a seller buy their own listing;
+5. marks items sold, records the 85/15 payout split, and clears the item from **every** cart — all in one transaction.
+
+Fees: RM 15 flat shipping, 5% buyer service fee, 15% platform commission (85% seller payout). These constants live in `place_order()`; the checkout page mirrors them for display only.
+
+### Storage
+
+| Bucket | Access | Limit |
+|---|---|---|
+| `listing-images` | Public read, owner write | 5 MB, images only |
+| `avatars` | Public read, owner write | 2 MB, images only |
+| `authenticity-docs` | **Private** — owner and staff only, via signed URL | 10 MB, PDF/JPG/PNG |
+
+Every object is keyed `<user-id>/<filename>`; the policies check that the first path segment equals `auth.uid()`.
+
+### Demo account
+
+The seed creates a demo seller with 8 active listings:
+
+```
+demo.seller@greenatelier.test / DemoSeller123
+```
+
+Delete the `DEMO SELLER` and `DEMO CATALOGUE` sections of `supabase/seed.sql` before going to production.
 
 ---
 

@@ -23,6 +23,14 @@
       <!-- ===== LEFT: Steps ===== -->
       <div class="flex-1 max-w-2xl space-y-4">
 
+        <!-- Error -->
+        <div v-if="errorMsg" class="rounded-xl px-5 py-4 flex items-start gap-3" style="background-color: #FEF2F2;">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0 mt-0.5" style="color: #B91C1C;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <p class="text-xs" style="color: #B91C1C;">{{ errorMsg }}</p>
+        </div>
+
         <!-- ===== STEP 1: BAG ===== -->
         <div class="bg-white rounded-xl shadow-sm overflow-hidden">
           <button
@@ -134,30 +142,31 @@
 
           <div v-if="activeStep === 2" class="px-6 pb-6 space-y-4">
 
-            <!-- Saved address -->
-            <div v-if="shippingAddress"
-              class="border border-gray-800 rounded-lg px-5 py-4 flex items-start justify-between">
-              <div class="flex items-start gap-3">
-                <input type="radio" checked class="mt-1 w-3.5 h-3.5 accent-gray-800" />
-                <div>
-                  <p class="text-sm font-semibold text-gray-800">{{ shippingAddress.name }}</p>
-                  <p class="text-xs text-gray-500 mt-0.5">{{ shippingAddress.street }}</p>
-                  <p class="text-xs text-gray-500">{{ shippingAddress.postcode }} {{ shippingAddress.city }}, Malaysia</p>
-                </div>
+            <!-- Saved addresses -->
+            <label v-for="addr in savedAddresses" :key="addr.id"
+              class="border rounded-lg px-5 py-4 flex items-start gap-3 cursor-pointer transition"
+              :class="shippingAddressId === addr.id ? 'border-gray-800' : 'border-gray-200 hover:border-gray-300'">
+              <input type="radio" v-model="shippingAddressId" :value="addr.id" class="mt-1 w-3.5 h-3.5 accent-gray-800" />
+              <div>
+                <p class="text-sm font-semibold text-gray-800">{{ addr.name }}</p>
+                <p class="text-xs text-gray-500 mt-0.5">{{ addr.street }}</p>
+                <p class="text-xs text-gray-500">{{ addr.postcode }} {{ addr.city }}, {{ addr.country }}</p>
               </div>
-              <button @click="showAddressForm = true" class="text-gray-400 hover:text-gray-600 transition">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 15H9v-2z"/>
-                </svg>
-              </button>
-            </div>
+            </label>
 
             <!-- No address -->
-            <div v-else class="border border-dashed border-gray-200 rounded-lg px-5 py-6 text-center">
+            <div v-if="savedAddresses.length === 0 && !showAddressForm"
+              class="border border-dashed border-gray-200 rounded-lg px-5 py-6 text-center">
               <p class="text-xs text-gray-400 mb-3">No shipping address added yet.</p>
               <button @click="showAddressForm = true"
                 class="text-xs underline" style="color: #C9A96E;">Add address</button>
             </div>
+
+            <button v-else-if="!showAddressForm" @click="showAddressForm = true"
+              class="flex items-center gap-2 border border-gray-300 rounded-full px-5 py-2.5 text-xs text-gray-600 hover:border-gray-400 transition">
+              <span class="text-lg leading-none text-gray-400">+</span>
+              Add another address
+            </button>
 
             <!-- Add address form inline -->
             <div v-if="showAddressForm" class="border border-gray-200 rounded-lg px-5 py-5 space-y-4">
@@ -255,10 +264,10 @@
               </div>
             </div>
 
-            <button @click="handlePlaceOrder"
-              class="w-full py-3 text-sm text-white rounded-md transition hover:opacity-90 mt-2"
+            <button @click="handlePlaceOrder" :disabled="placing"
+              class="w-full py-3 text-sm text-white rounded-md transition hover:opacity-90 mt-2 disabled:opacity-60"
               style="background-color: #1B3A2D;">
-              Place Order
+              {{ placing ? 'Placing order…' : 'Place Order' }}
             </button>
 
           </div>
@@ -325,10 +334,10 @@
           <!-- Place order -->
           <button @click="handlePlaceOrder"
             class="w-full py-3 text-sm text-white rounded-md transition hover:opacity-90"
-            :class="cartItems.length === 0 ? 'opacity-40 cursor-not-allowed' : ''"
-            :disabled="cartItems.length === 0"
+            :class="cartItems.length === 0 || placing ? 'opacity-40 cursor-not-allowed' : ''"
+            :disabled="cartItems.length === 0 || placing"
             style="background-color: #1B3A2D;">
-            Place Order
+            {{ placing ? 'Placing order…' : 'Place Order' }}
           </button>
 
           <p class="text-xs text-gray-400 text-center mt-4 leading-relaxed">
@@ -357,7 +366,7 @@
           <button @click="handleOrderDone"
             class="w-full py-3 text-sm text-white rounded-md"
             style="background-color: #1B3A2D;">
-            Back to Home
+            View My Orders
           </button>
         </div>
       </div>
@@ -367,26 +376,43 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { cartItems, cartSubtotal, removeFromCart, clearCart } from '../cart.js'
+import { cartItems, cartSubtotal, removeFromCart, resetCartState } from '../cart.js'
+import { userId } from '../lib/auth.js'
+import { createAddress, fetchAddresses, toDisplay } from '../lib/addresses.js'
+import { placeOrder, validatePromoCode } from '../lib/orders.js'
 
 const router = useRouter()
 
 const activeStep = ref(1)
 const showAddressForm = ref(false)
 const orderPlaced = ref(false)
+const placedOrderId = ref(null)
 const promoCode = ref('')
 const promoMsg = ref('')
 const promoValid = ref(false)
 const discount = ref(0)
 const selectedPayment = ref('card')
+const placing = ref(false)
+const errorMsg = ref('')
 
-const shipping = ref(15)
-const serviceFee = computed(() => Math.round(cartSubtotal.value * 0.05))
+// These rates mirror the constants inside the place_order() database function,
+// which is what actually prices the order. They are shown for transparency; the
+// server total is authoritative.
+const SHIPPING_FEE = 15
+const SERVICE_FEE_RATE = 0.05
+
+const shipping = ref(SHIPPING_FEE)
+const serviceFee = computed(() => Math.round(cartSubtotal.value * SERVICE_FEE_RATE * 100) / 100)
 const total = computed(() => cartSubtotal.value + shipping.value + serviceFee.value - discount.value)
 
-const shippingAddress = ref(null)
+const savedAddresses = ref([])
+const shippingAddressId = ref(null)
+const shippingAddress = computed(
+  () => savedAddresses.value.find((a) => a.id === shippingAddressId.value) ?? null,
+)
+
 const newShipping = ref({ firstName: '', lastName: '', street: '', city: '', postcode: '' })
 
 const card = ref({ number: '', expiry: '', cvv: '', name: '' })
@@ -397,48 +423,99 @@ const paymentMethods = [
   { key: 'ewallet', label: 'e-Wallet (Touch \'n Go / GrabPay)', icon: '📱' },
 ]
 
-const applyPromo = () => {
-  if (promoCode.value.toUpperCase() === 'GREEN10') {
-    discount.value = Math.round(cartSubtotal.value * 0.10)
-    promoMsg.value = '10% discount applied!'
-    promoValid.value = true
-  } else {
+const loadAddresses = async () => {
+  if (!userId.value) return
+  try {
+    const rows = await fetchAddresses(userId.value)
+    savedAddresses.value = rows.map(toDisplay)
+    const preferred = rows.find((r) => r.is_default) ?? rows[0]
+    if (preferred) shippingAddressId.value = preferred.id
+  } catch (error) {
+    errorMsg.value = error.message
+  }
+}
+
+onMounted(loadAddresses)
+
+// Validated in the database so expiry, spend thresholds and usage limits are
+// enforced server-side rather than trusted from the browser.
+const applyPromo = async () => {
+  promoMsg.value = ''
+  if (!promoCode.value.trim()) {
     discount.value = 0
-    promoMsg.value = 'Invalid promo code.'
-    promoValid.value = false
-  }
-}
-
-const saveShipping = () => {
-  if (!newShipping.value.firstName || !newShipping.value.street) return
-  shippingAddress.value = {
-    name: `${newShipping.value.firstName} ${newShipping.value.lastName}`,
-    street: newShipping.value.street,
-    city: newShipping.value.city,
-    postcode: newShipping.value.postcode,
-  }
-  showAddressForm.value = false
-}
-
-const handlePlaceOrder = () => {
-  if (cartItems.value.length === 0) return
-  if (!shippingAddress.value) {
-    activeStep.value = 2
     return
   }
-  // TODO: connect to Supabase orders
-  console.log('Order placed:', {
-    items: cartItems.value,
-    shipping: shippingAddress.value,
-    payment: selectedPayment.value,
-    total: total.value,
-  })
-  orderPlaced.value = true
+  try {
+    const result = await validatePromoCode(promoCode.value, cartSubtotal.value)
+    promoValid.value = result.valid
+    discount.value = result.discount
+    promoMsg.value = result.valid
+      ? `Discount of RM ${result.discount.toLocaleString()} applied!`
+      : result.reason
+  } catch (error) {
+    promoValid.value = false
+    discount.value = 0
+    promoMsg.value = error.message
+  }
+}
+
+const saveShipping = async () => {
+  errorMsg.value = ''
+  const a = newShipping.value
+  if (!a.firstName.trim() || !a.street.trim() || !a.city.trim() || !a.postcode.trim()) {
+    errorMsg.value = 'First name, street address, city and postcode are required.'
+    return
+  }
+  try {
+    const row = await createAddress(userId.value, {
+      firstName: a.firstName,
+      surname: a.lastName,
+      street: a.street,
+      city: a.city,
+      postcode: a.postcode,
+      country: 'Malaysia',
+      isDefault: savedAddresses.value.length === 0,
+    })
+    savedAddresses.value = [...savedAddresses.value, toDisplay(row)]
+    shippingAddressId.value = row.id
+    newShipping.value = { firstName: '', lastName: '', street: '', city: '', postcode: '' }
+    showAddressForm.value = false
+  } catch (error) {
+    errorMsg.value = error.message
+  }
+}
+
+const handlePlaceOrder = async () => {
+  errorMsg.value = ''
+  if (cartItems.value.length === 0) return
+  if (!shippingAddressId.value) {
+    activeStep.value = 2
+    showAddressForm.value = savedAddresses.value.length === 0
+    return
+  }
+
+  placing.value = true
+  try {
+    // place_order() re-prices everything from stored listing prices, verifies
+    // each item is still available, marks them sold and clears the cart in a
+    // single transaction.
+    placedOrderId.value = await placeOrder({
+      shippingAddressId: shippingAddressId.value,
+      paymentMethod: selectedPayment.value,
+      promoCode: promoValid.value ? promoCode.value : null,
+    })
+    resetCartState()
+    orderPlaced.value = true
+  } catch (error) {
+    errorMsg.value = error.message
+    activeStep.value = 1
+  } finally {
+    placing.value = false
+  }
 }
 
 const handleOrderDone = () => {
-  clearCart()
   orderPlaced.value = false
-  router.push('/home')
+  router.push({ path: '/profile', query: { tab: 'Orders' } })
 }
 </script>

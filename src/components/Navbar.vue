@@ -49,11 +49,11 @@
     <div class="flex items-center gap-5">
 
       <!-- Wishlist -->
-      <button class="text-gray-600 hover:text-black">
+      <RouterLink to="/wishlist" class="text-gray-600 hover:text-black">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 010-6.364z"/>
         </svg>
-      </button>
+      </RouterLink>
 
       <!-- Bag with count badge -->
       <button class="relative text-gray-600 hover:text-black" @click="cartOpen = true">
@@ -80,6 +80,31 @@
     @click="showProfile = false"
     class="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-lg py-2 z-50"
     style="width: 200px;">
+
+    <!-- Signed out -->
+    <template v-if="!isAuthenticated">
+      <RouterLink to="/login"
+        class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+        </svg>
+        Log In
+      </RouterLink>
+      <RouterLink to="/signup"
+        class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+        </svg>
+        Sign Up
+      </RouterLink>
+    </template>
+
+    <!-- Signed in -->
+    <template v-else>
+
+    <div class="px-4 pb-2 mb-1 border-b border-gray-100">
+      <p class="text-xs font-medium text-gray-800 truncate">{{ displayName || 'Your account' }}</p>
+    </div>
 
     <RouterLink to="/profile"
       class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 transition">
@@ -133,6 +158,8 @@
       Logout
     </button>
 
+    </template>
+
   </div>
 </div>
 
@@ -147,6 +174,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { cartCount } from '../cart.js'
+import { displayName, isAuthenticated, signOut } from '../lib/auth.js'
 import CartDrawer from './CartDrawer.vue'
 
 const router = useRouter()
@@ -157,9 +185,13 @@ const cartOpen = ref(false)
 const showProfile = ref(false)
 const profileContainer = ref(null)
 
-const handleLogout = () => {
+const handleLogout = async () => {
   showProfile.value = false
-  // TODO: Supabase signout
+  try {
+    await signOut()
+  } catch (error) {
+    console.error('Sign out failed:', error.message)
+  }
   router.push('/login')
 }
 

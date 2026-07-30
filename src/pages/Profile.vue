@@ -4,6 +4,25 @@
 
     <div class="pt-24 pb-16">
 
+      <!-- Listing submitted confirmation -->
+      <div v-if="justSubmitted" class="mx-16 mb-6 rounded-lg px-5 py-4 flex items-start gap-3" style="background-color: #E8F5EE;">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+        <div>
+          <p class="text-sm font-medium text-gray-800 mb-0.5">Listing submitted for review</p>
+          <p class="text-xs text-gray-500">
+            Our authentication team will check it over. It appears in the shop once approved —
+            until then you will find it below marked "In review".
+          </p>
+        </div>
+      </div>
+
+      <!-- Error -->
+      <div v-if="errorMsg" class="mx-16 mb-6 rounded-lg px-5 py-4 text-xs" style="background-color: #FEF2F2; color: #B91C1C;">
+        {{ errorMsg }}
+      </div>
+
       <!-- ===== PROFILE HEADER ===== -->
       <div class="px-16 py-10 flex items-center justify-between border-b border-gray-100">
 
@@ -30,8 +49,8 @@
               <p class="text-xs text-gray-400">{{ user.state }}, Malaysia</p>
             </div>
             <div class="flex items-center gap-4 mt-2">
-              <p class="text-xs text-gray-500"><span class="font-medium text-gray-700">{{ user.itemsForSale }}</span> items for sale</p>
-              <p class="text-xs text-gray-500"><span class="font-medium text-gray-700">{{ user.sold }}</span> sold</p>
+              <p class="text-xs text-gray-500"><span class="font-medium text-gray-700">{{ stats.itemsForSale }}</span> items for sale</p>
+              <p class="text-xs text-gray-500"><span class="font-medium text-gray-700">{{ stats.sold }}</span> sold</p>
             </div>
           </div>
         </div>
@@ -39,12 +58,12 @@
         <!-- Followers -->
         <div class="flex items-center gap-8 border border-gray-200 rounded-xl px-8 py-4">
           <div class="text-center">
-            <p class="text-lg font-semibold text-gray-800">{{ user.followers }}</p>
+            <p class="text-lg font-semibold text-gray-800">{{ stats.followers }}</p>
             <p class="text-xs text-gray-400">Followers</p>
           </div>
           <div class="border-l border-gray-100 h-8"></div>
           <div class="text-center">
-            <p class="text-lg font-semibold text-gray-800">{{ user.following }}</p>
+            <p class="text-lg font-semibold text-gray-800">{{ stats.following }}</p>
             <p class="text-xs text-gray-400">Following</p>
           </div>
         </div>
@@ -54,7 +73,7 @@
       <!-- ===== TABS ===== -->
       <div class="px-16 border-b border-gray-100">
         <div class="flex items-center gap-8">
-          <button v-for="tab in tabs" :key="tab"
+          <button v-for="tab in visibleTabs" :key="tab"
             @click="activeTab = tab"
             class="py-4 text-sm transition border-b-2"
             :class="activeTab === tab
@@ -128,9 +147,10 @@
           <div v-if="item.sold" class="absolute inset-0 bg-black/40 flex items-center justify-center">
             <span class="text-white text-xs font-medium tracking-widest uppercase">Sold</span>
           </div>
-          <!-- Active badge -->
-          <div v-else class="absolute top-2 left-2 px-2 py-0.5 rounded-full text-xs" style="background-color: #1B3A2D; color: white;">
-            Active
+          <!-- Status badge -->
+          <div v-else class="absolute top-2 left-2 px-2 py-0.5 rounded-full text-xs"
+            :style="STATUS_BADGES[item.status]?.style ?? STATUS_BADGES.active.style">
+            {{ STATUS_BADGES[item.status]?.label ?? item.status }}
           </div>
         </div>
         <p class="text-xs font-medium text-gray-800">{{ item.name }}</p>
@@ -257,14 +277,21 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
+import { profile as ownProfile, userId } from '../lib/auth.js'
+import { fetchProfileByUsername, fetchProfileStats } from '../lib/profiles.js'
+import { fetchSellerListings } from '../lib/listings.js'
+import { fetchWishlist, removeFromWishlist } from '../lib/wishlist.js'
+import { fetchOrders } from '../lib/orders.js'
 
 const router = useRouter()
-const activeTab = ref('Listings')
+const route = useRoute()
+
 const tabs = ['Listings', 'Wishlist', 'Orders']
+const activeTab = ref(tabs.includes(route.query.tab) ? route.query.tab : 'Listings')
 
 // Listings filters
 const listingFilter = ref('all')
@@ -275,51 +302,127 @@ const showSold = ref(false)
 const orderStatuses = ['All', 'Processing', 'Shipped', 'Delivered', 'Cancelled']
 const activeOrderStatus = ref('All')
 
-// TODO: replace with Supabase user data
-const user = ref({
-  firstName: 'Mierza',
-  lastName: 'Azmi',
-  username: 'hana35362376',
-  state: 'Johor',
-  avatar: null,
-  followers: 7,
-  following: 3,
-  itemsForSale: 2,
-  sold: 1,
+const STATUS_BADGES = {
+  active: { label: 'Active', style: 'background-color: #1B3A2D; color: white;' },
+  pending_review: { label: 'In review', style: 'background-color: #C9A96E; color: white;' },
+  draft: { label: 'Draft', style: 'background-color: #9CA3AF; color: white;' },
+  rejected: { label: 'Rejected', style: 'background-color: #DC2626; color: white;' },
+  archived: { label: 'Archived', style: 'background-color: #6B7280; color: white;' },
+}
+
+const profileRow = ref(null)
+const stats = ref({ itemsForSale: 0, sold: 0, followers: 0, following: 0 })
+const listings = ref([])
+const wishlist = ref([])
+const orders = ref([])
+const loading = ref(true)
+const errorMsg = ref('')
+
+// /profile shows your own page; /profile/:username shows someone else's.
+const isOwnProfile = computed(() => !route.params.username || profileRow.value?.id === userId.value)
+const justSubmitted = computed(() => route.query.submitted === '1')
+
+// Wishlist and order history are private to their owner.
+const visibleTabs = computed(() => (isOwnProfile.value ? tabs : ['Listings']))
+
+watch(isOwnProfile, (own) => {
+  if (!own && activeTab.value !== 'Listings') activeTab.value = 'Listings'
 })
 
-// TODO: replace with Supabase listings
-const listings = ref([
-  { id: 1, name: 'Kisslock Frame Bag 27', brand: 'Coach', price: 2000, sold: false, image: new URL('../assets/bag1.png', import.meta.url).href },
-  { id: 2, name: 'Blouse', brand: 'Dior', price: 5000, sold: false, image: new URL('../assets/shirt.png', import.meta.url).href },
-  { id: 3, name: 'Triomphe Stamp 01 Sunglasses', brand: 'Celine', price: 2000, sold: true, image: new URL('../assets/shades.png', import.meta.url).href },
-])
+const user = computed(() => {
+  const p = profileRow.value
+  return {
+    firstName: p?.first_name ?? '',
+    lastName: p?.last_name ?? '',
+    username: p?.username ?? '',
+    state: p?.state ?? '',
+    country: p?.country ?? 'Malaysia',
+    avatar: p?.avatar_url ?? null,
+    bio: p?.bio ?? '',
+    isTrustedSeller: p?.is_trusted_seller ?? false,
+  }
+})
+
+const load = async () => {
+  loading.value = true
+  errorMsg.value = ''
+  try {
+    profileRow.value = route.params.username
+      ? await fetchProfileByUsername(route.params.username)
+      : ownProfile.value
+
+    if (!profileRow.value) {
+      errorMsg.value = 'Profile not found.'
+      return
+    }
+
+    const id = profileRow.value.id
+    stats.value = await fetchProfileStats(id)
+
+    // Visitors only ever see active and sold listings; RLS filters out the
+    // seller's drafts and items still in review.
+    listings.value = await fetchSellerListings(id)
+
+    // Wishlist and orders are private, so only load them on your own profile.
+    if (id === userId.value) {
+      wishlist.value = await fetchWishlist(id)
+      orders.value = await fetchOrders(id)
+    } else {
+      wishlist.value = []
+      orders.value = []
+    }
+  } catch (error) {
+    errorMsg.value = error.message
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(load)
+watch(() => route.params.username, load)
+// The profile arrives asynchronously on a hard refresh of /profile.
+watch(ownProfile, (p) => { if (p && !route.params.username && !profileRow.value) load() })
 
 const filteredListings = computed(() => {
   let result = [...listings.value]
-  if (!showSold.value) result = result.filter(i => !i.sold)
+  if (!showSold.value) result = result.filter((i) => !i.sold)
+  if (listingFilter.value !== 'all') {
+    result = result.filter((i) => i.category?.toLowerCase() === listingFilter.value)
+  }
   if (listingSort.value === 'price_asc') result.sort((a, b) => a.price - b.price)
   if (listingSort.value === 'price_desc') result.sort((a, b) => b.price - a.price)
   return result
 })
 
-// TODO: replace with Supabase wishlist
-const wishlist = ref([
-  { id: 4, name: "Women's Elite Active Sneakers", brand: 'Lacoste', price: 400, image: new URL('../assets/shoes.png', import.meta.url).href },
-])
-
-const removeWishlist = (id) => {
-  wishlist.value = wishlist.value.filter(i => i.id !== id)
+const removeWishlist = async (id) => {
+  const previous = wishlist.value
+  wishlist.value = wishlist.value.filter((i) => i.id !== id)
+  try {
+    await removeFromWishlist(userId.value, id)
+  } catch (error) {
+    errorMsg.value = error.message
+    wishlist.value = previous
+  }
 }
 
-// TODO: replace with Supabase orders
-const orders = ref([
-  { id: 1, orderId: 'GA-20240101', name: 'Kisslock Frame Bag 27', brand: 'Coach', price: 2000, date: '1 Jan 2024', status: 'Delivered', image: new URL('../assets/bag1.png', import.meta.url).href },
-  { id: 2, orderId: 'GA-20240215', name: 'Blouse', brand: 'Dior', price: 5000, date: '15 Feb 2024', status: 'Processing', image: new URL('../assets/shirt.png', import.meta.url).href },
-])
+// One card per purchased item, which is how the order list is laid out.
+const orderCards = computed(() =>
+  orders.value.flatMap((o) =>
+    o.items.map((item) => ({
+      id: item.id,
+      orderId: o.orderId,
+      name: item.name,
+      brand: item.brand,
+      price: item.price,
+      image: item.image,
+      date: o.date,
+      status: item.status,
+    })),
+  ),
+)
 
 const filteredOrders = computed(() => {
-  if (activeOrderStatus.value === 'All') return orders.value
-  return orders.value.filter(o => o.status === activeOrderStatus.value)
+  if (activeOrderStatus.value === 'All') return orderCards.value
+  return orderCards.value.filter((o) => o.status === activeOrderStatus.value)
 })
 </script>

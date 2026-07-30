@@ -394,31 +394,37 @@
 
 
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 const router = useRouter()
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
+import { fetchNewestListings } from '../lib/listings.js'
 
-const showShop = ref(false)
 const carousel = ref(null)
 
-const products = [
-  { id: 1, name: 'Kisslock Frame Bag 27', price: 'RM 2,500.00', image: new URL('../assets/bag1.png', import.meta.url).href },
-  { id: 2, name: 'Blouse', price: 'RM 5,000.00', image: new URL('../assets/shirt.png', import.meta.url).href },
-  { id: 3, name: 'Triomphe Stamp 01 Sunglasses', price: 'RM 2,000.00', image: new URL('../assets/shades.png', import.meta.url).href },
-  { id: 4, name: "Women's Elite Active Sneakers", price: 'RM 400.00', image: new URL('../assets/shoes.png', import.meta.url).href },
-  { id: 5, name: 'Kisslock Frame Bag 27', price: 'RM 2,500.00', image: new URL('../assets/bag1.png', import.meta.url).href },
-  { id: 6, name: 'Blouse', price: 'RM 5,000.00', image: new URL('../assets/shirt.png', import.meta.url).href },
-  { id: 7, name: 'Triomphe Stamp 01 Sunglasses', price: 'RM 2,000.00', image: new URL('../assets/shades.png', import.meta.url).href },
-  { id: 8, name: "Women's Elite Active Sneakers", price: 'RM 400.00', image: new URL('../assets/shoes.png', import.meta.url).href },
-]
+const products = ref([])
+
+onMounted(async () => {
+  try {
+    const rows = await fetchNewestListings(8)
+    products.value = rows.map((r) => ({
+      id: r.id,
+      name: r.name,
+      price: `RM ${r.price.toLocaleString()}.00`,
+      image: r.image,
+    }))
+  } catch (error) {
+    // The landing page still renders without the carousel.
+    console.error('Could not load featured listings:', error.message)
+  }
+})
 
 const scrollLeft = () => {
-  carousel.value.scrollBy({ left: -900, behavior: 'smooth' })
+  carousel.value?.scrollBy({ left: -900, behavior: 'smooth' })
 }
 
 const scrollRight = () => {
-  carousel.value.scrollBy({ left: 900, behavior: 'smooth' })
+  carousel.value?.scrollBy({ left: 900, behavior: 'smooth' })
 }
 </script>

@@ -50,9 +50,10 @@
       <!-- Continue Button -->
       <button
         @click="handleLogin"
-        class="w-full py-3 text-sm rounded-md transition"
+        :disabled="loading"
+        class="w-full py-3 text-sm rounded-md transition disabled:opacity-60"
         style="background-color: #F5EDD9; color: #C9A96E;">
-        Continue
+        {{ loading ? 'Signing in…' : 'Continue' }}
       </button>
 
       <!-- Terms -->
@@ -74,14 +75,17 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { signIn } from '../lib/auth.js'
 
 const router = useRouter()
+const route = useRoute()
 
 const email = ref('')
 const password = ref('')
 const showPassword = ref(false)
 const errorMsg = ref('')
+const loading = ref(false)
 
 const handleLogin = async () => {
   errorMsg.value = ''
@@ -91,10 +95,18 @@ const handleLogin = async () => {
     return
   }
 
-  // TODO: replace with Supabase login
-  console.log('Logging in with:', email.value)
-
-  // After successful login → go to home
-  router.push('/home')
+  loading.value = true
+  try {
+    await signIn(email.value, password.value)
+    // Return the user to whatever page sent them here.
+    router.push(route.query.redirect || '/home')
+  } catch (error) {
+    errorMsg.value =
+      error.message === 'Invalid login credentials'
+        ? 'That email and password do not match an account.'
+        : error.message
+  } finally {
+    loading.value = false
+  }
 }
 </script>

@@ -67,12 +67,15 @@
             ></textarea>
           </div>
 
-          <button 
-            type="submit" 
-            class="w-full py-3 text-xs text-white rounded-md tracking-wider font-medium uppercase shadow transition hover:opacity-90 active:scale-95 cursor-pointer"
+          <p v-if="errorMsg" class="text-xs text-red-400">{{ errorMsg }}</p>
+
+          <button
+            type="submit"
+            :disabled="submitting"
+            class="w-full py-3 text-xs text-white rounded-md tracking-wider font-medium uppercase shadow transition hover:opacity-90 active:scale-95 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
             style="background-color: #1B3A2D;"
           >
-            Send Message
+            {{ submitting ? 'Sending…' : 'Send Message' }}
           </button>
         </form>
       </div>
@@ -404,15 +407,23 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
+import { submitContactMessage } from '../lib/contact.js'
+import { displayName, userEmail, userId } from '../lib/auth.js'
 
 const form = ref({
   name: '',
   email: '',
   subject: '',
   message: ''
+})
+
+// Prefill for signed-in visitors so they are not retyping what we know.
+onMounted(() => {
+  if (userEmail.value) form.value.email = userEmail.value
+  if (displayName.value) form.value.name = displayName.value
 })
 
 const showSuccess = ref(false)
@@ -426,20 +437,28 @@ const faqTabs = [
   { id: 'returns', title: 'Returns Policy' }
 ]
 
-const handleSubmit = () => {
-  // Mock form submission
-  console.log('Contact form submitted:', form.value)
-  
-  // Clear inputs
-  form.value = {
-    name: '',
-    email: '',
-    subject: '',
-    message: ''
+const submitting = ref(false)
+const errorMsg = ref('')
+
+const handleSubmit = async () => {
+  errorMsg.value = ''
+
+  if (!form.value.name.trim() || !form.value.email.trim() || !form.value.message.trim()) {
+    errorMsg.value = 'Please fill in your name, email and message.'
+    return
   }
-  
-  // Display modal feedback
-  showSuccess.value = true
+
+  submitting.value = true
+  try {
+    // Works whether or not the visitor is signed in.
+    await submitContactMessage(form.value, userId.value)
+    form.value = { name: '', email: '', subject: '', message: '' }
+    showSuccess.value = true
+  } catch (error) {
+    errorMsg.value = error.message
+  } finally {
+    submitting.value = false
+  }
 }
 </script>
 

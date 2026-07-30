@@ -108,17 +108,44 @@
         <!-- ===== PRODUCT GRID ===== -->
         <div class="flex-1">
 
+          <!-- Error -->
+          <div v-if="errorMsg" class="rounded-lg px-5 py-4 mb-6 text-xs" style="background-color: #FEF2F2; color: #B91C1C;">
+            Could not load listings: {{ errorMsg }}
+          </div>
+
+          <!-- Loading skeletons -->
+          <div v-if="loading" class="grid grid-cols-3 gap-6 mb-10">
+            <div v-for="n in perPage" :key="n">
+              <div class="rounded-sm bg-gray-100 animate-pulse mb-3" style="height: 240px;"></div>
+              <div class="h-3 bg-gray-100 rounded animate-pulse w-3/4 mb-1.5"></div>
+              <div class="h-2 bg-gray-100 rounded animate-pulse w-1/3"></div>
+            </div>
+          </div>
+
+          <!-- Empty state -->
+          <div v-else-if="products.length === 0" class="flex flex-col items-center justify-center py-24 text-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-200 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+            </svg>
+            <p class="text-sm font-medium text-gray-500 mb-1">Nothing matches those filters</p>
+            <p class="text-xs text-gray-400">Try widening your search or clearing a filter.</p>
+          </div>
+
           <!-- Grid -->
-          <div class="grid grid-cols-3 gap-6 mb-10">
-            <div v-for="product in paginatedProducts" :key="product.id" 
+          <div v-else class="grid grid-cols-3 gap-6 mb-10">
+            <div v-for="product in products" :key="product.id"
             class="cursor-pointer group"  @click="router.push('/product/' + product.id)">
 
               <!-- Image -->
               <div class="relative overflow-hidden rounded-sm bg-gray-100 mb-3" style="height: 240px;">
                 <img :src="product.image" :alt="product.name" class="w-full h-full object-cover transition duration-300 group-hover:scale-105" />
                 <!-- Wishlist -->
-                <button class="absolute top-3 right-3 text-gray-400 hover:text-red-400 transition">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <button @click.stop="handleWishlist(product.id)"
+                  class="absolute top-3 right-3 transition"
+                  :class="wishlistIds.has(product.id) ? 'text-red-400' : 'text-gray-400 hover:text-red-400'">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
+                    :fill="wishlistIds.has(product.id) ? 'currentColor' : 'none'"
+                    viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 010-6.364z"/>
                   </svg>
                 </button>
@@ -137,7 +164,7 @@
           </div>
 
           <!-- Pagination -->
-          <div class="flex items-center justify-center gap-2">
+          <div v-if="totalPages > 1" class="flex items-center justify-center gap-2">
             <button @click="prevPage" :disabled="currentPage === 1"
               class="w-7 h-7 flex items-center justify-center rounded text-xs text-gray-400 hover:text-gray-700 disabled:opacity-30">
               ‹
@@ -163,10 +190,15 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
+import { fetchListings } from '../lib/listings.js'
+import { isAuthenticated, userId } from '../lib/auth.js'
+import { loadWishlistIds, toggleWishlist, wishlistIds } from '../lib/wishlist.js'
+
+const router = useRouter()
 
 const search = ref('')
 const sortBy = ref('latest')
@@ -179,41 +211,75 @@ const selectedConditions = ref([])
 const currentPage = ref(1)
 const perPage = 9
 
-const categories = ['Tops', 'Bags', 'Bottoms', 'Accessories', 'Shoes']
-const conditions = ['Never worn', 'Good as new', 'Fair']
+const products = ref([])
+const total = ref(0)
+const loading = ref(true)
+const errorMsg = ref('')
 
-const allProducts = [
-  { id: 1, name: 'Triomphe Stamp 01 Sunglasses', brand: 'Celine', price: 2000, image: new URL('../assets/shades.png', import.meta.url).href },
-  { id: 2, name: "Women's Elite Active Sneakers", brand: 'Lacoste', price: 400, image: new URL('../assets/shoes.png', import.meta.url).href },
-  { id: 3, name: 'Blouse', brand: 'Dior', price: 9000, image: new URL('../assets/shirt.png', import.meta.url).href },
-  { id: 4, name: 'Triomphe Stamp 01 Sunglasses', brand: 'Celine', price: 2000, image: new URL('../assets/shades.png', import.meta.url).href },
-  { id: 5, name: "Women's Elite Active Sneakers", brand: 'Lacoste', price: 400, image: new URL('../assets/shoes.png', import.meta.url).href },
-  { id: 6, name: 'Blouse', brand: 'Dior', price: 9000, image: new URL('../assets/shirt.png', import.meta.url).href },
-  { id: 7, name: 'Triomphe Stamp 01 Sunglasses', brand: 'Celine', price: 2000, image: new URL('../assets/shades.png', import.meta.url).href },
-  { id: 8, name: "Women's Elite Active Sneakers", brand: 'Lacoste', price: 400, image: new URL('../assets/shoes.png', import.meta.url).href },
-  { id: 9, name: 'Blouse', brand: 'Dior', price: 9000, image: new URL('../assets/shirt.png', import.meta.url).href },
-  { id: 10, name: 'Kisslock Frame Bag 27', brand: 'Coach', price: 2500, image: new URL('../assets/bag1.png', import.meta.url).href },
-  { id: 11, name: 'Triomphe Stamp 01 Sunglasses', brand: 'Celine', price: 2000, image: new URL('../assets/shades.png', import.meta.url).href },
-  { id: 12, name: 'Blouse', brand: 'Dior', price: 9000, image: new URL('../assets/shirt.png', import.meta.url).href },
-]
+// Must match the category and condition CHECK constraints on public.listings.
+const categories = ['Tops', 'Blouses', 'Bags', 'Bottoms', 'Accessories', 'Shoes']
+const conditions = ['New with tag', 'Good as new', 'Fair']
 
-const filteredProducts = computed(() => {
-  let result = [...allProducts]
-  if (search.value) {
-    result = result.filter(p => p.name.toLowerCase().includes(search.value.toLowerCase()))
+const PRICE_CEILING = 10000
+
+const totalPages = computed(() => Math.max(1, Math.ceil(total.value / perPage)))
+
+// Filtering, sorting and paging all happen in Postgres, so only the nine rows
+// actually on screen come over the wire.
+const load = async () => {
+  loading.value = true
+  errorMsg.value = ''
+  try {
+    const result = await fetchListings({
+      search: search.value,
+      categories: selectedCategories.value,
+      conditions: selectedConditions.value,
+      // At the top of the slider the filter is dropped entirely, so listings
+      // priced above the ceiling are still reachable.
+      maxPrice: Number(priceMax.value) >= PRICE_CEILING ? null : Number(priceMax.value),
+      sort: sortBy.value,
+      page: currentPage.value,
+      perPage,
+    })
+    products.value = result.items
+    total.value = result.total
+  } catch (error) {
+    errorMsg.value = error.message
+    products.value = []
+    total.value = 0
+  } finally {
+    loading.value = false
   }
-  if (sortBy.value === 'price_asc') result.sort((a, b) => a.price - b.price)
-  if (sortBy.value === 'price_desc') result.sort((a, b) => b.price - a.price)
-  result = result.filter(p => p.price <= priceMax.value)
-  return result
+}
+
+// Debounced so typing in the search box does not fire a query per keystroke.
+let debounce = null
+watch([search, selectedCategories, selectedConditions, priceMax], () => {
+  currentPage.value = 1
+  clearTimeout(debounce)
+  debounce = setTimeout(load, 250)
+}, { deep: true })
+
+watch([sortBy, currentPage], load)
+
+watch(userId, (id) => loadWishlistIds(id))
+
+onMounted(async () => {
+  await load()
+  if (userId.value) await loadWishlistIds(userId.value)
 })
 
-const totalPages = computed(() => Math.ceil(filteredProducts.value.length / perPage))
-
-const paginatedProducts = computed(() => {
-  const start = (currentPage.value - 1) * perPage
-  return filteredProducts.value.slice(start, start + perPage)
-})
+const handleWishlist = async (id) => {
+  if (!isAuthenticated.value) {
+    router.push({ path: '/login', query: { redirect: '/shop' } })
+    return
+  }
+  try {
+    await toggleWishlist(userId.value, id)
+  } catch (error) {
+    console.error('Could not update wishlist:', error.message)
+  }
+}
 
 const prevPage = () => { if (currentPage.value > 1) currentPage.value-- }
 const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.value++ }

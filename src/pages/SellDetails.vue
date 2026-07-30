@@ -58,22 +58,21 @@
         <!-- ===== STEP 0: OVERVIEW ===== -->
         <div v-if="currentStep === 0" class="space-y-5 mt-6">
           <div>
+            <label class="text-xs text-gray-400 mb-1 block">Title</label>
+            <input v-model="details.title" type="text" placeholder="e.g. Kisslock Frame Bag 27"
+              class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white placeholder-gray-300" />
+            <p class="text-xs text-gray-400 mt-1">This is the name buyers see in the shop.</p>
+          </div>
+          <div>
             <label class="text-xs text-gray-400 mb-1 block">Category</label>
             <select v-model="details.category" class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white">
-              <option>Blouses</option>
-              <option>Tops</option>
-              <option>Bottoms</option>
-              <option>Bags</option>
-              <option>Accessories</option>
-              <option>Shoes</option>
+              <option v-for="c in CATEGORIES" :key="c" :value="c">{{ c }}</option>
             </select>
           </div>
           <div>
             <label class="text-xs text-gray-400 mb-1 block">Condition</label>
             <select v-model="details.condition" class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white">
-              <option>New with tag</option>
-              <option>Good as new</option>
-              <option>Fair</option>
+              <option v-for="c in CONDITIONS" :key="c" :value="c">{{ c }}</option>
             </select>
           </div>
           <div>
@@ -267,11 +266,33 @@
           <div class="flex gap-4">
             <div v-for="slot in mediaSlots" :key="slot.key"
               @click="triggerMediaUpload"
-              class="flex-1 border border-gray-200 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-gray-300 transition"
+              class="flex-1 border border-gray-200 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-gray-300 transition overflow-hidden"
               style="height: 100px;">
-              <img v-if="details.images[slot.index]" :src="details.images[slot.index]" class="w-full h-full object-cover rounded-xl" />
+              <img v-if="details.images[slot.index]" :src="details.images[slot.index]" class="w-full h-full object-cover" />
               <span v-else class="text-2xl text-gray-300">+</span>
               <p v-if="!details.images[slot.index]" class="text-xs text-gray-400 mt-1 text-center px-2">{{ slot.label }}</p>
+            </div>
+          </div>
+
+          <!-- All uploaded photos -->
+          <div v-if="details.images.length" class="pt-2">
+            <p class="text-xs text-gray-400 mb-2">
+              {{ details.images.length }} of {{ MAX_IMAGES }} photos · the first is the main image
+            </p>
+            <div class="grid grid-cols-5 gap-3">
+              <div v-for="(img, i) in details.images" :key="i"
+                class="relative rounded-lg overflow-hidden bg-gray-100 group" style="height: 72px;">
+                <img :src="img" class="w-full h-full object-cover" />
+                <span v-if="i === 0"
+                  class="absolute bottom-0 left-0 right-0 text-white text-center py-0.5"
+                  style="font-size: 9px; background-color: rgba(0,0,0,0.45);">Main</span>
+                <button @click="removeImage(i)"
+                  class="absolute top-1 right-1 w-5 h-5 rounded-full bg-white/90 flex items-center justify-center text-gray-500 hover:text-red-500 shadow transition">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -517,6 +538,17 @@
 
   </div>
 
+  <!-- Original retail price -->
+  <div>
+    <label class="text-xs text-gray-400 mb-1 block">Original retail price (optional)</label>
+    <div class="flex items-center gap-1 border border-gray-200 rounded-md px-4 py-2.5">
+      <span class="text-sm text-gray-400">RM</span>
+      <input v-model="details.originalPrice" type="number" placeholder="0"
+        class="text-sm text-gray-700 outline-none bg-transparent w-full placeholder-gray-300" />
+    </div>
+    <p class="text-xs text-gray-400 mt-1">Shown to buyers so they can see the saving.</p>
+  </div>
+
   <!-- Service fee note -->
   <p class="text-xs text-gray-400">
     The buyer will also pay a service fee.
@@ -652,13 +684,22 @@
   </div>
 </Teleport>
 
+        <!-- Error -->
+        <div v-if="errorMsg" class="mt-6 rounded-md px-4 py-3 text-xs" style="background-color: #FEF2F2; color: #B91C1C;">
+          {{ errorMsg }}
+        </div>
+
         <!-- Buttons -->
         <div class="flex items-center justify-end gap-4 mt-10">
-          <button @click="handleReset" class="text-sm text-gray-400 hover:text-gray-600 transition">Reset</button>
+          <button @click="handleReset" :disabled="submitting"
+            class="text-sm text-gray-400 hover:text-gray-600 transition disabled:opacity-50">Reset</button>
           <button @click="handleContinue"
-            class="px-8 py-2.5 text-sm text-white rounded-md transition hover:opacity-90"
+            :disabled="submitting"
+            class="px-8 py-2.5 text-sm text-white rounded-md transition hover:opacity-90 disabled:opacity-60"
             style="background-color: #7A9E8E;">
-            {{ currentStep === steps.length - 1 ? 'Submit Listing' : 'Continue' }}
+            {{ submitting
+               ? 'Submitting…'
+               : currentStep === steps.length - 1 ? 'Submit Listing' : 'Continue' }}
           </button>
         </div>
 
@@ -671,10 +712,13 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
+import { createListing } from '../lib/listings.js'
+import { userId } from '../lib/auth.js'
+import { createAddress, fetchDefaultAddress, toDisplay } from '../lib/addresses.js'
 
 const router = useRouter()
 const route = useRoute()
@@ -682,6 +726,8 @@ const route = useRoute()
 const currentStep = ref(0)
 const docInput = ref(null)
 const mediaInput = ref(null)
+const submitting = ref(false)
+const errorMsg = ref('')
 
 const form = ref({
   brand: route.query.brand || '',
@@ -712,9 +758,14 @@ const mediaSlots = [
   { key: 'size', label: 'Size label', index: 2 },
 ]
 
+const CATEGORIES = ['Blouses', 'Tops', 'Bottoms', 'Bags', 'Accessories', 'Shoes']
+const CONDITIONS = ['New with tag', 'Good as new', 'Fair']
+
+// Carry over whatever the Sell start page already collected.
 const defaultDetails = {
-  category: 'Blouses',
-  condition: 'Good as new',
+  title: '',
+  category: CATEGORIES.includes(route.query.category) ? route.query.category : 'Blouses',
+  condition: CONDITIONS.includes(route.query.condition) ? route.query.condition : 'Good as new',
   color: 'Brown',
   material: 'Leather',
   size: '',
@@ -727,11 +778,31 @@ const defaultDetails = {
   origin: 'Direct from the brand',
   images: [],
   listingPrice: '',
+  originalPrice: '',
   acceptOffers: 'Yes',
   savedAddress: null,
 }
 
 const details = ref({ ...defaultDetails })
+
+// `details.images` holds data URLs for the on-screen previews; the actual File
+// objects are kept alongside so they can be uploaded to Storage on submit.
+const imageFiles = ref([])
+const addressId = ref(null)
+
+// Reuse the seller's saved address instead of asking for it again.
+onMounted(async () => {
+  if (!userId.value) return
+  try {
+    const row = await fetchDefaultAddress(userId.value)
+    if (row) {
+      addressId.value = row.id
+      details.value.savedAddress = toDisplay(row)
+    }
+  } catch (error) {
+    console.error('Could not load saved address:', error.message)
+  }
+})
 
 // Address modal state
 const addressModal = ref({ open: false, step: 1, editMode: false })
@@ -774,17 +845,36 @@ const closeAddressModal = () => {
   addressModal.value.open = false
 }
 
-const confirmAddress = () => {
-  details.value.savedAddress = {
-    name: `${newAddress.value.firstName} ${newAddress.value.surname}`,
-    street: `${newAddress.value.street}${newAddress.value.apt ? ', ' + newAddress.value.apt : ''}`,
-    city: newAddress.value.city,
-    state: newAddress.value.state,
-    postcode: newAddress.value.postcode,
-    country: newAddress.value.country,
-    phone: `${newAddress.value.phoneCode} ${newAddress.value.phone}`,
+const confirmAddress = async () => {
+  errorMsg.value = ''
+  const a = newAddress.value
+  if (!a.firstName?.trim() || !a.street?.trim() || !a.city?.trim() || !a.postcode?.trim()) {
+    errorMsg.value = 'First name, street address, city and ZIP code are required.'
+    return
   }
-  closeAddressModal()
+
+  try {
+    const row = await createAddress(userId.value, {
+      firstName: a.firstName,
+      surname: a.surname,
+      company: a.company,
+      phoneCode: a.phoneCode?.split(' ')[0],
+      phone: a.phone,
+      street: a.street,
+      apartment: a.apt,
+      city: a.city,
+      state: a.state,
+      postcode: a.postcode,
+      country: a.country,
+      // First address on the account becomes the default.
+      isDefault: !addressId.value,
+    })
+    addressId.value = row.id
+    details.value.savedAddress = toDisplay(row)
+    closeAddressModal()
+  } catch (error) {
+    errorMsg.value = error.message
+  }
 }
 
 const goToStep = (i) => {
@@ -793,44 +883,146 @@ const goToStep = (i) => {
   }
 }
 
+const MAX_DOC_BYTES = 10 * 1024 * 1024 // matches the authenticity-docs bucket limit
+
 const triggerDocUpload = () => docInput.value.click()
 const handleDocUpload = (e) => {
-  details.value.authDoc = e.target.files[0] || null
+  errorMsg.value = ''
+  const file = e.target.files[0]
+  if (!file) return
+  if (file.size > MAX_DOC_BYTES) {
+    errorMsg.value = 'That document is larger than 10 MB.'
+    e.target.value = ''
+    return
+  }
+  details.value.authDoc = file
 }
+
+const MAX_IMAGES = 10
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024 // matches the Storage bucket limit
 
 const triggerMediaUpload = () => mediaInput.value.click()
+
+// Keeps the File for upload and a data URL for the preview thumbnail.
+const acceptImages = (files) => {
+  errorMsg.value = ''
+  for (const file of files) {
+    if (imageFiles.value.length >= MAX_IMAGES) {
+      errorMsg.value = `You can upload up to ${MAX_IMAGES} photos.`
+      break
+    }
+    if (!file.type.startsWith('image/')) {
+      errorMsg.value = `${file.name} is not an image.`
+      continue
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      errorMsg.value = `${file.name} is larger than 5 MB.`
+      continue
+    }
+    imageFiles.value.push(file)
+    const reader = new FileReader()
+    reader.onload = (ev) => details.value.images.push(ev.target.result)
+    reader.readAsDataURL(file)
+  }
+}
+
 const handleMediaFiles = (e) => {
-  const files = Array.from(e.target.files)
-  files.forEach(file => {
-    if (details.value.images.length >= 10) return
-    const reader = new FileReader()
-    reader.onload = (ev) => details.value.images.push(ev.target.result)
-    reader.readAsDataURL(file)
-  })
+  acceptImages(Array.from(e.target.files))
+  e.target.value = '' // let the same file be picked again after removal
 }
 
-const handleDrop = (e) => {
-  const files = Array.from(e.dataTransfer.files)
-  files.forEach(file => {
-    if (details.value.images.length >= 10) return
-    const reader = new FileReader()
-    reader.onload = (ev) => details.value.images.push(ev.target.result)
-    reader.readAsDataURL(file)
-  })
+const handleDrop = (e) => acceptImages(Array.from(e.dataTransfer.files))
+
+const removeImage = (index) => {
+  details.value.images.splice(index, 1)
+  imageFiles.value.splice(index, 1)
 }
 
-const handleContinue = () => {
+// Per-step validation, so a seller cannot reach the last step with gaps and
+// then hit a wall of database errors.
+const validateStep = (step) => {
+  const d = details.value
+  if (step === 0) {
+    if (!d.title.trim()) return 'Give your item a title so buyers can find it.'
+    if (d.title.trim().length < 2) return 'That title is too short.'
+  }
+  if (step === 3 && imageFiles.value.length < 3) {
+    return 'Please upload at least 3 photos.'
+  }
+  if (step === 4 && !addressId.value) {
+    return 'Add the address you will ship from.'
+  }
+  if (step === 5) {
+    const price = Number(d.listingPrice)
+    if (!price || price <= 0) return 'Enter a listing price.'
+    if (d.originalPrice && Number(d.originalPrice) <= 0) {
+      return 'Original price must be greater than zero.'
+    }
+  }
+  return null
+}
+
+const handleContinue = async () => {
+  errorMsg.value = ''
+
+  const problem = validateStep(currentStep.value)
+  if (problem) {
+    errorMsg.value = problem
+    return
+  }
+
   if (currentStep.value < steps.length - 1) {
     currentStep.value++
-  } else {
-    console.log('Listing submitted:', { ...form.value, ...details.value })
-    alert('Your listing has been submitted for review!')
-    router.push('/sell')
+    return
+  }
+
+  // Final step — re-check the earlier steps in case one was skipped.
+  for (let step = 0; step < steps.length; step++) {
+    const earlier = validateStep(step)
+    if (earlier) {
+      errorMsg.value = earlier
+      currentStep.value = step
+      return
+    }
+  }
+
+  submitting.value = true
+  try {
+    await createListing({
+      sellerId: userId.value,
+      title: details.value.title,
+      brand: form.value.brand || 'Unbranded',
+      category: details.value.category,
+      itemType: route.query.itemType || null,
+      condition: details.value.condition,
+      color: details.value.color,
+      material: details.value.material,
+      size: details.value.size,
+      isVintage: details.value.vintage,
+      description: details.value.description,
+      yearPurchased: details.value.yearPurchased,
+      origin: details.value.origin,
+      packaging: details.value.packaging,
+      listingPrice: details.value.listingPrice,
+      originalPrice: details.value.originalPrice,
+      acceptOffers: details.value.acceptOffers === 'Yes',
+      shippingAddressId: addressId.value,
+      imageFiles: imageFiles.value,
+      authDocFile: details.value.authDoc,
+      serialNumber: details.value.serialNumber,
+    })
+    router.push({ path: '/profile', query: { tab: 'Listings', submitted: '1' } })
+  } catch (error) {
+    errorMsg.value = error.message
+  } finally {
+    submitting.value = false
   }
 }
 
 const handleReset = () => {
   currentStep.value = 0
+  errorMsg.value = ''
+  imageFiles.value = []
   details.value = { ...defaultDetails, packaging: [], images: [] }
 }
 </script>

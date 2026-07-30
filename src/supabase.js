@@ -1,6 +1,19 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = 'https://nrpdpoigajouxtncveva.supabase.co'
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ycGRwb2lnYWpvdXh0bmN2ZXZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1MDE3MjksImV4cCI6MjA5NzA3NzcyOX0.UBzz33fj0IKHnECukcrhflhFPkWWoCtptfbqrnFTABAre'
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-export const supabase = createClient(supabaseUrl, supabaseKey)
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error(
+    'Missing Supabase credentials. Copy .env.example to .env and fill in ' +
+      'VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY, then restart the dev server.',
+  )
+}
+
+export const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+  },
+})

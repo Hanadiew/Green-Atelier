@@ -9,6 +9,9 @@
     <!-- Card -->
     <div class="bg-white rounded-2xl px-10 py-10 w-full max-w-md shadow-sm">
 
+      <!-- Error message (shared across steps) -->
+      <p v-if="errorMsg" class="text-red-400 text-xs mb-4 text-center">{{ errorMsg }}</p>
+
       <!-- STEP 1: Email -->
       <div v-if="step === 1">
         <h2 class="text-xl font-bold text-gray-900 mb-1">Welcome to Green Atelier,</h2>
@@ -18,10 +21,11 @@
           v-model="email"
           type="email"
           placeholder="Email Address"
+          @keydown.enter="goToPassword"
           class="w-full border-b border-gray-300 pb-2 text-sm text-gray-600 outline-none focus:border-gray-500 bg-transparent placeholder-gray-400 mb-6"
         />
 
-        <button @click="handleSendOtp"
+        <button @click="goToPassword"
           class="w-full py-3 text-sm rounded-md mt-2 transition"
           style="background-color: #F5EDD9; color: #C9A96E;">
           Continue
@@ -33,41 +37,15 @@
         </p>
       </div>
 
-      <!-- STEP 2: OTP -->
+      <!-- STEP 2: Password -->
       <div v-if="step === 2">
-        <p class="text-gray-800 text-sm font-medium mb-6">
-          We've sent a code to <span style="color: #C9A96E;">{{ email }}</span>
-        </p>
-
-        <!-- 6 OTP boxes -->
-        <div class="flex gap-2 mb-6">
-          <input
-            v-for="(_, i) in otp"
-            :key="i"
-            :ref="el => otpRefs[i] = el"
-            v-model="otp[i]"
-            @input="handleOtpInput(i)"
-            @keydown.backspace="handleBackspace(i)"
-            maxlength="1"
-            type="text"
-            class="w-12 h-12 text-center text-lg border border-gray-300 rounded-lg outline-none focus:border-gray-500"
-          />
-        </div>
-
-        <button @click="handleVerifyOtp"
-          class="w-full py-3 text-sm rounded-md transition"
-          style="background-color: #F5EDD9; color: #C9A96E;">
-          Verify
+        <button @click="step = 1" class="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 transition mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+          {{ email }}
         </button>
 
-        <p class="text-center text-xs text-gray-400 mt-4">
-          <span v-if="resendTimer > 0">Resend code in {{ resendTimer }}s</span>
-          <button v-else @click="handleSendOtp" class="underline" style="color: #C9A96E;">Resend code</button>
-        </p>
-      </div>
-
-      <!-- STEP 3: Password -->
-      <div v-if="step === 3">
         <h2 class="text-xl font-bold text-gray-900 mb-6">
           One last step—<span style="color: #C9A96E;">create your password</span>
         </h2>
@@ -110,17 +88,40 @@
           </button>
         </div>
 
-        <button @click="handleSetPassword"
-          class="w-full py-3 text-sm rounded-md transition"
+        <button @click="handleCreateAccount"
+          :disabled="loading"
+          class="w-full py-3 text-sm rounded-md transition disabled:opacity-60"
           style="background-color: #F5EDD9; color: #C9A96E;">
-          Continue
+          {{ loading ? 'Creating account…' : 'Create account' }}
         </button>
+      </div>
+
+      <!-- STEP 3: Confirm your email
+           Only reached when "Confirm email" is enabled in Supabase. With it
+           disabled, step 2 signs the user straight in and this never shows. -->
+      <div v-if="step === 3" class="text-center">
+        <div class="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5" style="background-color: #F5EDD9;">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" style="color: #C9A96E;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+          </svg>
+        </div>
+        <h2 class="text-xl font-bold text-gray-900 mb-2">Check your inbox</h2>
+        <p class="text-sm text-gray-400 leading-relaxed mb-6">
+          We sent a confirmation link to
+          <span style="color: #C9A96E;">{{ email }}</span>.
+          Click it to activate your account, then log in.
+        </p>
+        <RouterLink to="/login"
+          class="block w-full py-3 text-sm rounded-md transition"
+          style="background-color: #F5EDD9; color: #C9A96E;">
+          Go to log in
+        </RouterLink>
       </div>
 
     </div>
 
-    <!-- Login link (Step 1 only) -->
-    <p v-if="step === 1" class="mt-6 text-sm text-gray-500">
+    <!-- Login link -->
+    <p v-if="step !== 3" class="mt-6 text-sm text-gray-500">
       Already have an account?
       <RouterLink to="/login" class="font-bold text-gray-800">Log In</RouterLink>
     </p>
@@ -129,72 +130,65 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onUnmounted } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { signUpWithPassword } from '../lib/auth.js'
 
 const router = useRouter()
 
 const step = ref(1)
 const email = ref('')
-const otp = reactive(['', '', '', '', '', ''])
-const otpRefs = ref([])
 const password = ref('')
 const confirmPassword = ref('')
 const showPassword = ref(false)
 const showConfirm = ref(false)
-const resendTimer = ref(0)
-let timerInterval = null
+const errorMsg = ref('')
+const loading = ref(false)
 
 const rules = computed(() => ({
   minLength: password.value.length >= 8,
   complexity: /[A-Z]/.test(password.value) && /[a-z]/.test(password.value) && /[0-9]/.test(password.value)
 }))
 
-const startResendTimer = () => {
-  resendTimer.value = 10
-  clearInterval(timerInterval)
-  timerInterval = setInterval(() => {
-    resendTimer.value--
-    if (resendTimer.value <= 0) clearInterval(timerInterval)
-  }, 1000)
-}
-
-const handleSendOtp = () => {
-  if (!email.value) return alert('Please enter your email.')
-  // TODO: call Supabase to send OTP
-  console.log('Sending OTP to', email.value)
+const goToPassword = () => {
+  errorMsg.value = ''
+  const value = email.value.trim()
+  if (!value) {
+    errorMsg.value = 'Please enter your email.'
+    return
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+    errorMsg.value = 'That does not look like a valid email address.'
+    return
+  }
   step.value = 2
-  startResendTimer()
 }
 
-const handleOtpInput = (i) => {
-  if (otp[i].length === 1 && i < 5) {
-    otpRefs.value[i + 1]?.focus()
+const handleCreateAccount = async () => {
+  errorMsg.value = ''
+  if (!rules.value.minLength || !rules.value.complexity) {
+    errorMsg.value = 'Password does not meet the requirements.'
+    return
+  }
+  if (password.value !== confirmPassword.value) {
+    errorMsg.value = 'Passwords do not match.'
+    return
+  }
+
+  loading.value = true
+  try {
+    const { signedIn } = await signUpWithPassword(email.value, password.value)
+    if (signedIn) {
+      // "Confirm email" is off, so the account is usable immediately.
+      router.push('/home')
+    } else {
+      // Confirmation is required — send them to check their inbox.
+      step.value = 3
+    }
+  } catch (error) {
+    errorMsg.value = error.message
+  } finally {
+    loading.value = false
   }
 }
-
-const handleBackspace = (i) => {
-  if (!otp[i] && i > 0) {
-    otp[i - 1] = ''
-    otpRefs.value[i - 1]?.focus()
-  }
-}
-
-const handleVerifyOtp = () => {
-  const code = otp.join('')
-  if (code.length < 6) return alert('Please enter the full 6-digit code.')
-  // TODO: verify OTP with Supabase
-  console.log('Verifying OTP:', code)
-  step.value = 3
-}
-
-const handleSetPassword = () => {
-  if (!rules.value.minLength || !rules.value.complexity) return alert('Password does not meet requirements.')
-  if (password.value !== confirmPassword.value) return alert('Passwords do not match.')
-  // TODO: set password with Supabase
-  console.log('Password set successfully')
-  router.push('/login')
-}
-
-onUnmounted(() => clearInterval(timerInterval))
 </script>

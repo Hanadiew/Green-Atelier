@@ -1,0 +1,10 @@
+# Supabase CLI project config.
+project_id = "nrpdpoigajouxtncveva"
+
+[db]
+major_version = 17
+
+# Applied by `supabase db push --include-seed`.
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
