@@ -42,7 +42,7 @@ GAFS/
 │   ├── lib/                  # Data-access layer (all Supabase queries live here)
 │   │   ├── auth.js           # Reactive session + profile, sign up / in / out
 │   │   ├── listings.js       # Catalogue queries, Storage uploads, listing creation
-│   │   ├── profiles.js       # Profile editing, avatars, stats, follows
+│   │   ├── profiles.js       # Profile editing, avatars, stats
 │   │   ├── addresses.js      # Address CRUD
 │   │   ├── wishlist.js       # Saved items
 │   │   ├── orders.js         # Checkout RPC, order & sales history
@@ -142,7 +142,7 @@ npm run build
 
 ## 📊 Database
 
-17 tables, all with Row Level Security enabled. The full definition lives in `supabase/migrations/`.
+16 tables, all with Row Level Security enabled. The full definition lives in `supabase/migrations/`.
 
 | Table | Purpose |
 |---|---|
@@ -154,14 +154,13 @@ npm run build
 | `listing_verification` | Serial numbers and authenticity documents. **Separate table with no public read policy**, because the Sell wizard promises sellers this stays private. |
 | `addresses` | Shipping and billing addresses. A partial unique index plus a trigger enforce one default per user. |
 | `wishlists` / `cart_items` | Saved and in-bag items. No quantity column — resale items are one-of-a-kind. |
-| `follows` | Follower graph. Publicly readable so counts render on profiles. |
 | `offers` | Price negotiation when a seller enables "Accept Offers". |
 | `promo_codes` | Discount codes with expiry, minimum spend and usage limits. |
 | `orders` / `order_items` | Purchases. Items carry a **snapshot** of title, brand and image so history survives a listing being edited or deleted, and each item has its own status because a multi-seller order ships in separate parcels. |
 | `conversations` / `messages` | Buyer↔seller messaging (schema only — no chat UI yet). |
 | `contact_messages` | Contact form submissions. Anyone may insert; only the sender and staff can read. |
 
-Plus the `profile_stats` view (listing, sale and follower counts, `security_invoker`).
+Plus the `profile_stats` view (listing and sale counts, `security_invoker`).
 
 ### Security model
 

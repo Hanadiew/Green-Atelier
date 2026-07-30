@@ -24,7 +24,7 @@
       </div>
 
       <!-- ===== PROFILE HEADER ===== -->
-      <div class="px-16 py-10 flex items-center justify-between border-b border-gray-100">
+      <div class="px-16 py-10 flex items-center border-b border-gray-100">
 
         <div class="flex items-center gap-8">
           <!-- Avatar -->
@@ -52,19 +52,6 @@
               <p class="text-xs text-gray-500"><span class="font-medium text-gray-700">{{ stats.itemsForSale }}</span> items for sale</p>
               <p class="text-xs text-gray-500"><span class="font-medium text-gray-700">{{ stats.sold }}</span> sold</p>
             </div>
-          </div>
-        </div>
-
-        <!-- Followers -->
-        <div class="flex items-center gap-8 border border-gray-200 rounded-xl px-8 py-4">
-          <div class="text-center">
-            <p class="text-lg font-semibold text-gray-800">{{ stats.followers }}</p>
-            <p class="text-xs text-gray-400">Followers</p>
-          </div>
-          <div class="border-l border-gray-100 h-8"></div>
-          <div class="text-center">
-            <p class="text-lg font-semibold text-gray-800">{{ stats.following }}</p>
-            <p class="text-xs text-gray-400">Following</p>
           </div>
         </div>
 
@@ -311,7 +298,7 @@ const STATUS_BADGES = {
 }
 
 const profileRow = ref(null)
-const stats = ref({ itemsForSale: 0, sold: 0, followers: 0, following: 0 })
+const stats = ref({ itemsForSale: 0, sold: 0 })
 const listings = ref([])
 const wishlist = ref([])
 const orders = ref([])

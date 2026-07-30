@@ -16,7 +16,7 @@ export async function fetchProfileByUsername(username) {
   return data
 }
 
-/** Listing, sale and follower counts from the profile_stats view. */
+/** Listing and sale counts from the profile_stats view. */
 export async function fetchProfileStats(id) {
   const { data, error } = await supabase
     .from('profile_stats')
@@ -27,8 +27,6 @@ export async function fetchProfileStats(id) {
   return {
     itemsForSale: data?.items_for_sale ?? 0,
     sold: data?.sold_count ?? 0,
-    followers: data?.followers_count ?? 0,
-    following: data?.following_count ?? 0,
     co2SavedKg: data?.co2_saved_kg ? Number(data.co2_saved_kg) : 0,
   }
 }
@@ -98,31 +96,3 @@ export async function updateSettings(userId, fields) {
   if (error) throw error
 }
 
-// --- Follows ----------------------------------------------------------------
-
-export async function isFollowing(followerId, followingId) {
-  const { count, error } = await supabase
-    .from('follows')
-    .select('*', { count: 'exact', head: true })
-    .eq('follower_id', followerId)
-    .eq('following_id', followingId)
-  if (error) throw error
-  return (count ?? 0) > 0
-}
-
-export async function followUser(followerId, followingId) {
-  const { error } = await supabase.from('follows').insert({
-    follower_id: followerId,
-    following_id: followingId,
-  })
-  if (error && error.code !== '23505') throw error
-}
-
-export async function unfollowUser(followerId, followingId) {
-  const { error } = await supabase
-    .from('follows')
-    .delete()
-    .eq('follower_id', followerId)
-    .eq('following_id', followingId)
-  if (error) throw error
-}
