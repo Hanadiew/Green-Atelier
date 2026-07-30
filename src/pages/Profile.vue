@@ -312,10 +312,13 @@ import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
 import { profile as ownProfile, userId } from '../lib/auth.js'
 import { fetchProfileByUsername, fetchProfileStats } from '../lib/profiles.js'
-import { fetchSellerListings } from '../lib/listings.js'
 import { fetchWishlist, removeFromWishlist } from '../lib/wishlist.js'
 import { fetchOrders } from '../lib/orders.js'
-import { fetchSellerListings, deleteListing, archiveListing } from '../lib/listings.js'
+import {
+  fetchSellerListings,
+  deleteListing,
+  archiveListing
+} from '../lib/listings.js'
 import { showToast } from '../lib/toast.js'
 
 const router = useRouter()

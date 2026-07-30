@@ -743,11 +743,15 @@ import { useRouter, useRoute } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
 import TrustCheckPanel from '../components/TrustCheckPanel.vue'
-import { createListing } from '../lib/listings.js'
 import { userId } from '../lib/auth.js'
 import { createAddress, fetchDefaultAddress, toDisplay } from '../lib/addresses.js'
 import { matchBrand, saveAssessment } from '../lib/trustcheck/index.js'
-import { createListing, fetchListing, updateListing, uploadListingImages } from '../lib/listings.js'
+import {
+  createListing,
+  fetchListing,
+  updateListing,
+  uploadListingImages,
+} from '../lib/listings.js'
 import { showToast } from '../lib/toast.js'
 
 const router = useRouter()
