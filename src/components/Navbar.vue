@@ -138,6 +138,14 @@
       Listings
     </RouterLink>
 
+    <RouterLink to="/sales-orders"
+  class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 transition">
+  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 012-2h2a2 2 0 012 2v6m-6 0h6m-6 0H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2"/>
+  </svg>
+  Sales Orders
+</RouterLink>
+
     <div class="border-t border-gray-100 my-1"></div>
 
     <RouterLink to="/support"
