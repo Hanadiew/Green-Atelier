@@ -1,0 +1,10 @@
+{
+  "slug": "gucci-marmont-small",
+  "brand": "Gucci",
+  "model": "Marmont Small",
+  "country": "Italy",
+  "originPhrases": ["Made in Italy"],
+  "requiredEvidence": ["Front Image", "Back Image", "Interior Image"],
+  "optionalEvidence": ["Serial Number Image", "Receipt / Invoice", "Authentication Certificate"],
+  "serialFormatHint": "Two lines of digits inside a leather tab, commonly 6 digits over 6 digits."
+}

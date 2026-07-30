@@ -1,0 +1,10 @@
+{
+  "slug": "prada-galleria-medium",
+  "brand": "Prada",
+  "model": "Galleria Medium",
+  "country": "Italy",
+  "originPhrases": ["Made in Italy"],
+  "requiredEvidence": ["Front Image", "Back Image", "Interior Image"],
+  "optionalEvidence": ["Serial Number Image", "Receipt / Invoice", "Authentication Certificate"],
+  "serialFormatHint": "Interior logo plaque plus a stamped code on the lining tag."
+}

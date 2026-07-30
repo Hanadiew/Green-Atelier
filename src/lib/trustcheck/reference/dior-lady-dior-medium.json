@@ -1,0 +1,10 @@
+{
+  "slug": "dior-lady-dior-medium",
+  "brand": "Dior",
+  "model": "Lady Dior Medium",
+  "country": "Italy",
+  "originPhrases": ["Made in Italy"],
+  "requiredEvidence": ["Front Image", "Back Image", "Interior Image"],
+  "optionalEvidence": ["Serial Number Image", "Receipt / Invoice", "Authentication Certificate"],
+  "serialFormatHint": "Date code on a leather tab, letters followed by digits."
+}

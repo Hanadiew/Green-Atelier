@@ -1,0 +1,10 @@
+{
+  "slug": "hermes-birkin-30",
+  "brand": "Hermès",
+  "model": "Birkin 30",
+  "country": "France",
+  "originPhrases": ["Made in France"],
+  "requiredEvidence": ["Front Image", "Back Image", "Interior Image"],
+  "optionalEvidence": ["Serial Number Image", "Receipt / Invoice", "Authentication Certificate"],
+  "serialFormatHint": "Blind stamp on the interior strap indicating year of production."
+}

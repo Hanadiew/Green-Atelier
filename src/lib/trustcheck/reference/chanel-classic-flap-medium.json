@@ -1,0 +1,10 @@
+{
+  "slug": "chanel-classic-flap-medium",
+  "brand": "Chanel",
+  "model": "Classic Flap Medium",
+  "country": "France",
+  "originPhrases": ["Made in France", "Made in Italy"],
+  "requiredEvidence": ["Front Image", "Back Image", "Interior Image"],
+  "optionalEvidence": ["Serial Number Image", "Receipt / Invoice", "Authentication Certificate"],
+  "serialFormatHint": "Serial sticker of 7 or 8 digits, or a microchip on recent production."
+}

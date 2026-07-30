@@ -298,8 +298,17 @@
 
         </div>
 
-        <!-- ===== STEP 4: LOCATION ===== -->
-<div v-if="currentStep === 4" class="space-y-5 mt-4">
+        <!-- ===== STEP 4: GREEN ATELIER TRUSTCHECK ===== -->
+        <div v-if="currentStep === 4" class="mt-4">
+          <TrustCheckPanel
+            v-model="trustCheck"
+            :initial-brand="form.brand"
+            :listing-images="imageFiles"
+          />
+        </div>
+
+        <!-- ===== STEP 5: LOCATION ===== -->
+<div v-if="currentStep === 5" class="space-y-5 mt-4">
 
   <p class="text-sm font-semibold text-gray-800 mb-4">Addresses</p>
 
@@ -499,8 +508,8 @@
   </div>
 </Teleport>
 
-        <!-- ===== STEP 5: PRICING ===== -->
-<div v-if="currentStep === 5" class="space-y-5 mt-4">
+        <!-- ===== STEP 6: PRICING ===== -->
+<div v-if="currentStep === 6" class="space-y-5 mt-4">
 
   <p class="text-sm font-semibold text-gray-800 mb-4">Price</p>
 
@@ -712,13 +721,15 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
+import TrustCheckPanel from '../components/TrustCheckPanel.vue'
 import { createListing } from '../lib/listings.js'
 import { userId } from '../lib/auth.js'
 import { createAddress, fetchDefaultAddress, toDisplay } from '../lib/addresses.js'
+import { matchBrand, saveAssessment } from '../lib/trustcheck/index.js'
 
 const router = useRouter()
 const route = useRoute()
@@ -739,6 +750,7 @@ const steps = [
   { key: 'authenticity', label: 'Authenticity' },
   { key: 'details', label: 'Details' },
   { key: 'media', label: 'Media' },
+  { key: 'trustcheck', label: 'TrustCheck' },
   { key: 'location', label: 'Location' },
   { key: 'pricing', label: 'Pricing' },
 ]
@@ -752,10 +764,12 @@ const originOptions = [
   'Other',
 ]
 
+// The first three photos double as TrustCheck's required evidence, so the slot
+// labels name them explicitly. Order matters: front, back, interior.
 const mediaSlots = [
-  { key: 'main', label: 'Main photo', index: 0 },
-  { key: 'brand', label: 'Brand label (inside/out)', index: 1 },
-  { key: 'size', label: 'Size label', index: 2 },
+  { key: 'front', label: 'Front (main photo)', index: 0 },
+  { key: 'back', label: 'Back', index: 1 },
+  { key: 'interior', label: 'Interior / brand label', index: 2 },
 ]
 
 const CATEGORIES = ['Blouses', 'Tops', 'Bottoms', 'Bags', 'Accessories', 'Shoes']
@@ -789,6 +803,14 @@ const details = ref({ ...defaultDetails })
 // objects are kept alongside so they can be uploaded to Storage on submit.
 const imageFiles = ref([])
 const addressId = ref(null)
+
+// The TrustCheck result, held in memory until the listing row exists. Assessment
+// runs on the local File objects, so nothing is uploaded for an abandoned draft.
+const trustCheck = ref(null)
+
+// TrustCheck covers six models. It is required when the seller's brand is one we
+// support, and skipped entirely otherwise.
+const trustCheckApplies = computed(() => Boolean(matchBrand(form.value.brand)))
 
 // Reuse the seller's saved address instead of asking for it again.
 onMounted(async () => {
@@ -949,10 +971,15 @@ const validateStep = (step) => {
   if (step === 3 && imageFiles.value.length < 3) {
     return 'Please upload at least 3 photos.'
   }
-  if (step === 4 && !addressId.value) {
+  // TrustCheck is mandatory for the models it supports, so a listing that could
+  // carry an assessment never reaches buyers without one.
+  if (step === 4 && trustCheckApplies.value && !trustCheck.value) {
+    return 'Run Green Atelier TrustCheck before continuing. Pick your model, then Analyze Authenticity.'
+  }
+  if (step === 5 && !addressId.value) {
     return 'Add the address you will ship from.'
   }
-  if (step === 5) {
+  if (step === 6) {
     const price = Number(d.listingPrice)
     if (!price || price <= 0) return 'Enter a listing price.'
     if (d.originalPrice && Number(d.originalPrice) <= 0) {
@@ -988,7 +1015,7 @@ const handleContinue = async () => {
 
   submitting.value = true
   try {
-    await createListing({
+    const listing = await createListing({
       sellerId: userId.value,
       title: details.value.title,
       brand: form.value.brand || 'Unbranded',
@@ -1011,6 +1038,17 @@ const handleContinue = async () => {
       authDocFile: details.value.authDoc,
       serialNumber: details.value.serialNumber,
     })
+
+    // Save the assessment against the new listing. The listing itself is
+    // already created, so a failure here must not discard the seller's work.
+    if (trustCheck.value && listing?.id) {
+      try {
+        await saveAssessment(listing.id, trustCheck.value, userId.value)
+      } catch (assessmentError) {
+        console.error('TrustCheck assessment not saved:', assessmentError.message)
+      }
+    }
+
     router.push({ path: '/profile', query: { tab: 'Listings', submitted: '1' } })
   } catch (error) {
     errorMsg.value = error.message
@@ -1023,6 +1061,7 @@ const handleReset = () => {
   currentStep.value = 0
   errorMsg.value = ''
   imageFiles.value = []
+  trustCheck.value = null
   details.value = { ...defaultDetails, packaging: [], images: [] }
 }
 </script>

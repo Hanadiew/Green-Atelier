@@ -1,0 +1,10 @@
+{
+  "slug": "louis-vuitton-neverfull-mm",
+  "brand": "Louis Vuitton",
+  "model": "Neverfull MM",
+  "country": "France",
+  "originPhrases": ["Made in France", "Made in Spain", "Made in USA"],
+  "requiredEvidence": ["Front Image", "Back Image", "Interior Image"],
+  "optionalEvidence": ["Serial Number Image", "Receipt / Invoice", "Authentication Certificate"],
+  "serialFormatHint": "Date code of two letters followed by four digits, stamped inside a seam."
+}

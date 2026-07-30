@@ -175,6 +175,11 @@
         <!-- More About Product -->
         <div class="flex-1">
           <p class="text-xs tracking-widest uppercase text-gray-400 mb-4">More About The Product</p>
+          <!-- Green Atelier TrustCheck -->
+          <div v-if="trustCheck" class="mb-4">
+            <TrustCheckCard :assessment="trustCheck" />
+          </div>
+
           <div class="grid grid-cols-3 gap-4">
 
             <!-- Condition -->
@@ -274,6 +279,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { addToCart, cartItems } from '../cart.js'
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
+import TrustCheckCard from '../components/TrustCheckCard.vue'
+import { fetchAssessment } from '../lib/trustcheck/index.js'
 import { fetchListing, fetchRelatedListings, incrementViews } from '../lib/listings.js'
 import { isAuthenticated, userId } from '../lib/auth.js'
 import { loadWishlistIds, toggleWishlist, wishlistIds } from '../lib/wishlist.js'
@@ -285,6 +292,7 @@ const activeImage = ref(0)
 const relatedCarousel = ref(null)
 const product = ref(null)
 const relatedProducts = ref([])
+const trustCheck = ref(null)
 const loading = ref(true)
 const errorMsg = ref('')
 
@@ -327,6 +335,7 @@ const load = async (id) => {
   loading.value = true
   errorMsg.value = ''
   activeImage.value = 0
+  trustCheck.value = null
   try {
     const row = await fetchListing(id)
     if (!row) {
@@ -336,6 +345,8 @@ const load = async (id) => {
     }
     product.value = row
     accordions.value[0].content = row.description || 'The seller has not added a description.'
+    // Only some listings carry an assessment; the card hides itself when absent.
+    trustCheck.value = await fetchAssessment(id)
     relatedProducts.value = await fetchRelatedListings(row)
     incrementViews(id)
     if (userId.value) await loadWishlistIds(userId.value)
