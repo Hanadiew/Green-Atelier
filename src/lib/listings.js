@@ -312,3 +312,37 @@ export async function deleteListing(id) {
   const { error } = await supabase.from('listings').delete().eq('id', id)
   if (error) throw error
 }
+
+// Fields a seller is allowed to change on an edit. seller_id and created_at
+// are deliberately excluded — updated_at is handled by the DB trigger already.
+const EDITABLE_FIELDS = [
+  'title', 'brand', 'brand_id', 'category', 'item_type', 'condition', 'color',
+  'material', 'size', 'is_vintage', 'description', 'year_purchased', 'origin',
+  'packaging', 'images', 'listing_price', 'original_price', 'accept_offers',
+]
+
+export async function updateListing(id, fields) {
+  const payload = {}
+  for (const key of EDITABLE_FIELDS) {
+    if (key in fields) payload[key] = fields[key]
+  }
+  const { data, error } = await supabase
+    .from('listings')
+    .update(payload)
+    .eq('id', id)
+    .select('*')
+    .single()
+  if (error) throw error
+  return data
+}
+
+/**
+ * "Soft delete" for active listings. Your RLS delete policy only allows a
+ * real delete when status is draft/pending_review/rejected/archived — active
+ * and sold listings can't be removed outright, so this hides an active one
+ * from the shop instead.
+ */
+export async function archiveListing(id) {
+  const { error } = await supabase.from('listings').update({ status: 'archived' }).eq('id', id)
+  if (error) throw error
+}

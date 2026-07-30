@@ -78,36 +78,43 @@
   <!-- ===== LISTINGS TAB ===== -->
   <div v-if="activeTab === 'Listings'">
 
-    <!-- Filter + Sort row -->
-    <div v-if="listings.length > 0" class="flex items-center justify-end gap-4 mb-6">
-      <div class="flex items-center gap-2">
-        <span class="text-xs text-gray-400">Filter by</span>
-        <select v-model="listingFilter" class="border border-gray-200 rounded-md px-3 py-1.5 text-xs text-gray-600 outline-none bg-white">
-          <option value="all">All</option>
-          <option value="tops">Tops</option>
-          <option value="bags">Bags</option>
-          <option value="shoes">Shoes</option>
-          <option value="accessories">Accessories</option>
-        </select>
-      </div>
-      <div class="flex items-center gap-2">
-        <span class="text-xs text-gray-400">Sort by</span>
-        <select v-model="listingSort" class="border border-gray-200 rounded-md px-3 py-1.5 text-xs text-gray-600 outline-none bg-white">
-          <option value="latest">Latest</option>
-          <option value="price_asc">Price: Low to High</option>
-          <option value="price_desc">Price: High to Low</option>
-        </select>
-      </div>
-      <div class="flex items-center gap-2">
-        <span class="text-xs text-gray-400">Sold items</span>
-        <button @click="showSold = !showSold"
-          class="relative w-10 h-5 rounded-full transition-colors duration-300"
-          :style="showSold ? 'background-color: #C9A96E;' : 'background-color: #e5e7eb;'">
-          <span class="absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-300"
-            :style="showSold ? 'transform: translateX(22px)' : 'transform: translateX(2px)'"></span>
-        </button>
-      </div>
+    <div v-if="listings.length > 0 || isOwnProfile" class="flex items-center justify-between gap-4 mb-6 flex-wrap">
+  <RouterLink v-if="isOwnProfile" to="/sell"
+    class="px-5 py-2 text-xs text-white rounded-md transition hover:opacity-90 flex items-center gap-1.5 flex-shrink-0"
+    style="background-color: #1B3A2D;">
+    <span class="text-sm leading-none">+</span> Add Item
+  </RouterLink>
+
+  <div v-if="listings.length > 0" class="flex items-center gap-4 ml-auto flex-wrap">
+    <div class="flex items-center gap-2">
+      <span class="text-xs text-gray-400">Filter by</span>
+      <select v-model="listingFilter" class="border border-gray-200 rounded-md px-3 py-1.5 text-xs text-gray-600 outline-none bg-white">
+        <option value="all">All</option>
+        <option value="tops">Tops</option>
+        <option value="bags">Bags</option>
+        <option value="shoes">Shoes</option>
+        <option value="accessories">Accessories</option>
+      </select>
     </div>
+    <div class="flex items-center gap-2">
+      <span class="text-xs text-gray-400">Sort by</span>
+      <select v-model="listingSort" class="border border-gray-200 rounded-md px-3 py-1.5 text-xs text-gray-600 outline-none bg-white">
+        <option value="latest">Latest</option>
+        <option value="price_asc">Price: Low to High</option>
+        <option value="price_desc">Price: High to Low</option>
+      </select>
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="text-xs text-gray-400">Sold items</span>
+      <button @click="showSold = !showSold"
+        class="relative w-10 h-5 rounded-full transition-colors duration-300"
+        :style="showSold ? 'background-color: #C9A96E;' : 'background-color: #e5e7eb;'">
+        <span class="absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-300"
+          :style="showSold ? 'transform: translateX(22px)' : 'transform: translateX(2px)'"></span>
+      </button>
+    </div>
+  </div>
+</div>
 
     <!-- Empty state -->
     <div v-if="listings.length === 0" class="flex flex-col items-center justify-center py-24 text-center">
@@ -117,34 +124,48 @@
       <p class="text-sm font-medium text-gray-500 mb-1">No listings yet</p>
       <p class="text-xs text-gray-400 mb-6">Start selling your pre-loved pieces</p>
       <RouterLink to="/sell"
-        class="px-6 py-2.5 text-xs text-white rounded-md"
-        style="background-color: #1B3A2D;">
-        Start Selling
-      </RouterLink>
+  class="px-6 py-2.5 text-xs text-white rounded-md"
+  style="background-color: #1B3A2D;">
+  + Add Item
+</RouterLink>
     </div>
 
     <!-- Listing cards -->
     <div v-else class="grid grid-cols-4 gap-5">
-      <div v-for="item in filteredListings" :key="item.id"
-        @click="router.push('/product/' + item.id)"
-        class="cursor-pointer group">
-        <div class="relative rounded-sm overflow-hidden bg-gray-100 mb-3" style="height: 220px;">
-          <img :src="item.image" :alt="item.name" class="w-full h-full object-cover transition duration-300 group-hover:scale-105" />
-          <!-- Sold badge -->
-          <div v-if="item.sold" class="absolute inset-0 bg-black/40 flex items-center justify-center">
-            <span class="text-white text-xs font-medium tracking-widest uppercase">Sold</span>
-          </div>
-          <!-- Status badge -->
-          <div v-else class="absolute top-2 left-2 px-2 py-0.5 rounded-full text-xs"
-            :style="STATUS_BADGES[item.status]?.style ?? STATUS_BADGES.active.style">
-            {{ STATUS_BADGES[item.status]?.label ?? item.status }}
-          </div>
-        </div>
-        <p class="text-xs font-medium text-gray-800">{{ item.name }}</p>
-        <p class="text-xs text-gray-400 uppercase mt-0.5" style="font-size: 10px;">{{ item.brand }}</p>
-        <p class="text-xs text-gray-600 mt-0.5">RM {{ item.price.toLocaleString() }}.00</p>
+  <div v-for="item in filteredListings" :key="item.id" class="group">
+    <div class="relative rounded-sm overflow-hidden bg-gray-100 mb-3 cursor-pointer" style="height: 220px;"
+      @click="router.push('/product/' + item.id)">
+      <img :src="item.image" :alt="item.name" class="w-full h-full object-cover transition duration-300 group-hover:scale-105" />
+
+      <div v-if="item.sold" class="absolute inset-0 bg-black/40 flex items-center justify-center">
+        <span class="text-white text-xs font-medium tracking-widest uppercase">Sold</span>
+      </div>
+      <div v-else class="absolute top-2 left-2 px-2 py-0.5 rounded-full text-xs"
+        :style="STATUS_BADGES[item.status]?.style ?? STATUS_BADGES.active.style">
+        {{ STATUS_BADGES[item.status]?.label ?? item.status }}
+      </div>
+
+      <!-- Owner-only actions, revealed on hover -->
+      <div v-if="isOwnProfile" class="absolute top-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition">
+        <button @click.stop="goEdit(item)"
+          class="w-7 h-7 rounded-full bg-white/90 flex items-center justify-center text-gray-600 hover:text-gray-900 shadow transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 15H9v-2z"/>
+          </svg>
+        </button>
+        <button @click.stop="deleteTarget = item"
+          class="w-7 h-7 rounded-full bg-white/90 flex items-center justify-center text-gray-600 hover:text-red-500 shadow transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3M4 7h16"/>
+          </svg>
+        </button>
       </div>
     </div>
+    <p class="text-xs font-medium text-gray-800">{{ item.name }}</p>
+    <p class="text-xs text-gray-400 uppercase mt-0.5" style="font-size: 10px;">{{ item.brand }}</p>
+    <p class="text-xs text-gray-600 mt-0.5">RM {{ item.price.toLocaleString() }}.00</p>
+  </div>
+</div>
 
   </div>
 
@@ -261,6 +282,27 @@
 
     <Footer />
   </div>
+
+<Teleport to="body">
+  <div v-if="deleteTarget" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+    <div class="bg-white rounded-2xl shadow-xl px-8 py-8 max-w-sm w-full mx-4 text-center">
+      <h3 class="text-base font-semibold text-gray-800 mb-2">Delete Listing?</h3>
+      <p class="text-xs text-gray-400 leading-relaxed mb-6">This action cannot be undone.</p>
+      <div class="flex gap-3">
+        <button @click="deleteTarget = null"
+          class="flex-1 py-2.5 text-xs text-gray-600 border border-gray-200 rounded-md hover:bg-gray-50 transition">
+          Cancel
+        </button>
+        <button @click="confirmDelete" :disabled="deleting"
+          class="flex-1 py-2.5 text-xs text-white rounded-md disabled:opacity-60"
+          style="background-color: #B91C1C;">
+          {{ deleting ? 'Deleting…' : 'Delete' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</Teleport>
+
 </template>
 
 <script setup>
@@ -273,6 +315,8 @@ import { fetchProfileByUsername, fetchProfileStats } from '../lib/profiles.js'
 import { fetchSellerListings } from '../lib/listings.js'
 import { fetchWishlist, removeFromWishlist } from '../lib/wishlist.js'
 import { fetchOrders } from '../lib/orders.js'
+import { fetchSellerListings, deleteListing, archiveListing } from '../lib/listings.js'
+import { showToast } from '../lib/toast.js'
 
 const router = useRouter()
 const route = useRoute()
@@ -284,6 +328,8 @@ const activeTab = ref(tabs.includes(route.query.tab) ? route.query.tab : 'Listin
 const listingFilter = ref('all')
 const listingSort = ref('latest')
 const showSold = ref(false)
+
+
 
 // Orders filter
 const orderStatuses = ['All', 'Processing', 'Shipped', 'Delivered', 'Cancelled']
@@ -304,6 +350,36 @@ const wishlist = ref([])
 const orders = ref([])
 const loading = ref(true)
 const errorMsg = ref('')
+const deleteTarget = ref(null)
+const deleting = ref(false)
+
+const goEdit = (item) => {
+  router.push({ path: '/sell/details', query: { edit: item.id } })
+}
+
+const confirmDelete = async () => {
+  const item = deleteTarget.value
+  if (!item) return
+  deleting.value = true
+  try {
+    if (item.status === 'sold') {
+      showToast('Sold items are part of order history and cannot be deleted.', 'error')
+    } else if (item.status === 'active') {
+      await archiveListing(item.id)
+      listings.value = listings.value.filter((i) => i.id !== item.id)
+      showToast('Listing removed from the shop.')
+    } else {
+      await deleteListing(item.id)
+      listings.value = listings.value.filter((i) => i.id !== item.id)
+      showToast('Listing deleted.')
+    }
+  } catch (error) {
+    showToast(error.message, 'error')
+  } finally {
+    deleting.value = false
+    deleteTarget.value = null
+  }
+}
 
 // /profile shows your own page; /profile/:username shows someone else's.
 const isOwnProfile = computed(() => !route.params.username || profileRow.value?.id === userId.value)

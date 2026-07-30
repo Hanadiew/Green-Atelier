@@ -262,6 +262,23 @@
           </div>
           <input ref="mediaInput" type="file" multiple accept="image/*" class="hidden" @change="handleMediaFiles" />
 
+          <!-- Existing photos (edit mode) -->
+<div v-if="existingImages.length" class="pt-1">
+  <p class="text-xs text-gray-400 mb-2">Current photos</p>
+  <div class="grid grid-cols-5 gap-3">
+    <div v-for="(img, i) in existingImages" :key="'existing-' + i"
+      class="relative rounded-lg overflow-hidden bg-gray-100 group" style="height: 72px;">
+      <img :src="img" class="w-full h-full object-cover" />
+      <button @click="removeExistingImage(i)"
+        class="absolute top-1 right-1 w-5 h-5 rounded-full bg-white/90 flex items-center justify-center text-gray-500 hover:text-red-500 shadow transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+
           <!-- 3 labeled upload slots -->
           <div class="flex gap-4">
             <div v-for="slot in mediaSlots" :key="slot.key"
@@ -707,8 +724,8 @@
             class="px-8 py-2.5 text-sm text-white rounded-md transition hover:opacity-90 disabled:opacity-60"
             style="background-color: #7A9E8E;">
             {{ submitting
-               ? 'Submitting…'
-               : currentStep === steps.length - 1 ? 'Submit Listing' : 'Continue' }}
+            ? (isEditMode ? 'Saving…' : 'Submitting…')
+            : isEditMode ? 'Save Changes' : currentStep === steps.length - 1 ? 'Submit Listing' : 'Continue' }}
           </button>
         </div>
 
@@ -730,6 +747,8 @@ import { createListing } from '../lib/listings.js'
 import { userId } from '../lib/auth.js'
 import { createAddress, fetchDefaultAddress, toDisplay } from '../lib/addresses.js'
 import { matchBrand, saveAssessment } from '../lib/trustcheck/index.js'
+import { createListing, fetchListing, updateListing, uploadListingImages } from '../lib/listings.js'
+import { showToast } from '../lib/toast.js'
 
 const router = useRouter()
 const route = useRoute()
@@ -744,6 +763,13 @@ const form = ref({
   brand: route.query.brand || '',
   category: route.query.category || 'Tops',
 })
+
+const editId = route.query.edit || null
+const isEditMode = computed(() => Boolean(editId))
+// Images already stored in the DB when editing. Kept separate from imageFiles
+// (new uploads) since these are URLs, not File objects.
+const existingImages = ref([])
+const removeExistingImage = (i) => existingImages.value.splice(i, 1)
 
 const steps = [
   { key: 'overview', label: 'Overview' },
@@ -810,10 +836,38 @@ const trustCheck = ref(null)
 
 // TrustCheck covers six models. It is required when the seller's brand is one we
 // support, and skipped entirely otherwise.
-const trustCheckApplies = computed(() => Boolean(matchBrand(form.value.brand)))
+const trustCheckApplies = computed(() => !isEditMode.value && Boolean(matchBrand(form.value.brand)))
 
-// Reuse the seller's saved address instead of asking for it again.
 onMounted(async () => {
+  if (isEditMode.value) {
+    try {
+      const listing = await fetchListing(editId)
+      if (!listing || listing.sellerId !== userId.value) {
+        errorMsg.value = 'This listing was not found or does not belong to you.'
+      } else {
+        form.value.brand = listing.brand
+        form.value.category = listing.category
+        details.value.title = listing.name
+        details.value.category = listing.category
+        details.value.condition = listing.condition
+        details.value.color = listing.color || 'Brown'
+        details.value.material = listing.material || 'Leather'
+        details.value.size = listing.size || ''
+        details.value.vintage = listing.isVintage
+        details.value.description = listing.description || ''
+        details.value.yearPurchased = listing.yearPurchased || ''
+        details.value.packaging = listing.packaging || []
+        details.value.origin = listing.origin || 'Direct from the brand'
+        details.value.listingPrice = listing.price
+        details.value.originalPrice = listing.originalPrice || ''
+        details.value.acceptOffers = listing.acceptOffers ? 'Yes' : 'No'
+        existingImages.value = [...listing.images]
+      }
+    } catch (error) {
+      errorMsg.value = error.message
+    }
+  }
+
   if (!userId.value) return
   try {
     const row = await fetchDefaultAddress(userId.value)
@@ -968,8 +1022,8 @@ const validateStep = (step) => {
     if (!d.title.trim()) return 'Give your item a title so buyers can find it.'
     if (d.title.trim().length < 2) return 'That title is too short.'
   }
-  if (step === 3 && imageFiles.value.length < 3) {
-    return 'Please upload at least 3 photos.'
+  if (step === 3 && existingImages.value.length + imageFiles.value.length < 3) {
+  return 'Please have at least 3 photos total.'
   }
   // TrustCheck is mandatory for the models it supports, so a listing that could
   // carry an assessment never reaches buyers without one.
@@ -1014,47 +1068,73 @@ const handleContinue = async () => {
   }
 
   submitting.value = true
-  try {
-    const listing = await createListing({
-      sellerId: userId.value,
+try {
+  if (isEditMode.value) {
+    const newUrls = imageFiles.value.length
+      ? await uploadListingImages(imageFiles.value, userId.value)
+      : []
+    await updateListing(editId, {
       title: details.value.title,
       brand: form.value.brand || 'Unbranded',
       category: details.value.category,
-      itemType: route.query.itemType || null,
       condition: details.value.condition,
       color: details.value.color,
       material: details.value.material,
       size: details.value.size,
-      isVintage: details.value.vintage,
+      is_vintage: details.value.vintage,
       description: details.value.description,
-      yearPurchased: details.value.yearPurchased,
+      year_purchased: details.value.yearPurchased || null,
       origin: details.value.origin,
       packaging: details.value.packaging,
-      listingPrice: details.value.listingPrice,
-      originalPrice: details.value.originalPrice,
-      acceptOffers: details.value.acceptOffers === 'Yes',
-      shippingAddressId: addressId.value,
-      imageFiles: imageFiles.value,
-      authDocFile: details.value.authDoc,
-      serialNumber: details.value.serialNumber,
+      images: [...existingImages.value, ...newUrls],
+      listing_price: Number(details.value.listingPrice),
+      original_price: details.value.originalPrice ? Number(details.value.originalPrice) : null,
+      accept_offers: details.value.acceptOffers === 'Yes',
     })
-
-    // Save the assessment against the new listing. The listing itself is
-    // already created, so a failure here must not discard the seller's work.
-    if (trustCheck.value && listing?.id) {
-      try {
-        await saveAssessment(listing.id, trustCheck.value, userId.value)
-      } catch (assessmentError) {
-        console.error('TrustCheck assessment not saved:', assessmentError.message)
-      }
-    }
-
-    router.push({ path: '/profile', query: { tab: 'Listings', submitted: '1' } })
-  } catch (error) {
-    errorMsg.value = error.message
-  } finally {
-    submitting.value = false
+    showToast('Listing updated.')
+    router.push({ path: '/profile', query: { tab: 'Listings' } })
+    return
   }
+
+  const listing = await createListing({
+    sellerId: userId.value,
+    title: details.value.title,
+    brand: form.value.brand || 'Unbranded',
+    category: details.value.category,
+    itemType: route.query.itemType || null,
+    condition: details.value.condition,
+    color: details.value.color,
+    material: details.value.material,
+    size: details.value.size,
+    isVintage: details.value.vintage,
+    description: details.value.description,
+    yearPurchased: details.value.yearPurchased,
+    origin: details.value.origin,
+    packaging: details.value.packaging,
+    listingPrice: details.value.listingPrice,
+    originalPrice: details.value.originalPrice,
+    acceptOffers: details.value.acceptOffers === 'Yes',
+    shippingAddressId: addressId.value,
+    imageFiles: imageFiles.value,
+    authDocFile: details.value.authDoc,
+    serialNumber: details.value.serialNumber,
+  })
+
+  if (trustCheck.value && listing?.id) {
+    try {
+      await saveAssessment(listing.id, trustCheck.value, userId.value)
+    } catch (assessmentError) {
+      console.error('TrustCheck assessment not saved:', assessmentError.message)
+    }
+  }
+
+  showToast('Listing submitted for review.')
+  router.push({ path: '/profile', query: { tab: 'Listings', submitted: '1' } })
+} catch (error) {
+  errorMsg.value = error.message
+} finally {
+  submitting.value = false
+}
 }
 
 const handleReset = () => {
