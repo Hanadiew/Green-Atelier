@@ -225,6 +225,75 @@
           </p>
         </div>
 
+        <!-- ===== PAYOUT INFORMATION SECTION ===== -->
+        <div v-if="activeSection === 'payout'">
+          <h2 class="text-base font-semibold text-gray-800 mb-2">Payout Information</h2>
+          <p class="text-xs text-gray-400 mb-6 leading-relaxed">
+            Earnings from your sales are paid directly to this bank account once an order is
+            delivered. Green Atelier does not hold your funds — this is only where a payout is sent.
+          </p>
+
+          <!-- Existing account, view mode -->
+          <div v-if="payoutAccount && !editPayout"
+            class="border border-gray-800 rounded-lg px-5 py-4 flex items-start justify-between">
+            <div>
+              <p class="text-xs text-gray-400 mb-1">Bank Account</p>
+              <p class="text-sm font-semibold text-gray-800">{{ payoutAccount.bankName }}</p>
+              <p class="text-xs text-gray-500 mt-0.5">{{ payoutAccount.accountNumberMasked }}</p>
+              <p class="text-xs text-gray-400 mt-2">Account Holder</p>
+              <p class="text-xs text-gray-600">{{ payoutAccount.accountHolderName }}</p>
+            </div>
+            <button @click="openEditPayout" class="text-gray-400 hover:text-gray-600 transition mt-1">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 15H9v-2z"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Empty state -->
+          <div v-else-if="!editPayout" class="border border-dashed border-gray-200 rounded-lg px-5 py-8 text-center mb-5">
+            <p class="text-xs text-gray-400 mb-1">No bank account has been configured.</p>
+            <p class="text-xs text-gray-300 mb-4">Add a bank account to receive earnings from your sales.</p>
+            <button @click="openAddPayout"
+              class="px-5 py-2 text-xs text-white rounded-md"
+              style="background-color: #1B3A2D;">
+              Add Bank Account
+            </button>
+          </div>
+
+          <!-- Add / edit form -->
+          <div v-if="editPayout" class="border border-gray-200 rounded-lg px-5 py-5 space-y-4 mt-5">
+            <div>
+              <label class="text-xs text-gray-400 mb-1 block">Bank Name</label>
+              <select v-model="payoutForm.bankName"
+                class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white">
+                <option value="" disabled>Choose a bank</option>
+                <option v-for="bank in BANKS" :key="bank" :value="bank">{{ bank }}</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs text-gray-400 mb-1 block">Account Holder Name</label>
+              <input v-model="payoutForm.accountHolderName" type="text" placeholder="As it appears on the bank account"
+                class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white placeholder-gray-300" />
+            </div>
+            <div>
+              <label class="text-xs text-gray-400 mb-1 block">Bank Account Number</label>
+              <input v-model="payoutForm.accountNumber" type="text" placeholder="Digits only"
+                class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white placeholder-gray-300" />
+            </div>
+            <div class="flex gap-3 pt-1">
+              <button @click="savePayout" :disabled="saving"
+                class="px-6 py-2 text-xs text-white rounded-md disabled:opacity-60"
+                style="background-color: #1B3A2D;">
+                {{ saving ? 'Saving…' : 'Save' }}
+              </button>
+              <button @click="cancelPayout" class="px-6 py-2 text-xs text-gray-500 hover:text-gray-700 transition">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- ===== PAYMENT METHODS SECTION ===== -->
         <div v-if="activeSection === 'payment'">
           <h2 class="text-base font-semibold text-gray-800 mb-6">Payment methods</h2>
@@ -246,13 +315,23 @@
 
 <script setup>
 import { onMounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
 import { changeEmail, loadProfile, profile, setPassword, userEmail, userId } from '../lib/auth.js'
 import { fetchSettings, updateProfile, updateSettings, uploadAvatar } from '../lib/profiles.js'
 import { deleteAddress, fetchAddresses, setDefaultAddress, toDisplay } from '../lib/addresses.js'
+import { fetchPayoutAccount, savePayoutAccount } from '../lib/payouts.js'
 
-const activeSection = ref('account')
+const route = useRoute()
+
+// Deep-links from other pages (e.g. the Sell wizard publish-gate modal) land
+// here with ?section=payout so the seller sees the right tab immediately.
+const activeSection = ref(
+  ['account', 'email', 'addresses', 'payout', 'payment'].includes(route.query.section)
+    ? route.query.section
+    : 'account',
+)
 const editPersonal = ref(false)
 const editAccount = ref(false)
 const newPassword = ref('')
@@ -265,7 +344,13 @@ const sidebarItems = [
   { key: 'account', label: 'Account' },
   { key: 'email', label: 'Email preferences' },
   { key: 'addresses', label: 'Addresses' },
+  { key: 'payout', label: 'Payout Information' },
   { key: 'payment', label: 'Payment methods' },
+]
+
+const BANKS = [
+  'Maybank', 'CIMB Bank', 'Public Bank', 'RHB Bank', 'Hong Leong Bank',
+  'AmBank', 'Bank Islam', 'OCBC Bank', 'Standard Chartered Bank', 'HSBC Bank', 'Other',
 ]
 
 const user = ref({
@@ -285,6 +370,11 @@ const emailPrefs = ref([
 ])
 
 const addresses = ref([])
+
+// Payout account state
+const payoutAccount = ref(null)
+const editPayout = ref(false)
+const payoutForm = ref({ bankName: '', accountHolderName: '', accountNumber: '' })
 
 const flash = (message) => {
   successMsg.value = message
@@ -315,6 +405,7 @@ const load = async () => {
       for (const pref of emailPrefs.value) pref.enabled = Boolean(settings[pref.key])
     }
     addresses.value = (await fetchAddresses(userId.value)).map(toDisplay)
+    payoutAccount.value = await fetchPayoutAccount(userId.value)
   } catch (error) {
     errorMsg.value = error.message
   }
@@ -429,6 +520,43 @@ const handleSetDefault = async (id) => {
     addresses.value = (await fetchAddresses(userId.value)).map(toDisplay)
   } catch (error) {
     errorMsg.value = error.message
+  }
+}
+
+// --- Payout account handlers -------------------------------------------------
+
+const openAddPayout = () => {
+  payoutForm.value = { bankName: '', accountHolderName: '', accountNumber: '' }
+  editPayout.value = true
+}
+
+const openEditPayout = () => {
+  // The masked number is display-only; the seller re-enters the full number
+  // to change it rather than editing around a partially hidden value.
+  payoutForm.value = {
+    bankName: payoutAccount.value?.bankName ?? '',
+    accountHolderName: payoutAccount.value?.accountHolderName ?? '',
+    accountNumber: '',
+  }
+  editPayout.value = true
+}
+
+const cancelPayout = () => {
+  errorMsg.value = ''
+  editPayout.value = false
+}
+
+const savePayout = async () => {
+  errorMsg.value = ''
+  saving.value = true
+  try {
+    payoutAccount.value = await savePayoutAccount(userId.value, payoutForm.value)
+    editPayout.value = false
+    flash('Bank account saved.')
+  } catch (error) {
+    errorMsg.value = error.message
+  } finally {
+    saving.value = false
   }
 }
 </script>
