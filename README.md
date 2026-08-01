@@ -142,7 +142,7 @@ npm run build
 
 ## 📊 Database
 
-16 tables, all with Row Level Security enabled. The full definition lives in `supabase/migrations/`.
+17 tables, all with Row Level Security enabled. The full definition lives in `supabase/migrations/`.
 
 | Table | Purpose |
 |---|---|
@@ -151,7 +151,8 @@ npm run build
 | `user_roles` | Grants `admin` / `moderator`. Has **no write policy at all**, so a role can only be granted with the `service_role` key. |
 | `brands` | Reference list of luxury houses. Public read, admin write. |
 | `listings` | Items for sale. Includes a generated `co2_saved_kg` (the sustainability calculator) and a generated `search_vector` with a GIN index powering the shop search. |
-| `listing_verification` | Serial numbers and authenticity documents. **Separate table with no public read policy**, because the Sell wizard promises sellers this stays private. |
+| `listing_verification` | Serial numbers and authenticity documents. **Separate table with no public read policy**, because the Sell wizard promises sellers this stays private. Also holds the private TrustCheck OCR text and document paths (see below). |
+| `trustcheck_assessments` | TrustCheck evidence score and status per listing. Publicly readable (buyers see it on the product page); score/status are recomputed server-side by trigger, never trusted from the client. |
 | `addresses` | Shipping and billing addresses. A partial unique index plus a trigger enforce one default per user. |
 | `wishlists` / `cart_items` | Saved and in-bag items. No quantity column — resale items are one-of-a-kind. |
 | `offers` | Price negotiation when a seller enables "Accept Offers". |
@@ -200,6 +201,58 @@ demo.seller@greenatelier.test / DemoSeller123
 ```
 
 Delete the `DEMO SELLER` and `DEMO CATALOGUE` sections of `supabase/seed.sql` before going to production.
+
+### Green Atelier TrustCheck™
+
+An **evidence-completeness check**, not an authentication service. It scores how complete and internally consistent a seller's uploaded evidence is for six supported models; it never claims an item is genuine, fake, or counterfeit, and that vocabulary is intentionally kept out of the code, schema, and UI copy.
+
+**Supported models** (`src/lib/trustcheck/reference/*.json`): Gucci Marmont Small, Louis Vuitton Neverfull MM, Chanel Classic Flap Medium, Dior Lady Dior Medium, Prada Galleria Medium, Hermès Birkin 30. Brand/model selection that doesn't match one of these skips TrustCheck entirely — the listing publishes without a score.
+
+**How it's scored** (`src/lib/trustcheck/scoring.js`, mirrored server-side in `trustcheck_score()`):
+
+| Evidence | Points |
+|---|---|
+| Front / Back / Interior photo (from the listing's own images) | 15 each |
+| Receipt or invoice | 20 |
+| Serial number photo | 15 |
+| Origin phrase detected via OCR (e.g. "Made in Italy") | 10 |
+| Authentication certificate | 10 |
+
+| Score | Status |
+|---|---|
+| 85–100 | Likely Consistent |
+| 60–84 | Needs Review |
+| 0–59 | Insufficient Evidence |
+
+**Where the OCR happens:** entirely client-side via [Tesseract.js](https://github.com/naptha/tesseract.js), which downloads its worker and language data (a few MB) from a CDN on first use in the browser and caches it after that. It reads text off uploaded documents only — it makes no judgement about whether a document is genuine.
+
+**What's public vs. private:**
+- `trustcheck_assessments` (score, status, which evidence exists) is publicly readable — it's what renders on the product page via `TrustCheckCard.vue`.
+- The OCR text and the document file paths go into `listing_verification`, which has no public read policy, since receipts routinely contain the original purchase price and the buyer's name.
+
+**Why the score can't be spoofed:** the browser only ever submits which evidence *exists* (boolean flags), never a numeric score. A `BEFORE INSERT OR UPDATE` trigger (`trustcheck_apply_score()`) recomputes the score from those flags server-side, and additionally corrects a claimed front/back/interior photo against the listing's *actual* stored image count — so a seller can't claim 3 required photos exist by submitting the flags alone.
+
+**Verifying the scoring logic:** `node verify.mjs` runs a standalone check (no dev server or Supabase connection needed) that:
+- confirms the JS evidence weights match the SQL function's constants exactly;
+- checks all 128 possible evidence combinations (2⁷ flags) produce the same status in JS and SQL;
+- exercises `assessEvidence()` against known score/status pairs (e.g. 3 photos → 45/Insufficient, + receipt → 65/Needs Review, + serial + origin match → 90/Likely Consistent);
+- checks the reference database (6 models) and OCR origin-matching against noisy/case-varied text;
+- scans the TrustCheck source and migration for verdict-on-item wording ("is authentic", "is fake", etc.).
+
+```sh
+node verify.mjs
+```
+
+This does **not** replace a browser test of the full flow — see the "Seller flow" checklist below.
+
+**Seller flow to test manually** (`/sell` → fill the wizard → upload 3 photos → TrustCheck step):
+1. Pick brand **Gucci**, model **Marmont Small**.
+2. **Analyze** with just the 3 required photos → expect **45/100, Insufficient Evidence**.
+3. Add a receipt photo, re-analyze → expect **65/100, Needs Review**.
+4. Add a serial number photo and a receipt whose text reads "Made in Italy", re-analyze → expect **90/100, Likely Consistent**.
+5. Publish, approve the listing (Table Editor → `listings` → `status` → `active`), then confirm the score renders correctly on the product page.
+
+Watch the browser console on the very first "Analyze Authenticity" click of a session — that's where a Tesseract.js CDN failure would surface, since it hasn't been exercised in a real browser yet.
 
 ---
 
