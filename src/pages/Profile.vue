@@ -24,7 +24,7 @@
       </div>
 
       <!-- ===== PROFILE HEADER ===== -->
-      <div class="px-16 py-10 flex items-center border-b border-gray-100">
+      <div class="px-16 py-10 flex items-center justify-between border-b border-gray-100 flex-wrap gap-8">
 
         <div class="flex items-center gap-8">
           <!-- Avatar -->
@@ -53,6 +53,38 @@
               <p class="text-xs text-gray-500"><span class="font-medium text-gray-700">{{ stats.sold }}</span> sold</p>
             </div>
           </div>
+        </div>
+
+        <!-- ===== SELLER OVERVIEW ===== -->
+        <!-- Owner-only, and only once the seller has at least one listing or
+             sale — a brand-new buyer-only account never sees this. -->
+        <div v-if="isOwnProfile && isSeller" class="flex-shrink-0" style="width: 260px;">
+          <p class="text-xs tracking-widest uppercase text-gray-400 mb-3">Seller Overview</p>
+          <div class="bg-white rounded-xl shadow-sm px-5 py-4 grid grid-cols-2 gap-x-4 gap-y-4">
+            <div>
+              <p class="text-xs text-gray-400 mb-0.5">Total Earnings</p>
+              <p class="text-sm font-semibold text-gray-800">
+                RM {{ earnings.totalEarnings.toLocaleString() }}.00
+              </p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400 mb-0.5">Items Sold</p>
+              <p class="text-sm font-semibold text-gray-800">{{ stats.sold }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400 mb-0.5">Active Listings</p>
+              <p class="text-sm font-semibold text-gray-800">{{ stats.itemsForSale }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400 mb-0.5">Paid Out</p>
+              <p class="text-sm font-semibold text-gray-800">
+                RM {{ earnings.paidOut.toLocaleString() }}.00
+              </p>
+            </div>
+          </div>
+          <RouterLink to="/wallet" class="block text-center mt-3 text-xs underline" style="color: #C9A96E;">
+            View Earnings
+          </RouterLink>
         </div>
 
       </div>
@@ -319,6 +351,7 @@ import {
   deleteListing,
   archiveListing
 } from '../lib/listings.js'
+import { fetchSellerEarnings } from '../lib/payouts.js'
 import { showToast } from '../lib/toast.js'
 
 const router = useRouter()
@@ -348,6 +381,7 @@ const STATUS_BADGES = {
 
 const profileRow = ref(null)
 const stats = ref({ itemsForSale: 0, sold: 0 })
+const earnings = ref({ totalEarnings: 0, paidOut: 0, pendingEarnings: 0, itemsSold: 0 })
 const listings = ref([])
 const wishlist = ref([])
 const orders = ref([])
@@ -387,6 +421,12 @@ const confirmDelete = async () => {
 // /profile shows your own page; /profile/:username shows someone else's.
 const isOwnProfile = computed(() => !route.params.username || profileRow.value?.id === userId.value)
 const justSubmitted = computed(() => route.query.submitted === '1')
+
+// A user counts as a "seller" once they have ever listed something — active
+// listings or a completed sale — so a buyer-only account never sees the
+// Seller Overview panel. Deliberately not a stored `is_seller` column: this
+// is derived from listing/sale data that already exists.
+const isSeller = computed(() => stats.value.itemsForSale > 0 || stats.value.sold > 0)
 
 // Wishlist and order history are private to their owner.
 const visibleTabs = computed(() => (isOwnProfile.value ? tabs : ['Listings']))
@@ -429,13 +469,16 @@ const load = async () => {
     // seller's drafts and items still in review.
     listings.value = await fetchSellerListings(id)
 
-    // Wishlist and orders are private, so only load them on your own profile.
+    // Wishlist, orders and earnings are private, so only load them on your
+    // own profile.
     if (id === userId.value) {
       wishlist.value = await fetchWishlist(id)
       orders.value = await fetchOrders(id)
+      earnings.value = await fetchSellerEarnings(id)
     } else {
       wishlist.value = []
       orders.value = []
+      earnings.value = { totalEarnings: 0, paidOut: 0, pendingEarnings: 0, itemsSold: 0 }
     }
   } catch (error) {
     errorMsg.value = error.message

@@ -146,6 +146,14 @@
   Sales Orders
 </RouterLink>
 
+    <RouterLink to="/wallet"
+      class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 transition">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 12V7H5a2 2 0 010-4h14v4M3 5v14a2 2 0 002 2h16v-5M18 12a2 2 0 000 4h4v-4h-4z"/>
+      </svg>
+      Wallet
+    </RouterLink>
+
     <div class="border-t border-gray-100 my-1"></div>
 
     <RouterLink to="/support"

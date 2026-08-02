@@ -29,6 +29,7 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     { path: '/sales-orders', component: () => import('./pages/SalesOrders.vue'), meta: { requiresAuth: true } },
+    { path: '/wallet', component: () => import('./pages/Wallet.vue'), meta: { requiresAuth: true } },
     { path: '/about', component: () => import('./pages/About.vue') },
     { path: '/contact', component: () => import('./pages/Contact.vue') },
 
