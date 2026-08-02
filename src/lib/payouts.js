@@ -22,6 +22,18 @@ function toAccountDisplay(row) {
   }
 }
 
+function isMissingDatabaseObjectError(error) {
+  if (!error) return false
+  const message = String(error.message || '').toLowerCase()
+  return (
+    error.status === 404 ||
+    error.code === '42P01' ||
+    message.includes('could not find the table') ||
+    message.includes('could not find the view') ||
+    (message.includes('relation') && message.includes('does not exist'))
+  )
+}
+
 /** The seller's default payout account, or null if none is configured. */
 export async function fetchPayoutAccount(userId) {
   if (!userId) return null
@@ -31,7 +43,10 @@ export async function fetchPayoutAccount(userId) {
     .eq('user_id', userId)
     .eq('is_default', true)
     .maybeSingle()
-  if (error) throw error
+  if (error) {
+    if (isMissingDatabaseObjectError(error)) return null
+    throw error
+  }
   return toAccountDisplay(data)
 }
 
@@ -45,7 +60,10 @@ export async function hasPayoutAccount(userId) {
     .from('seller_payout_accounts')
     .select('id', { count: 'exact', head: true })
     .eq('user_id', userId)
-  if (error) throw error
+  if (error) {
+    if (isMissingDatabaseObjectError(error)) return false
+    throw error
+  }
   return (count ?? 0) > 0
 }
 
@@ -102,7 +120,10 @@ export async function fetchSellerEarnings(userId) {
     .select('*')
     .eq('seller_id', userId)
     .maybeSingle()
-  if (error) throw error
+  if (error) {
+    if (isMissingDatabaseObjectError(error)) return EMPTY_EARNINGS
+    throw error
+  }
   if (!data) return EMPTY_EARNINGS
   return {
     totalEarnings: Number(data.total_earnings),
@@ -180,7 +201,10 @@ export async function fetchPayoutHistory(userId) {
     .select(PAYOUT_FIELDS)
     .eq('seller_id', userId)
     .order('created_at', { ascending: false })
-  if (error) throw error
+  if (error) {
+    if (isMissingDatabaseObjectError(error)) return []
+    throw error
+  }
 
   return (data ?? []).map((p) => ({
     id: p.id,

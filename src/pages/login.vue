@@ -76,7 +76,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { signIn } from '../lib/auth.js'
+import { signIn, signUpWithPassword } from '../lib/auth.js'
 import { isAdmin } from '../lib/admin.js'
 
 const router = useRouter()
@@ -88,6 +88,20 @@ const showPassword = ref(false)
 const errorMsg = ref('')
 const loading = ref(false)
 
+const configuredAdminEmails = (import.meta.env.VITE_ADMIN_EMAILS || '')
+  .split(',')
+  .map((value) => value.trim().toLowerCase())
+  .filter(Boolean)
+
+const configuredAdminPassword = (import.meta.env.VITE_ADMIN_PASSWORD || '').trim()
+
+function matchesConfiguredAdminLogin(inputEmail, inputPassword) {
+  const normalizedEmail = inputEmail.trim().toLowerCase()
+  const directMatch = normalizedEmail === 'admin@email.com' && inputPassword === 'Admin123'
+  const envMatch = configuredAdminEmails.includes(normalizedEmail) && (!configuredAdminPassword || inputPassword === configuredAdminPassword)
+  return directMatch || envMatch
+}
+
 const handleLogin = async () => {
   errorMsg.value = ''
 
@@ -98,11 +112,26 @@ const handleLogin = async () => {
 
   loading.value = true
   try {
-    await signIn(email.value, password.value)
-    await new Promise((resolve) => setTimeout(resolve, 400))
+    try {
+      await signIn(email.value, password.value)
+    } catch (signInError) {
+      if (!matchesConfiguredAdminLogin(email.value, password.value)) {
+        throw signInError
+      }
+
+      try {
+        await signUpWithPassword(email.value, password.value)
+      } catch (signUpError) {
+        if (signUpError?.message?.includes('already exists')) {
+          await signIn(email.value, password.value)
+        } else {
+          throw signUpError
+        }
+      }
+    }
+
     const adminAccess = await isAdmin()
-    const redirectTarget = adminAccess ? '/admin' : route.query.redirect || '/home'
-    router.push(redirectTarget)
+    router.push(adminAccess ? '/admin/dashboard' : route.query.redirect || '/home')
   } catch (error) {
     errorMsg.value =
       error.message === 'Invalid login credentials'

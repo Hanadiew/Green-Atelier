@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import './style.css'
 import App from './App.vue'
 import { initAuth, isAuthenticated } from './lib/auth.js'
+import { supabase } from './supabase.js'
 import { isAdmin } from './lib/admin.js'
 import { initCart } from './cart.js'
 
@@ -87,7 +88,7 @@ router.beforeEach(async (to) => {
       return { path: '/login', query: { redirect: to.fullPath } }
     }
 
-    await new Promise((resolve) => setTimeout(resolve, 300))
+    await supabase.auth.getSession()
     if (!(await isAdmin())) {
       return '/home'
     }

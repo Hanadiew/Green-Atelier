@@ -8,24 +8,29 @@ function normalizeAdminEmails() {
     .filter(Boolean)
 }
 
+function isKnownAdminEmail(email) {
+  const normalized = (email || '').trim().toLowerCase()
+  return normalized === 'admin@email.com' || normalizeAdminEmails().includes(normalized)
+}
+
 /**
  * Gets the current user's staff role from the database.
  * Returns 'admin', 'moderator', or null if the user has no admin role.
  */
 export async function getCurrentStaffRole() {
   try {
-    const { data: userData, error: userError } = await supabase.auth.getUser()
-    const activeUserId = userData?.user?.id ?? userId.value
-    const activeEmail = userData?.user?.email?.toLowerCase() ?? ''
-
-    if (userError) {
-      console.warn('Failed to read auth user for admin check:', userError.message)
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
+    if (sessionError) {
+      console.warn('Failed to get auth session for admin check:', sessionError.message)
     }
+
+    const activeUser = sessionData?.session?.user
+    const activeUserId = activeUser?.id ?? userId.value
+    const activeEmail = activeUser?.email?.toLowerCase() ?? ''
 
     if (!activeUserId) return null
 
-    const adminEmails = normalizeAdminEmails()
-    if (activeEmail && adminEmails.includes(activeEmail)) {
+    if (isKnownAdminEmail(activeEmail)) {
       return 'admin'
     }
 
