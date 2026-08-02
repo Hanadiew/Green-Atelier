@@ -77,6 +77,7 @@
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { signIn } from '../lib/auth.js'
+import { isAdmin } from '../lib/admin.js'
 
 const router = useRouter()
 const route = useRoute()
@@ -98,8 +99,10 @@ const handleLogin = async () => {
   loading.value = true
   try {
     await signIn(email.value, password.value)
-    // Return the user to whatever page sent them here.
-    router.push(route.query.redirect || '/home')
+    await new Promise((resolve) => setTimeout(resolve, 400))
+    const adminAccess = await isAdmin()
+    const redirectTarget = adminAccess ? '/admin' : route.query.redirect || '/home'
+    router.push(redirectTarget)
   } catch (error) {
     errorMsg.value =
       error.message === 'Invalid login credentials'

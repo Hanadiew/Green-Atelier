@@ -1,0 +1,1 @@
+<template><div><h1 class="text-2xl font-bold">Message Details</h1></div></template>
