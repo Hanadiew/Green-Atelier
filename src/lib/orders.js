@@ -87,6 +87,74 @@ export async function fetchOrders(userId) {
   }))
 }
 
+// Add near the top with the other exports, or anywhere below statusLabel()
+
+/** Full detail for one order — used by the receipt page. */
+export async function fetchOrderById(orderId) {
+  const { data, error } = await supabase
+    .from('orders')
+    .select(
+      `id, order_number, subtotal, shipping_fee, service_fee, discount, total,
+       status, payment_status, payment_method, placed_at, promo_code,
+       shipping_address:addresses(first_name, surname, street_address, apartment,
+                                  city, state, postcode, country, phone_code, phone),
+       items:order_items(id, listing_id, title_snapshot, brand_snapshot,
+                         image_snapshot, price_paid, status)`,
+    )
+    .eq('id', orderId)
+    .maybeSingle()
+
+  if (error) throw error
+  if (!data) return null
+
+  return {
+    id: data.id,
+    orderId: data.order_number,
+    subtotal: Number(data.subtotal),
+    shippingFee: Number(data.shipping_fee),
+    serviceFee: Number(data.service_fee),
+    discount: Number(data.discount),
+    total: Number(data.total),
+    status: statusLabel(data.status),
+    rawStatus: data.status,
+    paymentStatus: data.payment_status,
+    paymentMethod: data.payment_method,
+    promoCode: data.promo_code,
+    placedAt: data.placed_at,
+    date: new Date(data.placed_at).toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    }),
+    time: new Date(data.placed_at).toLocaleTimeString('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit',
+    }),
+    shippingAddress: data.shipping_address ?? null,
+    items: (data.items ?? []).map((i) => ({
+      id: i.id,
+      listingId: i.listing_id,
+      name: i.title_snapshot,
+      brand: i.brand_snapshot,
+      image: i.image_snapshot || '/demo/bag1.png',
+      price: Number(i.price_paid),
+      status: statusLabel(i.status),
+    })),
+  }
+}
+
+/**
+ * Emails the receipt via the send-receipt-email Edge Function.
+ * Best-effort — callers should not block the checkout flow on this failing.
+ */
+export async function sendReceiptEmail(orderId) {
+  const { data, error } = await supabase.functions.invoke('send-receipt-email', {
+    body: { orderId },
+  })
+  if (error) throw new Error(error.message)
+  return data
+}
+
 /** Items the signed-in user has sold, for a seller dashboard. */
 export async function fetchSales(userId) {
   const { data, error } = await supabase
