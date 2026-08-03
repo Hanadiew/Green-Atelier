@@ -252,7 +252,7 @@ export async function approveListing(listingId) {
 export async function rejectListing(listingId, reason = null) {
   const { error } = await supabase
     .from('listings')
-    .update({ status: 'rejected' })
+    .update({ status: 'rejected', rejection_reason: reason })
     .eq('id', listingId)
 
   if (error) throw error
@@ -271,7 +271,7 @@ const USER_FIELDS = `
  * Fetches users with pagination and search.
  */
 export async function getAdminUsers({ search = '', page = 1, perPage = 20 } = {}) {
-  let query = supabase.from('profiles').select(USER_FIELDS, { count: 'exact' })
+  let query = supabase.from('admin_users').select(USER_FIELDS, { count: 'exact' })
 
   if (search) {
     // Search by username or name
@@ -296,7 +296,7 @@ export async function getAdminUsers({ search = '', page = 1, perPage = 20 } = {}
  */
 export async function getAdminUser(userId) {
   const { data, error } = await supabase
-    .from('profiles')
+    .from('admin_users')
     .select(USER_FIELDS)
     .eq('id', userId)
     .maybeSingle()
@@ -385,6 +385,24 @@ export async function getAdminOrder(orderId) {
   return formatOrderForAdmin(data)
 }
 
+/**
+ * Moves an order to a new fulfilment status and stamps the matching timestamp.
+ * The orders RLS policy lets is_admin() past the buyer-only restriction.
+ */
+export async function updateOrderStatus(orderId, status) {
+  const stamps = {
+    shipped: 'shipped_at',
+    delivered: 'delivered_at',
+    cancelled: 'cancelled_at',
+  }
+
+  const updates = { status }
+  if (stamps[status]) updates[stamps[status]] = new Date().toISOString()
+
+  const { error } = await supabase.from('orders').update(updates).eq('id', orderId)
+  if (error) throw error
+}
+
 function formatOrderForAdmin(order) {
   return {
     id: order.id,
@@ -424,9 +442,9 @@ function formatOrderForAdmin(order) {
 const REPORT_FIELDS = `
   id, reporter_id, reported_listing_id, reported_user_id, reason, description,
   status, admin_notes, handled_by_id, created_at, updated_at,
-  reporter:profiles(id, username, full_name, avatar_url),
+  reporter:profiles!reports_reporter_id_fkey(id, username, full_name, avatar_url),
   listing:listings(id, title, brand, images),
-  reported_user:profiles(id, username, full_name, avatar_url)
+  reported_user:profiles!reports_reported_user_id_fkey(id, username, full_name, avatar_url)
 `
 
 /**
@@ -540,8 +558,10 @@ const TRUSTCHECK_FIELDS = `
   listing_id, evidence_score, status, has_front, has_back, has_interior,
   has_receipt, has_serial, has_certificate, ocr_origin_match,
   reference_slug, brand, model, reference_country,
-  listing:listings(id, title, brand, images, seller_id),
-  verification:listing_verification(ocr_text, receipt_path, certificate_path, serial_image_path)
+  listing:listings(
+    id, title, brand, images, seller_id,
+    verification:listing_verification(ocr_text, receipt_path, certificate_path, serial_image_path)
+  )
 `
 
 /**
@@ -610,11 +630,13 @@ function formatTrustCheckForAdmin(assessment) {
       model: assessment.model,
       country: assessment.reference_country,
     },
+    // listing_verification has no FK to trustcheck_assessments — both point at
+    // listings — so PostgREST can only reach it nested under the listing.
     verification: {
-      ocrText: assessment.verification?.ocr_text,
-      receiptPath: assessment.verification?.receipt_path,
-      certificatePath: assessment.verification?.certificate_path,
-      serialImagePath: assessment.verification?.serial_image_path,
+      ocrText: assessment.listing?.verification?.ocr_text,
+      receiptPath: assessment.listing?.verification?.receipt_path,
+      certificatePath: assessment.listing?.verification?.certificate_path,
+      serialImagePath: assessment.listing?.verification?.serial_image_path,
     },
   }
 }
@@ -733,12 +755,14 @@ export async function removeFeaturedListing(listingId) {
  * Reorders featured listings.
  */
 export async function updateFeaturedListingsOrder(updates) {
-  // updates is an array of { id, position }
-  const { error } = await Promise.all(
+  // updates is an array of { id, position }. Promise.all resolves to an array
+  // of results, so the error has to be picked out of each one.
+  const results = await Promise.all(
     updates.map((u) => supabase.from('featured_listings').update({ position: u.position }).eq('id', u.id)),
   )
 
-  if (error) throw error
+  const failed = results.find((result) => result.error)
+  if (failed) throw failed.error
 }
 
 // =============================================================================
@@ -785,12 +809,15 @@ export async function updatePromoCode(code, updates) {
 function formatPromoCode(promo) {
   return {
     code: promo.code,
+    description: promo.description,
     discountType: promo.discount_type,
-    discountAmount: Number(promo.discount_amount),
-    minSpend: Number(promo.minimum_spend),
-    expiresAt: promo.expires_at,
+    discountValue: Number(promo.discount_value),
+    minSubtotal: Number(promo.min_subtotal),
+    maxDiscount: promo.max_discount === null ? null : Number(promo.max_discount),
+    validFrom: promo.valid_from,
+    validUntil: promo.valid_until,
     usageLimit: promo.usage_limit,
-    usageCount: promo.usage_count,
+    timesUsed: promo.times_used,
     isActive: promo.is_active,
     createdAt: promo.created_at,
   }
@@ -844,8 +871,34 @@ export async function getContactMessage(messageId) {
 export async function markMessageAsRead(messageId) {
   const { error } = await supabase
     .from('contact_messages')
-    .update({ is_read: true })
+    .update({ is_read: true, handled_by_id: userId.value })
     .eq('id', messageId)
 
   if (error) throw error
+}
+
+// =============================================================================
+// STAFF
+// =============================================================================
+
+/**
+ * Lists everyone holding an admin or moderator role.
+ * user_roles_select_own lets is_admin() read the whole table.
+ */
+export async function getStaffMembers() {
+  const { data, error } = await supabase
+    .from('user_roles')
+    .select('user_id, role, created_at, profile:profiles(username, full_name, avatar_url)')
+    .order('created_at', { ascending: true })
+
+  if (error) throw error
+
+  return (data ?? []).map((row) => ({
+    userId: row.user_id,
+    role: row.role,
+    username: row.profile?.username ?? null,
+    fullName: row.profile?.full_name ?? null,
+    avatar: row.profile?.avatar_url ?? null,
+    createdAt: row.created_at,
+  }))
 }

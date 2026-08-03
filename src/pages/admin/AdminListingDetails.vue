@@ -27,6 +27,7 @@
         <div class="bg-white rounded-lg p-6">
           <div v-if="listing.status === 'pending_review'" class="space-y-2">
             <button @click="approve" :disabled="ap" class="w-full px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50">{{ ap ? 'Approving...' : 'Approve' }}</button>
+            <textarea v-model="rejectReason" rows="3" placeholder="Reason for rejection (shown to the seller)" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
             <button @click="reject" :disabled="rp" class="w-full px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50">{{ rp ? 'Rejecting...' : 'Reject' }}</button>
           </div>
           <div v-else class="text-gray-600 text-sm">Cannot modify in current status.</div>
@@ -56,6 +57,7 @@ const showApprove = ref(false)
 const showReject = ref(false)
 const ap = ref(false)
 const rp = ref(false)
+const rejectReason = ref('')
 
 onMounted(async () => {
   try {
@@ -89,7 +91,7 @@ async function doApprove() {
 async function doReject() {
   rp.value = true
   try {
-    await rejectListing(listing.value.id)
+    await rejectListing(listing.value.id, rejectReason.value.trim() || null)
     listing.value.status = 'rejected'
     showReject.value = false
     setTimeout(() => router.push('/admin/listings'), 500)

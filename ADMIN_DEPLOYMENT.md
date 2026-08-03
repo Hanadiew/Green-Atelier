@@ -19,9 +19,28 @@ npx supabase db push
 ```
 
 This will apply all pending migrations, including:
-- `supabase/migrations/20260730091300_admin_features.sql`
+- `supabase/migrations/20260730091300_admin_features.sql` — `reports` + `featured_listings`
+- `supabase/migrations/20260730091400_admin_portal_support.sql` — everything else `src/lib/admin.js` reads or writes
 
-The migration is idempotent - it's safe to run multiple times.
+Both are idempotent - safe to run multiple times.
+
+If the project is not linked yet:
+
+```bash
+npx supabase link --project-ref nrpdpoigajouxtncveva
+```
+
+### What 20260730091400 changes
+
+| Object | Change |
+| --- | --- |
+| `public.is_platform_admin()` | New strict predicate (`role = 'admin'`); `is_admin()` also matches moderators |
+| `reports.reporter_id` | `default auth.uid()` — the client never sends it |
+| `reports` | New `reports_has_target` check; policies rewritten onto `is_admin()` + `to authenticated`; the two SELECT policies merged into one |
+| `featured_listings.added_by_id` | Dropped `NOT NULL` (it was `NOT NULL` *and* `ON DELETE SET NULL`); writes gated on `is_platform_admin()` |
+| `contact_messages` | New `is_read`, `handled_by_id`, indexes, and admin UPDATE/DELETE policies |
+| `profile_stats` | Adds `user_id`, `listing_count`, `sales_count`, `purchase_count`; existing columns untouched |
+| `public.admin_users` | New admin-only view joining `auth.users.email` — `profiles` is world-readable, so email must not live there |
 
 ### Verify migration success:
 
