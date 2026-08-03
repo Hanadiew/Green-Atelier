@@ -1,16 +1,19 @@
 <template>
-  <div class="flex h-screen bg-gray-100">
-    <!-- Sidebar -->
-    <AdminSidebar />
+  <div class="flex h-screen bg-gray-100 overflow-hidden">
+    <AdminSidebar
+      :collapsed="collapsed"
+      :mobile-open="mobileOpen"
+      @toggle-collapse="toggleCollapse"
+      @close="mobileOpen = false"
+    />
 
-    <!-- Main Content -->
-    <div class="flex-1 flex flex-col overflow-hidden">
-      <!-- Header -->
-      <AdminHeader :title="pageTitle" />
+    <!-- min-w-0 so a wide table scrolls inside the main column instead of
+         stretching the flex row and pushing the sidebar off screen. -->
+    <div class="flex-1 flex flex-col overflow-hidden min-w-0">
+      <AdminHeader :title="pageTitle" @open-menu="mobileOpen = true" />
 
-      <!-- Page Content -->
       <main class="flex-1 overflow-y-auto">
-        <div class="p-8">
+        <div class="p-4 sm:p-6 lg:p-8">
           <router-view />
         </div>
       </main>
@@ -19,12 +22,38 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import AdminSidebar from '../../components/admin/AdminSidebar.vue'
 import AdminHeader from '../../components/admin/AdminHeader.vue'
 
 const route = useRoute()
+
+const COLLAPSE_KEY = 'ga-admin-sidebar-collapsed'
+
+const collapsed = ref(readCollapsed())
+const mobileOpen = ref(false)
+
+function readCollapsed() {
+  try {
+    return localStorage.getItem(COLLAPSE_KEY) === 'true'
+  } catch {
+    // Private browsing can throw on localStorage access.
+    return false
+  }
+}
+
+function toggleCollapse() {
+  collapsed.value = !collapsed.value
+  try {
+    localStorage.setItem(COLLAPSE_KEY, String(collapsed.value))
+  } catch {
+    // Not worth surfacing — the sidebar still collapses for this session.
+  }
+}
+
+// Navigating on a phone should leave the drawer closed behind you.
+watch(() => route.fullPath, () => { mobileOpen.value = false })
 
 const routeTitles = {
   'admin-dashboard': 'Dashboard',
@@ -41,9 +70,9 @@ const routeTitles = {
   'admin-brands': 'Brands',
   'admin-featured': 'Featured Products',
   'admin-promos': 'Promo Codes',
-  'admin-messages': 'Contact Messages',
-  'admin-message-details': 'Message Details',
-  'admin-settings': 'Settings',
+  'admin-enquiries': 'Enquiries',
+  'admin-enquiry-details': 'Enquiry',
+  'admin-staff': 'Staff & Access',
 }
 
 const pageTitle = computed(() => {

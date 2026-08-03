@@ -76,54 +76,31 @@
       </p>
     </div>
 
-    <!-- Session -->
+    <!-- Boundary -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <h2 class="text-lg font-bold text-gray-900 mb-2">Session</h2>
-      <p class="text-gray-600 text-sm mb-4">Sign out of the admin portal and the storefront.</p>
-      <div class="flex gap-3">
-        <router-link
-          to="/account"
-          class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition"
-        >
-          Account settings
-        </router-link>
-        <button
-          @click="showSignOut = true"
-          class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-        >
-          Sign out
-        </button>
-      </div>
+      <h2 class="text-lg font-bold text-gray-900 mb-2">Portal boundary</h2>
+      <p class="text-gray-600 text-sm">
+        The admin portal does not link into the storefront. A staff account is for running the
+        platform — it has no shopper profile, cart or order history to manage from here. To see the
+        site the way a customer does, open it in a signed-out browser or a private window.
+      </p>
+      <p class="text-gray-600 text-sm mt-3">
+        Log out from the button at the bottom of the sidebar.
+      </p>
     </div>
-
-    <AdminConfirmDialog
-      v-model="showSignOut"
-      title="Sign out?"
-      message="You will be returned to the storefront and need to log in again."
-      confirm-label="Sign out"
-      variant="danger"
-      :loading="signingOut"
-      @confirm="confirmSignOut"
-    />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import AdminBadge from '../../components/admin/AdminBadge.vue'
-import AdminConfirmDialog from '../../components/admin/AdminConfirmDialog.vue'
 import { getCurrentStaffRole, getStaffMembers } from '../../lib/admin.js'
-import { userEmail, signOut } from '../../lib/auth.js'
-
-const router = useRouter()
+import { userEmail } from '../../lib/auth.js'
 
 const role = ref(null)
 const staff = ref([])
 const loading = ref(true)
 const error = ref(null)
-const showSignOut = ref(false)
-const signingOut = ref(false)
 
 onMounted(async () => {
   try {
@@ -131,22 +108,10 @@ onMounted(async () => {
     role.value = currentRole
     staff.value = members
   } catch (err) {
-    error.value = 'Failed to load staff settings'
+    error.value = `Failed to load staff settings: ${err.message}`
     console.error(err)
   } finally {
     loading.value = false
   }
 })
-
-async function confirmSignOut() {
-  signingOut.value = true
-
-  try {
-    await signOut()
-    router.push('/home')
-  } catch (err) {
-    error.value = err.message
-    signingOut.value = false
-  }
-}
 </script>

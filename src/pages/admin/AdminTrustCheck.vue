@@ -119,7 +119,7 @@ async function fetchAssessments() {
     assessments.value = result.assessments
     total.value = result.total
   } catch (err) {
-    error.value = 'Failed to load assessments'
+    error.value = `Failed to load assessments: ${err.message}`
     console.error(err)
   } finally {
     loading.value = false

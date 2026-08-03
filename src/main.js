@@ -63,9 +63,14 @@ const router = createRouter({
         { path: 'brands', name: 'admin-brands', component: () => import('./pages/admin/AdminBrands.vue') },
         { path: 'featured', name: 'admin-featured', component: () => import('./pages/admin/AdminFeatured.vue') },
         { path: 'promos', name: 'admin-promos', component: () => import('./pages/admin/AdminPromos.vue') },
-        { path: 'messages', name: 'admin-messages', component: () => import('./pages/admin/AdminMessages.vue') },
-        { path: 'messages/:id', name: 'admin-message-details', component: () => import('./pages/admin/AdminMessageDetails.vue') },
-        { path: 'settings', name: 'admin-settings', component: () => import('./pages/admin/AdminSettings.vue') },
+        // "Enquiries" is the Contact Us inbox — not the buyer/seller chat,
+        // which stays entirely between the two of them.
+        { path: 'enquiries', name: 'admin-enquiries', component: () => import('./pages/admin/AdminEnquiries.vue') },
+        { path: 'enquiries/:id', name: 'admin-enquiry-details', component: () => import('./pages/admin/AdminEnquiryDetails.vue') },
+        // No storefront-facing account page here on purpose — an admin session
+        // manages the platform and has no shopper profile to edit.
+        { path: 'staff', name: 'admin-staff', component: () => import('./pages/admin/AdminStaff.vue') },
+        { path: 'settings', redirect: 'staff' },
       ],
     },
 

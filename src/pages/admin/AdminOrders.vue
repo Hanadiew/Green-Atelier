@@ -101,7 +101,7 @@ async function fetchOrders() {
     orders.value = result.orders
     total.value = result.total
   } catch (err) {
-    error.value = 'Failed to load orders'
+    error.value = `Failed to load orders: ${err.message}`
     console.error(err)
   } finally {
     loading.value = false

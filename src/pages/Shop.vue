@@ -1,10 +1,10 @@
 <template>
-  <div style="background-color: #FAFAF8;">
+  <div class="page-shell">
 
     <Navbar />
 
     <!-- Page content -->
-    <div class="px-16 pt-24 pb-16">
+    <div class="page-top px-16 pb-16">
 
       <!-- Page Title -->
       <h1 class="text-5xl font-light mb-8" style="color: #C9A96E; font-family: 'Georgia', serif;">Shop</h1>
@@ -196,7 +196,7 @@ import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
 import { fetchListings } from '../lib/listings.js'
 import { isAuthenticated, userId } from '../lib/auth.js'
-import { loadWishlistIds, toggleWishlist, wishlistIds } from '../lib/wishlist.js'
+import { toggleWishlist, wishlistIds } from '../lib/wishlist.js'
 
 const router = useRouter()
 
@@ -262,12 +262,9 @@ watch([search, selectedCategories, selectedConditions, priceMax], () => {
 
 watch([sortBy, currentPage], load)
 
-watch(userId, (id) => loadWishlistIds(id))
-
-onMounted(async () => {
-  await load()
-  if (userId.value) await loadWishlistIds(userId.value)
-})
+// The saved-ids set now follows the session from src/lib/wishlist.js, so this
+// page no longer loads it itself.
+onMounted(load)
 
 const handleWishlist = async (id) => {
   if (!isAuthenticated.value) {

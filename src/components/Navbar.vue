@@ -1,13 +1,37 @@
 <template>
-  <nav
-    class="w-full px-10 py-4 flex items-center justify-between fixed top-0 left-0 right-0 z-50 transition-all duration-300"
-    :class="scrolled ? 'backdrop-blur-md bg-white/60 shadow-sm' : 'bg-transparent'"
-  >
+  <!-- The fixed wrapper holds the gutter; the nav itself is the floating pill,
+       so it never runs edge to edge. The wrapper is click-through, otherwise
+       its transparent full-width strip would eat clicks either side of the
+       pill — over the hero, for instance. -->
+  <div class="fixed top-0 left-0 right-0 z-50 px-4 sm:px-8 pt-3 sm:pt-4 pointer-events-none">
+    <nav
+      class="relative pointer-events-auto mx-auto max-w-7xl rounded-full px-6 sm:px-8 py-3 flex items-center justify-between transition-all duration-300"
+      :class="scrolled
+        ? 'bg-white/85 backdrop-blur-md shadow-lg shadow-black/5'
+        : 'bg-white/60 backdrop-blur-sm shadow-sm'"
+    >
     <!-- Left: Nav Links -->
     <div class="flex items-center gap-8">
-      <div class="relative" @mouseenter="showShop = true" @mouseleave="showShop = false">
-        <button class="text-sm text-gray-700 hover:text-black">Shop</button>
-        <div v-if="showShop" class="absolute top-full left-0 mt-2 bg-white shadow-md rounded-md p-6 flex gap-10 w-72 z-50">
+      <div class="relative" ref="shopContainer">
+        <button
+          @click="showShop = !showShop"
+          :aria-expanded="showShop"
+          aria-haspopup="true"
+          class="text-sm text-gray-700 hover:text-black flex items-center gap-1"
+        >
+          Shop
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-gray-400 transition"
+            :class="showShop ? 'rotate-180' : ''"
+            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+        <!-- Click to open, click anywhere (including a link) to close. -->
+        <div
+          v-if="showShop"
+          @click="showShop = false"
+          class="absolute top-full left-0 mt-3 bg-white shadow-lg rounded-xl p-6 flex gap-10 w-72 z-50"
+        >
           <div>
             <p class="text-xs font-semibold text-gray-400 uppercase mb-2">Shop</p>
             <ul class="space-y-2 text-sm text-gray-700">
@@ -48,11 +72,16 @@
     <!-- Right: Icons -->
     <div class="flex items-center gap-5">
 
-      <!-- Wishlist -->
-      <RouterLink to="/wishlist" class="text-gray-600 hover:text-black">
+      <!-- Wishlist with count badge -->
+      <RouterLink to="/wishlist" class="relative text-gray-600 hover:text-black">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 010-6.364z"/>
         </svg>
+        <span v-if="wishlistCount > 0"
+          class="absolute -top-2 -right-2 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center"
+          style="background-color: #C9A96E; font-size: 9px;">
+          {{ wishlistCount }}
+        </span>
       </RouterLink>
 
       <!-- Bag with count badge -->
@@ -180,7 +209,8 @@
 </div>
 
     </div>
-  </nav>
+    </nav>
+  </div>
 
   <!-- Cart Drawer -->
   <CartDrawer :isOpen="cartOpen" @close="cartOpen = false" />
@@ -191,6 +221,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { cartCount } from '../cart.js'
 import { displayName, isAuthenticated, signOut } from '../lib/auth.js'
+import { wishlistCount } from '../lib/wishlist.js'
 import CartDrawer from './CartDrawer.vue'
 
 const router = useRouter()
@@ -200,6 +231,7 @@ const scrolled = ref(false)
 const cartOpen = ref(false)
 const showProfile = ref(false)
 const profileContainer = ref(null)
+const shopContainer = ref(null)
 
 const handleLogout = async () => {
   showProfile.value = false
@@ -215,15 +247,26 @@ const handleClickOutside = (e) => {
   if (profileContainer.value && !profileContainer.value.contains(e.target)) {
     showProfile.value = false
   }
+  if (shopContainer.value && !shopContainer.value.contains(e.target)) {
+    showShop.value = false
+  }
+}
+
+const handleEscape = (e) => {
+  if (e.key !== 'Escape') return
+  showShop.value = false
+  showProfile.value = false
 }
 
 const handleScroll = () => { scrolled.value = window.scrollY > 10 }
 onMounted(() => {
   window.addEventListener('scroll', handleScroll)
   window.addEventListener('click', handleClickOutside)
+  window.addEventListener('keydown', handleEscape)
 })
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
   window.removeEventListener('click', handleClickOutside)
+  window.removeEventListener('keydown', handleEscape)
 })
 </script>

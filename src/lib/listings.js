@@ -6,6 +6,10 @@ const SELLER_FIELDS =
 const CARD_FIELDS =
   'id, title, brand, category, condition, listing_price, original_price, images, status, created_at, seller_id'
 
+// Only a seller's own view needs the rejection note, so it stays out of
+// CARD_FIELDS — the catalogue has no business selecting it.
+const OWNER_CARD_FIELDS = `${CARD_FIELDS}, rejection_reason`
+
 /** Maps a listings row onto the shape the catalogue components render. */
 export function toCard(row) {
   return {
@@ -19,6 +23,7 @@ export function toCard(row) {
     image: row.images?.[0] || '/demo/bag1.png',
     sold: row.status === 'sold',
     status: row.status,
+    rejectionReason: row.rejection_reason ?? null,
     sellerId: row.seller_id,
   }
 }
@@ -144,6 +149,26 @@ export async function fetchRelatedListings(listing, limit = 8) {
   return (fallback ?? []).map(toCard)
 }
 
+/**
+ * The homepage carousel, in the order an admin arranged it on
+ * /admin/featured. Returns [] when nothing is curated so the caller can decide
+ * on a fallback; a sold or withdrawn listing is skipped rather than shown.
+ */
+export async function fetchFeaturedListings(limit = 8) {
+  const { data, error } = await supabase
+    .from('featured_listings')
+    .select(`position, listing:listings(${CARD_FIELDS})`)
+    .order('position', { ascending: true })
+    .limit(limit)
+
+  if (error) throw error
+
+  return (data ?? [])
+    .map((row) => row.listing)
+    .filter((listing) => listing?.status === 'active')
+    .map(toCard)
+}
+
 export async function fetchNewestListings(limit = 8) {
   const { data, error } = await supabase
     .from('listings')
@@ -159,7 +184,7 @@ export async function fetchNewestListings(limit = 8) {
 export async function fetchSellerListings(sellerId, { includeSold = true } = {}) {
   let query = supabase
     .from('listings')
-    .select(CARD_FIELDS)
+    .select(OWNER_CARD_FIELDS)
     .eq('seller_id', sellerId)
     .order('created_at', { ascending: false })
 

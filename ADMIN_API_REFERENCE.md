@@ -434,7 +434,7 @@ Updates promo code properties.
 
 ---
 
-## Contact Messages Management
+## Contact Messages Management (the /admin/enquiries pages)
 
 ### `getContactMessages(options)`
 Fetches paginated contact messages.

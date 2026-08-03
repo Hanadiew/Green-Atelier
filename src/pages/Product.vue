@@ -1,9 +1,9 @@
 <template>
-  <div style="background-color: #FAFAF8;">
+  <div class="page-shell">
 
     <Navbar />
 
-    <div class="px-16 pt-24 pb-16">
+    <div class="page-top px-16 pb-16">
 
       <!-- Loading -->
       <div v-if="loading" class="flex gap-10 pt-6">
@@ -169,6 +169,10 @@
               style="background-color: #1B3A2D;">
               View Profile
             </RouterLink>
+            <button v-if="!isOwnListing" @click="handleReport"
+              class="block w-full mt-2 py-2 text-xs text-gray-500 hover:text-red-600 transition text-center">
+              Report this listing
+            </button>
           </div>
         </div>
 
@@ -270,6 +274,8 @@
 
     <Footer />
 
+    <ReportDialog v-if="product" v-model="showReport" :listing-id="product.id" />
+
   </div>
 </template>
 
@@ -280,10 +286,11 @@ import { addToCart, cartItems } from '../cart.js'
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
 import TrustCheckCard from '../components/TrustCheckCard.vue'
+import ReportDialog from '../components/ReportDialog.vue'
 import { fetchAssessment } from '../lib/trustcheck/index.js'
 import { fetchListing, fetchRelatedListings, incrementViews } from '../lib/listings.js'
 import { isAuthenticated, userId } from '../lib/auth.js'
-import { loadWishlistIds, toggleWishlist, wishlistIds } from '../lib/wishlist.js'
+import { toggleWishlist, wishlistIds } from '../lib/wishlist.js'
 
 const router = useRouter()
 const route = useRoute()
@@ -349,7 +356,6 @@ const load = async (id) => {
     trustCheck.value = await fetchAssessment(id)
     relatedProducts.value = await fetchRelatedListings(row)
     incrementViews(id)
-    if (userId.value) await loadWishlistIds(userId.value)
   } catch (error) {
     errorMsg.value = error.message
     product.value = null
@@ -398,4 +404,15 @@ const handleWishlistFor = async (id) => {
 }
 
 const handleWishlist = () => handleWishlistFor(product.value.id)
+
+const showReport = ref(false)
+
+const handleReport = () => {
+  // reports.reporter_id defaults to auth.uid(), so a report needs a session.
+  if (!isAuthenticated.value) {
+    router.push({ path: '/login', query: { redirect: route.fullPath } })
+    return
+  }
+  showReport.value = true
+}
 </script>

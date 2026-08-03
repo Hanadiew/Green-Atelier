@@ -1,5 +1,7 @@
 <template>
-  <footer style="background-color: #1B3A2D;">
+  <!-- mt-auto takes up the slack in the .page-shell column, so a short page
+       still puts the footer at the bottom of the viewport. -->
+  <footer class="mt-auto" style="background-color: #1B3A2D;">
 
     <!-- Stay Connected -->
     <div class="flex flex-col items-center pt-12 pb-8">

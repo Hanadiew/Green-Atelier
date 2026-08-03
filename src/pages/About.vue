@@ -1,5 +1,5 @@
 <template>
-  <div style="background-color: #FAFAF8;">
+  <div class="page-shell">
     <Navbar />
 
     <!-- ===== HERO ===== -->

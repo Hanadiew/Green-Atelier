@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-4">
-    <router-link to="/admin/messages" class="text-emerald-600 hover:text-emerald-700 font-medium">
-      ← Back to messages
+    <router-link to="/admin/enquiries" class="text-emerald-600 hover:text-emerald-700 font-medium">
+      ← Back to enquiries
     </router-link>
 
     <div v-if="loading" class="bg-white rounded-lg p-8 text-center">
@@ -70,7 +70,7 @@ onMounted(async () => {
   try {
     const data = await getContactMessage(route.params.id)
     message.value = data
-    if (!data) error.value = 'Message not found'
+    if (!data) error.value = 'Enquiry not found'
   } catch (err) {
     error.value = err.message
   } finally {

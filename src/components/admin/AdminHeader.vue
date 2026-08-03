@@ -1,14 +1,31 @@
 <template>
-  <header class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-    <h1 class="text-2xl font-bold text-gray-900">{{ title }}</h1>
+  <header
+    class="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between gap-3"
+  >
+    <div class="flex items-center gap-3 min-w-0">
+      <!-- Drawer toggle, mobile only -->
+      <button
+        @click="$emit('open-menu')"
+        aria-label="Open menu"
+        class="lg:hidden w-9 h-9 flex-shrink-0 flex items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100 transition"
+      >
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
 
-    <div class="flex items-center gap-4">
+      <h1 class="text-lg sm:text-2xl font-bold text-gray-900 truncate">{{ title }}</h1>
+    </div>
+
+    <div class="flex items-center gap-3 sm:gap-4 flex-shrink-0">
       <!-- Role Badge -->
       <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-600">{{ displayName }}</span>
+        <span class="hidden sm:inline text-sm text-gray-600 truncate max-w-[12rem]">
+          {{ displayName }}
+        </span>
         <span
           :class="[
-            'px-3 py-1 rounded-full text-xs font-semibold',
+            'px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap',
             staffRole === 'admin'
               ? 'bg-red-100 text-red-800'
               : 'bg-blue-100 text-blue-800',
@@ -18,8 +35,7 @@
         </span>
       </div>
 
-      <!-- Divider -->
-      <div class="w-px h-6 bg-gray-200"></div>
+      <div class="hidden sm:block w-px h-6 bg-gray-200"></div>
 
       <!-- Profile Dropdown -->
       <div class="relative">
@@ -38,57 +54,74 @@
           </div>
         </button>
 
-        <!-- Dropdown Menu -->
+        <!-- Dropdown Menu. Deliberately has no link into the storefront: an
+             admin session is for running the platform, not for browsing as a
+             shopper. Visit the site signed out to see it as a visitor does. -->
         <div
           v-if="showProfileMenu"
           @click.outside="showProfileMenu = false"
-          class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50"
+          class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50"
         >
           <div class="px-4 py-2 border-b border-gray-200">
-            <p class="text-sm font-semibold text-gray-900">{{ displayName }}</p>
-            <p class="text-xs text-gray-500">{{ userEmail }}</p>
+            <p class="text-sm font-semibold text-gray-900 truncate">{{ displayName }}</p>
+            <p class="text-xs text-gray-500 truncate">{{ userEmail }}</p>
           </div>
           <router-link
-            to="/account"
+            to="/admin/staff"
             class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition"
             @click="showProfileMenu = false"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
             </svg>
-            Account Settings
+            Staff &amp; access
           </router-link>
           <button
-            @click="handleLogout"
+            @click="showLogout = true; showProfileMenu = false"
             class="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
-            Sign Out
+            Log out
           </button>
         </div>
       </div>
     </div>
+
+    <AdminConfirmDialog
+      v-model="showLogout"
+      title="Log out?"
+      message="You will be signed out of the admin portal and returned to the login page."
+      confirm-label="Log out"
+      variant="danger"
+      :loading="loggingOut"
+      @confirm="handleLogout"
+    />
   </header>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import AdminConfirmDialog from './AdminConfirmDialog.vue'
 import { profile, displayName, userEmail, signOut } from '../../lib/auth.js'
 import { getCurrentStaffRole } from '../../lib/admin.js'
 
 const router = useRouter()
 const showProfileMenu = ref(false)
+const showLogout = ref(false)
+const loggingOut = ref(false)
 const staffRole = ref(null)
 
-const props = defineProps({
+defineProps({
   title: {
     type: String,
     default: 'Admin Dashboard',
   },
 })
+
+defineEmits(['open-menu'])
 
 const userAvatar = computed(() => profile.value?.avatar_url)
 
@@ -98,11 +131,16 @@ getCurrentStaffRole().then((role) => {
 })
 
 async function handleLogout() {
+  loggingOut.value = true
+
   try {
     await signOut()
     await router.push('/login')
   } catch (error) {
     console.error('Logout failed:', error)
+  } finally {
+    loggingOut.value = false
+    showLogout.value = false
   }
 }
 </script>

@@ -161,7 +161,7 @@ async function fetchFeatured() {
     featured.value = await getFeaturedListings()
     dirty.value = false
   } catch (err) {
-    error.value = 'Failed to load featured listings'
+    error.value = `Failed to load featured listings: ${err.message}`
     console.error(err)
   } finally {
     loading.value = false
@@ -205,7 +205,7 @@ async function searchListings() {
     })
     candidates.value = result.listings
   } catch (err) {
-    error.value = 'Failed to search listings'
+    error.value = `Failed to search listings: ${err.message}`
     console.error(err)
   } finally {
     searching.value = false

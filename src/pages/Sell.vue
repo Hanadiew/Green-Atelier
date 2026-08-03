@@ -1,10 +1,10 @@
 <template>
-  <div style="background-color: #FAFAF8;">
+  <div class="page-shell">
 
     <Navbar />
 
     <!-- ===== HERO SECTION ===== -->
-    <div class="flex flex-col items-center justify-center text-center pt-36 pb-16 px-16">
+    <div class="page-top flex flex-col items-center justify-center text-center pb-16 px-16">
       <h1 class="text-2xl font-light tracking-widest uppercase mb-4" style="color: #C9A96E; font-family: 'Georgia', serif;">
         Give Your Wardrobe A Second Chance
       </h1>

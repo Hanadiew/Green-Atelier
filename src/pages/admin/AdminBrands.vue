@@ -172,7 +172,7 @@ async function fetchBrands() {
     brands.value = result.brands
     total.value = result.total
   } catch (err) {
-    error.value = 'Failed to load brands'
+    error.value = `Failed to load brands: ${err.message}`
     console.error(err)
   } finally {
     loading.value = false

@@ -142,9 +142,11 @@ npx supabase db reset
 
 ### Can't access other admin pages
 
-- All pages are placeholders but should render
-- Implement them following the pattern in `AdminListings.vue`
-- Use functions from `src/lib/admin.js`
+- Every page is implemented; a failure now shows the real Postgres message in
+  the page's error banner, so read that rather than guessing
+- "Could not find the table ... in the schema cache" means a migration has not
+  been applied, or PostgREST's cache is stale (`notify pgrst, 'reload schema';`)
+- Empty tables with no error are genuinely empty, not broken
 
 ## For Production Deployment
 
@@ -188,4 +190,34 @@ npx supabase db reset
 
 ---
 
-**Next:** Start implementing placeholder pages or deploy to production. The admin portal is now ready for use!
+## Applying the schema without the CLI
+
+If `supabase link` is not set up, paste
+[supabase/apply_admin_schema.sql](supabase/apply_admin_schema.sql) into the
+**Supabase Dashboard → SQL Editor** and run it. It is `091300` followed by
+`091400` verbatim, ends with `notify pgrst, 'reload schema'`, and prints two
+verification queries. Both migrations are idempotent, so switching back to
+`supabase db push` later is safe.
+
+Note that applying it this way leaves `supabase_migrations.schema_migrations`
+unaware the migrations ran — harmless, but the files under
+`supabase/migrations/` remain the source of truth for a `db reset`.
+
+## Grant yourself a role
+
+The "Admin" badge in the header comes from a **frontend** email check in
+`src/lib/admin.js`. Every RLS policy uses `public.is_admin()`, which reads
+`public.user_roles`. Without a row there, admin pages return empty rather than
+erroring:
+
+```sql
+insert into public.user_roles (user_id, role)
+select id, 'admin' from auth.users where email = 'your@email.com'
+on conflict (user_id) do update set role = 'admin';
+```
+
+---
+
+**Next:** Deploy to production. Apply the migrations **before** shipping the
+frontend — the storefront's report buttons and the seller's rejection note both
+reference objects added in `091400`.

@@ -1,8 +1,8 @@
 <template>
-  <div style="background-color: #FAFAF8;">
+  <div class="page-shell">
     <Navbar />
 
-    <div class="px-16 pt-24 pb-16">
+    <div class="page-top px-16 pb-16">
 
       <div class="flex items-center justify-between mb-8">
         <div>

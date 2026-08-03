@@ -123,7 +123,7 @@ async function fetchReports() {
     reports.value = result.reports
     total.value = result.total
   } catch (err) {
-    error.value = 'Failed to load reports'
+    error.value = `Failed to load reports: ${err.message}`
     console.error(err)
   } finally {
     loading.value = false

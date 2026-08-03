@@ -1,8 +1,8 @@
 <template>
-  <div style="background-color: #FAFAF8;">
+  <div class="page-shell">
     <Navbar />
 
-    <div class="pt-24 pb-16">
+    <div class="page-top pb-16">
 
       <!-- Listing submitted confirmation -->
       <div v-if="justSubmitted" class="mx-16 mb-6 rounded-lg px-5 py-4 flex items-start gap-3" style="background-color: #E8F5EE;">
@@ -52,6 +52,10 @@
               <p class="text-xs text-gray-500"><span class="font-medium text-gray-700">{{ stats.itemsForSale }}</span> items for sale</p>
               <p class="text-xs text-gray-500"><span class="font-medium text-gray-700">{{ stats.sold }}</span> sold</p>
             </div>
+            <button v-if="!isOwnProfile && profileRow?.id" @click="handleReport"
+              class="text-xs text-gray-400 hover:text-red-600 transition mt-3">
+              Report this user
+            </button>
           </div>
         </div>
 
@@ -195,6 +199,12 @@
     </div>
     <p class="text-xs font-medium text-gray-800">{{ item.name }}</p>
     <p class="text-xs text-gray-400 uppercase mt-0.5" style="font-size: 10px;">{{ item.brand }}</p>
+
+    <!-- Why it was rejected, for the seller only. -->
+    <p v-if="isOwnProfile && item.status === 'rejected' && item.rejectionReason"
+      class="text-xs text-red-600 mt-1 leading-snug">
+      {{ item.rejectionReason }}
+    </p>
     <p class="text-xs text-gray-600 mt-0.5">RM {{ item.price.toLocaleString() }}.00</p>
   </div>
 </div>
@@ -335,6 +345,8 @@
   </div>
 </Teleport>
 
+<ReportDialog v-model="showReport" :user-id="profileRow?.id ?? null" />
+
 </template>
 
 <script setup>
@@ -342,7 +354,8 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
-import { profile as ownProfile, userId } from '../lib/auth.js'
+import ReportDialog from '../components/ReportDialog.vue'
+import { isAuthenticated, profile as ownProfile, userId } from '../lib/auth.js'
 import { fetchProfileByUsername, fetchProfileStats } from '../lib/profiles.js'
 import { fetchWishlist, removeFromWishlist } from '../lib/wishlist.js'
 import { fetchOrders } from '../lib/orders.js'
@@ -389,6 +402,17 @@ const loading = ref(true)
 const errorMsg = ref('')
 const deleteTarget = ref(null)
 const deleting = ref(false)
+
+const showReport = ref(false)
+
+const handleReport = () => {
+  // reports.reporter_id defaults to auth.uid(), so a report needs a session.
+  if (!isAuthenticated.value) {
+    router.push({ path: '/login', query: { redirect: route.fullPath } })
+    return
+  }
+  showReport.value = true
+}
 
 const goEdit = (item) => {
   router.push({ path: '/sell/details', query: { edit: item.id } })

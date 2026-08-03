@@ -1,8 +1,8 @@
 <template>
-  <div style="background-color: #FAFAF8;">
+  <div class="page-shell">
     <Navbar />
 
-    <div class="px-16 pt-24 pb-16 flex gap-16">
+    <div class="page-top px-16 pb-16 flex gap-16">
 
       <!-- ===== LEFT SIDEBAR ===== -->
       <div class="flex-shrink-0" style="width: 200px;">

@@ -1,9 +1,9 @@
 <template>
-  <div style="background-color: #FAFAF8; min-height: 100vh;">
+  <div class="page-shell">
     <Navbar />
 
     <!-- ===== HERO / HEADER ===== -->
-    <div class="pt-32 pb-16 px-16 text-center" style="background-color: #1B3A2D; color: white;">
+    <div class="page-top pb-16 px-16 text-center" style="background-color: #1B3A2D; color: white;">
       <p class="text-xs tracking-widest uppercase mb-3" style="color: #C9A96E;">Conscious Support</p>
       <h1 class="text-4xl font-light leading-tight mb-4" style="font-family: 'Georgia', serif;">
         How Can We Assist You?

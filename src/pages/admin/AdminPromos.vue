@@ -202,7 +202,7 @@ async function fetchCodes() {
     codes.value = result.codes
     total.value = result.total
   } catch (err) {
-    error.value = 'Failed to load promo codes'
+    error.value = `Failed to load promo codes: ${err.message}`
     console.error(err)
   } finally {
     loading.value = false

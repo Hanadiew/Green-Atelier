@@ -3,8 +3,9 @@
     :loading="loading"
     :error="error"
     :empty="messages.length === 0"
-    loading-text="Loading messages..."
-    empty-text="No contact messages"
+    loading-text="Loading enquiries..."
+    empty-text="No enquiries"
+    empty-hint="Nothing has come in through the Contact Us form"
     :page="page"
     :per-page="perPage"
     :total="total"
@@ -45,7 +46,7 @@
           </td>
           <td class="px-6 py-4">
             <router-link
-              :to="`/admin/messages/${message.id}`"
+              :to="`/admin/enquiries/${message.id}`"
               class="text-emerald-600 hover:text-emerald-700 text-sm font-medium"
             >
               Open
@@ -83,7 +84,7 @@ async function fetchMessages() {
     messages.value = result.messages
     total.value = result.total
   } catch (err) {
-    error.value = 'Failed to load messages'
+    error.value = `Failed to load enquiries: ${err.message}`
     console.error(err)
   } finally {
     loading.value = false

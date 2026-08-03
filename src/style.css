@@ -25,3 +25,34 @@
 .animate-scroll-reviews:hover {
   animation-play-state: paused;
 }
+
+/* --- Page shell -------------------------------------------------------------
+   Every storefront page is a full-height column so the footer lands at the
+   bottom of the viewport on short pages instead of floating mid-screen. Pages
+   used to set min-height ad hoc (two of ten did), which is why the footer moved
+   as you navigated. Footer carries mt-auto to take up the slack. */
+.page-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #FAFAF8;
+}
+
+/* Clearance under the floating navbar. One value everywhere, replacing the
+   hand-tuned pt-24 / pt-32 / pt-36 each page used to pick for itself. Pages
+   with a full-height hero (Home, About) sit under the nav on purpose and do
+   not use this. */
+.page-top {
+  padding-top: 7rem;
+}
+
+/* Scrolls, but without the visible track — for panels like the admin sidebar
+   where the bar itself is the only thing that looks out of place. */
+.no-scrollbar {
+  scrollbar-width: none;          /* Firefox */
+  -ms-overflow-style: none;       /* legacy Edge */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;                  /* Chromium, Safari */
+}

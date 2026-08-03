@@ -223,7 +223,7 @@ async function fetchListings() {
     listings.value = data
     pagination.value.total = total
   } catch (err) {
-    error.value = 'Failed to load listings'
+    error.value = `Failed to load listings: ${err.message}`
     console.error(err)
   } finally {
     loading.value = false

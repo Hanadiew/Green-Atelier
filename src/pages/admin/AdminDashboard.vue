@@ -138,7 +138,7 @@ onMounted(async () => {
     const data = await getDashboardStats()
     stats.value = data
   } catch (err) {
-    error.value = 'Failed to load dashboard statistics'
+    error.value = `Failed to load dashboard statistics: ${err.message}`
     console.error(err)
   } finally {
     loading.value = false

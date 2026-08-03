@@ -1,5 +1,5 @@
 <template>
-  <div style="background-color: #FAFAF8; min-height: 100vh;">
+  <div class="page-shell">
 
     <!-- ===== CHECKOUT NAVBAR ===== -->
     <div class="w-full px-16 py-4 flex items-center justify-between bg-white border-b border-gray-100">

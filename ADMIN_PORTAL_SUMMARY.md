@@ -1,7 +1,7 @@
 # ✅ Green Atelier Admin Portal - Complete Implementation
 
 **Date:** August 2, 2026  
-**Status:** Phase 1 Complete and Ready for Testing
+**Status:** Phases 1-4 complete; schema applied to the live project and the pages verified against it
 
 ---
 
@@ -10,12 +10,12 @@
 A professional, secure admin portal has been successfully integrated into the existing Green Atelier Fashion Site (GAFS). The implementation follows all PRD requirements and maintains 100% compatibility with the existing codebase.
 
 **Key Stats:**
-- ✅ 3 fully functional admin pages (Dashboard, Listings, Listing Details)
-- ✅ 13 placeholder pages with routing and structure ready for completion
+- ✅ 17 fully functional admin pages
+- ✅ 0 placeholder pages
 - ✅ 30+ data access functions in `src/lib/admin.js`
 - ✅ 4 reusable admin UI components
-- ✅ 2 new database tables with RLS policies
-- ✅ 1 new database migration (idempotent & tested)
+- ✅ 2 new database tables + 1 admin-only view, all with RLS policies
+- ✅ 2 new database migrations (idempotent)
 - ✅ Project builds successfully with zero errors
 
 ---
@@ -72,23 +72,43 @@ A professional, secure admin portal has been successfully integrated into the ex
 - [x] No duplicate queries (reuses existing tables)
 - [x] Proper error handling and logging
 
-### Phase 2: Placeholder Pages (READY FOR IMPLEMENTATION)
+### Phase 2: Database (DONE)
 
-Routes created and working, with basic structure:
-- [ ] Users Management (`/admin/users`) - 📋 Ready to implement
-- [ ] User Details (`/admin/users/:id`) - 📋 Ready to implement
-- [ ] Orders (`/admin/orders`) - 📋 Ready to implement
-- [ ] Order Details (`/admin/orders/:id`) - 📋 Ready to implement
-- [ ] Reports (`/admin/reports`) - 📋 Ready to implement
-- [ ] Report Details (`/admin/reports/:id`) - 📋 Ready to implement
-- [ ] TrustCheck (`/admin/trustcheck`) - 📋 Ready to implement
-- [ ] TrustCheck Details (`/admin/trustcheck/:id`) - 📋 Ready to implement
-- [ ] Brands (`/admin/brands`) - 📋 Ready to implement
-- [ ] Featured Products (`/admin/featured`) - 📋 Ready to implement
-- [ ] Promo Codes (`/admin/promos`) - 📋 Ready to implement
-- [ ] Contact Messages (`/admin/messages`) - 📋 Ready to implement
-- [ ] Message Details (`/admin/messages/:id`) - 📋 Ready to implement
-- [ ] Settings (`/admin/settings`) - ✅ Profile & logout ready
+- [x] `20260730091300_admin_features.sql` — `reports`, `featured_listings`
+- [x] `20260730091400_admin_portal_support.sql` — everything else `admin.js` needs:
+      `is_platform_admin()`, `reports.reporter_id` default, `contact_messages.is_read`,
+      `listings.rejection_reason`, extended `profile_stats`, the `admin_users` view
+- [x] Applied to the `nrpdpoigajouxtncveva` project via `supabase/apply_admin_schema.sql`
+      in the SQL editor (the CLI was never linked, so the
+      `supabase_migrations` ledger does not record them — both are idempotent,
+      so a later `db push` re-runs them as no-ops)
+
+### Phase 3: All Pages (DONE)
+
+- [x] Users Management (`/admin/users`)
+- [x] User Details (`/admin/users/:id`)
+- [x] Orders (`/admin/orders`)
+- [x] Order Details (`/admin/orders/:id`) — with status transitions
+- [x] Reports (`/admin/reports`)
+- [x] Report Details (`/admin/reports/:id`) — status + admin notes
+- [x] TrustCheck (`/admin/trustcheck`)
+- [x] TrustCheck Details (`/admin/trustcheck/:id`)
+- [x] Brands (`/admin/brands`) — create, show/hide
+- [x] Featured Products (`/admin/featured`) — curate, reorder, remove
+- [x] Promo Codes (`/admin/promos`) — create, activate/deactivate
+- [x] Enquiries (`/admin/enquiries`) — the Contact Us inbox, renamed from
+      "Messages" so it is not confused with buyer↔seller chat, which the admin
+      portal deliberately does not touch
+- [x] Enquiry (`/admin/enquiries/:id`)
+- [x] Staff & Access (`/admin/staff`) — role, staff roster, portal boundary note
+
+### Phase 4: Storefront Side (DONE)
+
+- [x] "Report this listing" on Product, "Report this user" on Profile — until
+      this existed, `createReport()` had no caller and the Reports queue could
+      never fill
+- [x] Home carousel reads the curated selection, falling back to newest
+- [x] Sellers see why a listing was rejected
 
 ---
 
@@ -128,36 +148,41 @@ Green-Atelier/
 │   ├── lib/
 │   │   └── admin.js ........................... 30+ admin functions
 │   │
+│   ├── components/
+│   │   └── ReportDialog.vue .................. User-facing report form
+│   │
 │   ├── components/admin/
 │   │   ├── AdminSidebar.vue .................. Navigation menu
 │   │   ├── AdminHeader.vue ................... Top bar
 │   │   ├── AdminStatCard.vue ................. Dashboard card
 │   │   ├── AdminBadge.vue .................... Status badges
-│   │   └── AdminConfirmDialog.vue ............ Dialogs
+│   │   ├── AdminConfirmDialog.vue ............ Dialogs
+│   │   └── AdminTableFrame.vue ............... Loading/error/empty/pagination shell
 │   │
 │   └── pages/admin/
 │       ├── AdminLayout.vue ................... Main layout wrapper
 │       ├── AdminDashboard.vue ................ Dashboard (✅ COMPLETE)
 │       ├── AdminListings.vue ................. Listings table (✅ COMPLETE)
 │       ├── AdminListingDetails.vue ........... Listing detail (✅ COMPLETE)
-│       ├── AdminUsers.vue .................... Users list (📋 placeholder)
-│       ├── AdminUserDetails.vue .............. User detail (📋 placeholder)
-│       ├── AdminOrders.vue ................... Orders list (📋 placeholder)
-│       ├── AdminOrderDetails.vue ............. Order detail (📋 placeholder)
-│       ├── AdminReports.vue .................. Reports list (📋 placeholder)
-│       ├── AdminReportDetails.vue ............ Report detail (📋 placeholder)
-│       ├── AdminTrustCheck.vue ............... TrustCheck list (📋 placeholder)
-│       ├── AdminTrustCheckDetails.vue ........ TrustCheck detail (📋 placeholder)
-│       ├── AdminBrands.vue ................... Brands list (📋 placeholder)
-│       ├── AdminFeatured.vue ................. Featured list (📋 placeholder)
-│       ├── AdminPromos.vue ................... Promos list (📋 placeholder)
-│       ├── AdminMessages.vue ................. Messages list (📋 placeholder)
-│       ├── AdminMessageDetails.vue ........... Message detail (📋 placeholder)
-│       └── AdminSettings.vue ................. Settings (✅ basic done)
+│       ├── AdminUsers.vue .................... Users list (✅ complete)
+│       ├── AdminUserDetails.vue .............. User detail (✅ complete)
+│       ├── AdminOrders.vue ................... Orders list (✅ complete)
+│       ├── AdminOrderDetails.vue ............. Order detail (✅ complete)
+│       ├── AdminReports.vue .................. Reports list (✅ complete)
+│       ├── AdminReportDetails.vue ............ Report detail (✅ complete)
+│       ├── AdminTrustCheck.vue ............... TrustCheck list (✅ complete)
+│       ├── AdminTrustCheckDetails.vue ........ TrustCheck detail (✅ complete)
+│       ├── AdminBrands.vue ................... Brands list (✅ complete)
+│       ├── AdminFeatured.vue ................. Featured list (✅ complete)
+│       ├── AdminPromos.vue ................... Promos list (✅ complete)
+│       ├── AdminEnquiries.vue ............... Enquiries list (✅ complete)
+│       ├── AdminEnquiryDetails.vue .......... Enquiry detail (✅ complete)
+│       └── AdminStaff.vue .................... Staff & access (✅ complete)
 │
 ├── supabase/
 │   └── migrations/
-│       └── 20260730091300_admin_features.sql  New tables & RLS
+│       ├── 20260730091300_admin_features.sql  reports, featured_listings
+│       └── 20260730091400_admin_portal_support.sql  admin_users view + fixes
 │
 ├── src/main.js .............................. Updated with admin routes
 │
@@ -239,10 +264,10 @@ Three comprehensive guides have been created:
 | Metric | Status |
 |--------|--------|
 | Builds successfully | ✅ Yes |
-| Zero console errors | ✅ Yes |
+| Zero console errors | ✅ Yes (all admin pages surface the real Postgres message on failure) |
 | No TypeScript errors | ✅ Yes |
 | RLS policies in place | ✅ Yes |
-| Database queries tested | ✅ Yes |
+| Database queries tested | ⚠️ Verified against the live project only after phases 2-4; the phase 1 claim here was untrue — `getAdminListings` was broken by a missing FK hint |
 | Responsive design | ✅ Yes |
 | Authentication secure | ✅ Yes |
 | Service role protected | ✅ Yes |
@@ -273,7 +298,7 @@ Follow the pattern from `AdminListings.vue`:
 3. Deploy migration
 4. Create admin users
 5. Monitor for errors
-6. Complete remaining placeholder pages as needed
+6. Close the remaining gaps listed under Known Gaps
 
 ---
 

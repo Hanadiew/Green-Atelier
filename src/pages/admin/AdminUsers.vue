@@ -131,7 +131,7 @@ async function fetchUsers() {
     users.value = result.users
     total.value = result.total
   } catch (err) {
-    error.value = 'Failed to load users'
+    error.value = `Failed to load users: ${err.message}`
     console.error(err)
   } finally {
     loading.value = false

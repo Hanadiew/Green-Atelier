@@ -1,6 +1,15 @@
 import { supabase } from '../supabase.js'
 import { userId } from './auth.js'
 
+/**
+ * A profile's display name. full_name is nullable and first/last are too, so
+ * template-stringing them renders the literal "null null".
+ */
+function personName(row) {
+  const parts = [row?.first_name, row?.last_name].filter(Boolean)
+  return row?.full_name || parts.join(' ') || null
+}
+
 function normalizeAdminEmails() {
   return (import.meta.env.VITE_ADMIN_EMAILS || '')
     .split(',')
@@ -101,6 +110,20 @@ export async function getDashboardStats() {
       supabase.from('reports').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
     ])
 
+  // Each count is read independently so one broken query does not blank the
+  // whole dashboard — but a failure must not masquerade as a genuine zero.
+  const counts = {
+    totalUsers: usersResult,
+    activeListings: activeListingsResult,
+    pendingListings: pendingListingsResult,
+    totalOrders: ordersResult,
+    pendingReports: pendingReportsResult,
+  }
+
+  for (const [name, result] of Object.entries(counts)) {
+    if (result.error) console.error(`Dashboard stat "${name}" failed:`, result.error.message)
+  }
+
   const totalUsers = usersResult.count ?? 0
   const activeListings = activeListingsResult.count ?? 0
   const pendingListings = pendingListingsResult.count ?? 0
@@ -137,10 +160,13 @@ export async function getDashboardStats() {
 // LISTINGS MANAGEMENT
 // =============================================================================
 
+// The seller embed is hinted because wishlists and cart_items are both keyed
+// (user_id, listing_id), which PostgREST reads as many-to-many links between
+// listings and profiles — ambiguous against listings.seller_id without a hint.
 const LISTING_FIELDS = `
   id, title, brand, category, condition, listing_price, original_price,
   images, status, created_at, updated_at, seller_id,
-  seller:profiles(id, username, full_name, first_name, last_name, avatar_url),
+  seller:profiles!listings_seller_id_fkey(id, username, full_name, first_name, last_name, avatar_url),
   trustcheck:trustcheck_assessments(evidence_score, status)
 `
 
@@ -225,7 +251,7 @@ function formatListingForAdmin(listing) {
     seller: {
       id: listing.seller.id,
       username: listing.seller.username,
-      fullName: listing.seller.full_name || `${listing.seller.first_name} ${listing.seller.last_name}`.trim(),
+      fullName: personName(listing.seller),
       avatar: listing.seller.avatar_url,
     },
     trustcheck: listing.trustcheck
@@ -327,7 +353,7 @@ function formatUserForAdmin(user) {
   return {
     id: user.id,
     username: user.username,
-    fullName: user.full_name || `${user.first_name} ${user.last_name}`.trim(),
+    fullName: personName(user),
     avatar: user.avatar_url,
     email: user.email,
     location: [user.city, user.state, user.country].filter(Boolean).join(', '),
@@ -343,7 +369,7 @@ function formatUserForAdmin(user) {
 const ORDER_FIELDS = `
   id, order_number, buyer_id, subtotal, shipping_fee, service_fee,
   discount, total, status, payment_status, placed_at,
-  buyer:profiles(id, username, full_name, avatar_url),
+  buyer:profiles!orders_buyer_id_fkey(id, username, full_name, avatar_url),
   items:order_items(
     id, seller_id, title_snapshot, brand_snapshot, image_snapshot,
     price_paid, platform_fee, seller_payout, status
