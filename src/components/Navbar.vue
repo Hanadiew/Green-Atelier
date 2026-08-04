@@ -98,10 +98,16 @@
 
       <!-- Profile with dropdown -->
 <div class="relative" ref="profileContainer">
-  <button @click="showProfile = !showProfile" class="text-gray-600 hover:text-black">
+  <button @click="showProfile = !showProfile" class="relative text-gray-600 hover:text-black">
     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5.121 17.804A8.966 8.966 0 0112 15c2.21 0 4.232.797 5.879 2.11M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
     </svg>
+    <!-- A plain dot, not a count: the number lives on the Listings row inside
+         the dropdown, so this only has to say "something is waiting". -->
+    <span v-if="pendingOfferCount > 0"
+      class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full ring-2 ring-white"
+      style="background-color: #C9A96E;"
+      :title="`${pendingOfferCount} offer${pendingOfferCount > 1 ? 's' : ''} waiting`"></span>
   </button>
 
   <!-- Dropdown -->
@@ -165,6 +171,11 @@
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
       </svg>
       Listings
+      <span v-if="pendingOfferCount > 0"
+        class="ml-auto text-white rounded-full px-1.5 min-w-4 h-4 flex items-center justify-center"
+        style="background-color: #C9A96E; font-size: 9px;">
+        {{ pendingOfferCount }}
+      </span>
     </RouterLink>
 
     <RouterLink to="/sales-orders"
@@ -225,14 +236,16 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { cartCount } from '../cart.js'
 import { displayName, isAuthenticated, signOut } from '../lib/auth.js'
 import { wishlistCount } from '../lib/wishlist.js'
+import { pendingOfferCount, pendingOffersByListing, refreshPendingOffers } from '../lib/offers.js'
 import CartDrawer from './CartDrawer.vue'
 
 const router = useRouter()
+const route = useRoute()
 
 const showShop = ref(false)
 const scrolled = ref(false)
@@ -267,6 +280,19 @@ const handleEscape = (e) => {
 }
 
 const handleScroll = () => { scrolled.value = window.scrollY > 10 }
+
+// The navbar is mounted on every storefront page, which makes it the natural
+// place to keep the seller's offer badge current — recounted on sign-in and on
+// each navigation, so responding to an offer clears the dot without a reload.
+watch(isAuthenticated, (signedIn) => {
+  if (signedIn) refreshPendingOffers()
+  else pendingOffersByListing.value = {}
+}, { immediate: true })
+
+watch(() => route.fullPath, () => {
+  if (isAuthenticated.value) refreshPendingOffers()
+})
+
 onMounted(() => {
   window.addEventListener('scroll', handleScroll)
   window.addEventListener('click', handleClickOutside)

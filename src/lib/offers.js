@@ -1,3 +1,4 @@
+import { computed, ref } from 'vue'
 import { supabase } from '../supabase.js'
 import { userId } from './auth.js'
 
@@ -135,4 +136,70 @@ export async function withdrawOffer(offerId) {
     .update({ status: 'withdrawn', responded_at: new Date().toISOString() })
     .eq('id', offerId)
   if (error) throw error
+}
+
+// =============================================================================
+// SELLER NOTIFICATION BADGES
+// =============================================================================
+// Shared module state rather than per-component fetches, so the navbar dot, the
+// Listings dropdown count and the per-listing dots on the profile all read from
+// one query instead of three. Same pattern the cart and wishlist counts use.
+
+/** Pending offers on the signed-in user's listings, keyed by listing id. */
+export const pendingOffersByListing = ref({})
+
+export const pendingOfferCount = computed(() =>
+  Object.values(pendingOffersByListing.value).reduce((sum, n) => sum + n, 0),
+)
+
+/** How many offers are waiting on one listing. 0 when none. */
+export function pendingOffersFor(listingId) {
+  return pendingOffersByListing.value[listingId] ?? 0
+}
+
+/**
+ * Recounts the seller's waiting offers.
+ *
+ * Two queries rather than a join because `offers` has no seller_id — ownership
+ * lives on the listing. RLS would filter other people's offers out anyway; the
+ * explicit listing-id filter just avoids pulling rows we would discard.
+ */
+export async function refreshPendingOffers() {
+  if (!userId.value) {
+    pendingOffersByListing.value = {}
+    return
+  }
+
+  try {
+    const { data: listings, error: listingError } = await supabase
+      .from('listings')
+      .select('id')
+      .eq('seller_id', userId.value)
+      .eq('status', 'active')
+
+    if (listingError) throw listingError
+
+    const ids = (listings ?? []).map((l) => l.id)
+    if (!ids.length) {
+      pendingOffersByListing.value = {}
+      return
+    }
+
+    const { data: offers, error: offerError } = await supabase
+      .from('offers')
+      .select('listing_id')
+      .eq('status', 'pending')
+      .in('listing_id', ids)
+
+    if (offerError) throw offerError
+
+    const tally = {}
+    for (const row of offers ?? []) {
+      tally[row.listing_id] = (tally[row.listing_id] ?? 0) + 1
+    }
+    pendingOffersByListing.value = tally
+  } catch (error) {
+    // A badge is not worth breaking a page over; leave the last known counts.
+    console.error('Could not count pending offers:', error.message)
+  }
 }

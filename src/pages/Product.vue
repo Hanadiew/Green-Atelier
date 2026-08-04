@@ -396,6 +396,7 @@ import {
   fetchMyOffer,
   fetchOffersForListing,
   placeOffer,
+  refreshPendingOffers,
   respondToOffer,
   withdrawOffer,
 } from '../lib/offers.js'
@@ -511,6 +512,8 @@ const respond = async (offer, status) => {
   try {
     await respondToOffer(offer.id, status)
     await loadOffers()
+    // Clears the navbar dot and this listing's badge without needing a reload.
+    await refreshPendingOffers()
   } catch (error) {
     console.error('Could not respond to the offer:', error.message)
   } finally {

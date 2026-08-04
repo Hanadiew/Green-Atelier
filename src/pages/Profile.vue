@@ -188,6 +188,19 @@
         {{ STATUS_BADGES[item.status]?.label ?? item.status }}
       </div>
 
+      <!-- Offers waiting on this listing. Sits opposite the status badge and
+           stays visible (not hover-revealed) — the whole point is being seen. -->
+      <RouterLink v-if="isOwnProfile && pendingOffersFor(item.id) > 0"
+        :to="`/product/${item.id}`" @click.stop
+        class="absolute bottom-2 left-2 flex items-center gap-1.5 px-2 py-1 rounded-full shadow-sm transition hover:opacity-90"
+        style="background-color: #C9A96E;"
+        :title="`${pendingOffersFor(item.id)} offer${pendingOffersFor(item.id) > 1 ? 's' : ''} — tap to review`">
+        <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+        <span class="text-white" style="font-size: 10px;">
+          {{ pendingOffersFor(item.id) }} offer{{ pendingOffersFor(item.id) > 1 ? 's' : '' }}
+        </span>
+      </RouterLink>
+
       <!-- Owner-only actions, revealed on hover -->
       <div v-if="isOwnProfile" class="absolute top-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition">
         <button @click.stop="goEdit(item)"
@@ -578,6 +591,7 @@ import { fetchProfileByUsername, fetchProfileStats } from '../lib/profiles.js'
 import { fetchWishlist, removeFromWishlist } from '../lib/wishlist.js'
 import { fetchOrderById, fetchOrders } from '../lib/orders.js'
 import { fetchMyReports } from '../lib/admin.js'
+import { pendingOffersFor } from '../lib/offers.js'
 import { paymentStatusLabel } from '../lib/payments.js'
 import {
   fetchSellerListings,
