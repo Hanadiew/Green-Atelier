@@ -145,9 +145,11 @@
     <div class="flex items-center gap-2">
       <span class="text-xs text-gray-400">Sold items</span>
       <button @click="showSold = !showSold"
-        class="relative w-10 h-5 rounded-full transition-colors duration-300"
+        class="relative w-10 h-5 p-0 rounded-full transition-colors duration-300"
         :style="showSold ? 'background-color: #C9A96E;' : 'background-color: #e5e7eb;'">
-        <span class="absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-300"
+        <!-- left-0 anchors the knob to the track; see the note on the Sell form's
+             Accept Offers toggle for why its absence drifts it out of the pill. -->
+        <span class="absolute top-0.5 left-0 w-4 h-4 bg-white rounded-full shadow transition-transform duration-300"
           :style="showSold ? 'transform: translateX(22px)' : 'transform: translateX(2px)'"></span>
       </button>
     </div>
@@ -339,6 +341,82 @@
 
   </div>
 
+  <!-- ===== REPORTS TAB ===== -->
+  <div v-if="activeTab === 'Reports'">
+
+    <div v-if="reportsLoading" class="py-24 text-center">
+      <div class="w-6 h-6 border-2 rounded-full animate-spin mx-auto"
+        style="border-color: #C9A96E; border-top-color: transparent;"></div>
+      <p class="text-xs text-gray-400 mt-3">Loading your reports…</p>
+    </div>
+
+    <!-- Empty state -->
+    <div v-else-if="myReports.length === 0" class="flex flex-col items-center justify-center py-24 text-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-200 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+      </svg>
+      <p class="text-sm font-medium text-gray-500 mb-1">No reports submitted</p>
+      <p class="text-xs text-gray-400">
+        If you report a listing or a member, you'll be able to follow it here.
+      </p>
+    </div>
+
+    <div v-else class="space-y-4">
+      <p class="text-xs text-gray-400 mb-1">
+        We review every report. Once our team responds, their reply appears below.
+      </p>
+
+      <div v-for="report in myReports" :key="report.id"
+        class="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
+
+        <div class="flex items-start justify-between gap-4 mb-3">
+          <div class="min-w-0">
+            <p class="text-sm font-medium text-gray-800">{{ report.reasonLabel }}</p>
+            <p class="text-xs text-gray-400 mt-0.5">Filed {{ report.filedOn }}</p>
+          </div>
+          <span class="px-3 py-0.5 rounded-full text-xs font-medium flex-shrink-0"
+            :style="report.statusStyle">
+            {{ report.statusLabel }}
+          </span>
+        </div>
+
+        <!-- What was reported -->
+        <div class="flex items-center gap-3 mb-3">
+          <div v-if="report.subjectImage" class="w-10 h-10 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
+            <img :src="report.subjectImage" :alt="report.subject" class="w-full h-full object-cover" />
+          </div>
+          <div class="min-w-0">
+            <p v-if="report.subjectBrand" class="text-xs text-gray-400 uppercase tracking-widest" style="font-size: 10px;">
+              {{ report.subjectBrand }}
+            </p>
+            <RouterLink v-if="report.subjectListingId" :to="`/product/${report.subjectListingId}`"
+              class="text-xs text-gray-700 hover:underline truncate block">
+              {{ report.subject }}
+            </RouterLink>
+            <p v-else class="text-xs text-gray-500 truncate">{{ report.subject }}</p>
+          </div>
+        </div>
+
+        <p v-if="report.description" class="text-xs text-gray-500 leading-relaxed mb-3">
+          "{{ report.description }}"
+        </p>
+
+        <!-- The moderator's reply, once there is one. -->
+        <div v-if="report.hasReply" class="rounded-lg px-4 py-3" style="background-color: #F7F5F0;">
+          <p class="text-xs tracking-widest uppercase mb-1" style="color: #C9A96E; font-size: 10px;">
+            Green Atelier response
+          </p>
+          <p class="text-xs text-gray-600 leading-relaxed whitespace-pre-wrap">{{ report.adminNotes }}</p>
+        </div>
+        <p v-else class="text-xs text-gray-400 italic">
+          Awaiting a response from our team.
+        </p>
+
+      </div>
+    </div>
+
+  </div>
+
 </div>
 
     </div>
@@ -499,6 +577,7 @@ import { isAuthenticated, profile as ownProfile, userId } from '../lib/auth.js'
 import { fetchProfileByUsername, fetchProfileStats } from '../lib/profiles.js'
 import { fetchWishlist, removeFromWishlist } from '../lib/wishlist.js'
 import { fetchOrderById, fetchOrders } from '../lib/orders.js'
+import { fetchMyReports } from '../lib/admin.js'
 import { paymentStatusLabel } from '../lib/payments.js'
 import {
   fetchSellerListings,
@@ -510,7 +589,7 @@ import { showToast } from '../lib/toast.js'
 const router = useRouter()
 const route = useRoute()
 
-const tabs = ['Listings', 'Wishlist', 'Orders']
+const tabs = ['Listings', 'Wishlist', 'Orders', 'Reports']
 const activeTab = ref(tabs.includes(route.query.tab) ? route.query.tab : 'Listings')
 
 // Listings filters
@@ -522,6 +601,10 @@ const showSold = ref(false)
 
 // Orders filter
 const orderStatuses = ['All', 'Processing', 'Shipped', 'Delivered', 'Cancelled']
+
+// ===== Reports the user has filed =====
+const myReports = ref([])
+const reportsLoading = ref(false)
 
 // ===== Order detail modal =====
 // Opens over the Orders tab rather than navigating away, so closing it returns
@@ -715,9 +798,21 @@ const load = async () => {
       wishlist.value = await fetchWishlist(id)
       orders.value = await fetchOrders(id)
       earnings.value = await fetchSellerEarnings(id)
+      // Your own reports only — nobody sees who reported whom.
+      reportsLoading.value = true
+      try {
+        myReports.value = await fetchMyReports()
+      } catch (reportError) {
+        // A failed report list must not blank out the rest of the profile.
+        console.error('Could not load your reports:', reportError.message)
+        myReports.value = []
+      } finally {
+        reportsLoading.value = false
+      }
     } else {
       wishlist.value = []
       orders.value = []
+      myReports.value = []
       earnings.value = { totalEarnings: 0, paidOut: 0, pendingEarnings: 0, itemsSold: 0 }
     }
   } catch (error) {

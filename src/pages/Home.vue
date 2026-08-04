@@ -399,27 +399,18 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
-import { fetchFeaturedListings, fetchNewestListings } from '../lib/listings.js'
+import { fetchNewestListings } from '../lib/listings.js'
 
 const carousel = ref(null)
 
 const products = ref([])
 
-// Admin curation wins, but the carousel must survive it failing — the
-// featured_listings table is newer than this page.
-async function loadCarouselRows() {
-  try {
-    const curated = await fetchFeaturedListings(8)
-    if (curated.length) return curated
-  } catch (error) {
-    console.error('Could not load the curated selection:', error.message)
-  }
-  return fetchNewestListings(8)
-}
-
+// "New In" is exactly that: the newest approved listings, no curation step. Admin
+// no longer picks a featured set, so a seller's item reaches the homepage as soon
+// as it is approved.
 onMounted(async () => {
   try {
-    const rows = await loadCarouselRows()
+    const rows = await fetchNewestListings(8)
     products.value = rows.map((r) => ({
       id: r.id,
       name: r.name,
@@ -428,7 +419,7 @@ onMounted(async () => {
     }))
   } catch (error) {
     // The landing page still renders without the carousel.
-    console.error('Could not load featured listings:', error.message)
+    console.error('Could not load the New In carousel:', error.message)
   }
 })
 

@@ -1,6 +1,8 @@
 <template>
+  <!-- Floating bar rather than a full-width band, matching the storefront navbar
+       and the sidebar panel beside it. -->
   <header
-    class="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between gap-3"
+    class="bg-white/80 backdrop-blur-md rounded-2xl shadow-sm px-4 sm:px-6 py-3.5 flex items-center justify-between gap-3 flex-shrink-0"
   >
     <div class="flex items-center gap-3 min-w-0">
       <!-- Drawer toggle, mobile only -->
@@ -14,7 +16,9 @@
         </svg>
       </button>
 
-      <h1 class="text-lg sm:text-2xl font-bold text-gray-900 truncate">{{ title }}</h1>
+      <h1 class="text-lg sm:text-2xl truncate" style="color: #1B3A2D; font-family: 'Georgia', serif;">
+        {{ title }}
+      </h1>
     </div>
 
     <div class="flex items-center gap-3 sm:gap-4 flex-shrink-0">

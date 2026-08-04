@@ -80,40 +80,88 @@
         </div>
 
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-4">
-          <h3 class="font-bold text-gray-900">Moderate</h3>
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-            <select
-              v-model="form.status"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          <!-- Closed out and not being edited: the outcome is a record, not a
+               form. Editing is still one click away. -->
+          <template v-if="isClosed && !editing">
+            <div class="flex items-start justify-between gap-3">
+              <h3 class="font-bold text-gray-900">Outcome</h3>
+              <button
+                @click="startEditing"
+                class="text-emerald-600 hover:text-emerald-700 text-sm font-medium flex-shrink-0"
+              >
+                Edit
+              </button>
+            </div>
+
+            <div>
+              <p class="text-sm text-gray-600 mb-1">Status</p>
+              <AdminBadge
+                :label="titleCase(report.status)"
+                :variant="REPORT_STATUS_VARIANT[report.status] || 'default'"
+                size="sm"
+              />
+            </div>
+
+            <div>
+              <p class="text-sm text-gray-600 mb-1">Admin notes</p>
+              <p v-if="report.adminNotes" class="text-sm text-gray-900 whitespace-pre-wrap leading-relaxed">
+                {{ report.adminNotes }}
+              </p>
+              <p v-else class="text-sm text-gray-400 italic">No notes were recorded.</p>
+            </div>
+
+            <p class="text-xs text-gray-400 leading-relaxed pt-1 border-t border-gray-100">
+              The reporter can see this status and these notes on their Reports tab.
+            </p>
+          </template>
+
+          <!-- Still open, or an admin chose to revise a closed report. -->
+          <template v-else>
+            <div class="flex items-start justify-between gap-3">
+              <h3 class="font-bold text-gray-900">Moderate</h3>
+              <button
+                v-if="isClosed"
+                @click="cancelEditing"
+                class="text-gray-400 hover:text-gray-600 text-sm flex-shrink-0"
+              >
+                Cancel
+              </button>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+              <select
+                v-model="form.status"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              >
+                <option value="pending">Pending</option>
+                <option value="investigating">Investigating</option>
+                <option value="resolved">Resolved</option>
+                <option value="dismissed">Dismissed</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Admin notes</label>
+              <textarea
+                v-model="form.adminNotes"
+                rows="5"
+                placeholder="What action was taken and why — the reporter will see this."
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              ></textarea>
+            </div>
+
+            <button
+              @click="save"
+              :disabled="saving"
+              class="w-full px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition disabled:opacity-50"
             >
-              <option value="pending">Pending</option>
-              <option value="investigating">Investigating</option>
-              <option value="resolved">Resolved</option>
-              <option value="dismissed">Dismissed</option>
-            </select>
-          </div>
+              {{ saving ? 'Saving...' : 'Save' }}
+            </button>
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Admin notes</label>
-            <textarea
-              v-model="form.adminNotes"
-              rows="5"
-              placeholder="What action was taken and why..."
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            ></textarea>
-          </div>
-
-          <button
-            @click="save"
-            :disabled="saving"
-            class="w-full px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition disabled:opacity-50"
-          >
-            {{ saving ? 'Saving...' : 'Save' }}
-          </button>
-
-          <p v-if="saved" class="text-sm text-emerald-700">Saved.</p>
+            <p v-if="saved" class="text-sm text-emerald-700">Saved.</p>
+          </template>
         </div>
       </div>
     </div>
@@ -121,7 +169,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import AdminBadge from '../../components/admin/AdminBadge.vue'
 import { getReport, updateReportStatus } from '../../lib/admin.js'
@@ -135,6 +183,22 @@ const error = ref(null)
 const saving = ref(false)
 const saved = ref(false)
 const form = ref({ status: 'pending', adminNotes: '' })
+const editing = ref(false)
+
+// A resolved or dismissed report has been decided. Showing a live form for one
+// invites accidental edits and reads as unfinished work.
+const isClosed = computed(() => ['resolved', 'dismissed'].includes(report.value?.status))
+
+const startEditing = () => {
+  form.value = { status: report.value.status, adminNotes: report.value.adminNotes || '' }
+  saved.value = false
+  editing.value = true
+}
+
+const cancelEditing = () => {
+  editing.value = false
+  saved.value = false
+}
 
 onMounted(async () => {
   try {
@@ -162,6 +226,8 @@ async function save() {
     report.value.status = form.value.status
     report.value.adminNotes = form.value.adminNotes
     saved.value = true
+    // Drop back to the read-only record if this saved into a closed state.
+    editing.value = false
   } catch (err) {
     error.value = err.message
   } finally {

@@ -536,6 +536,68 @@ export async function createReport({ reportedListingId, reportedUserId, reason, 
   if (error) throw error
 }
 
+export const MY_REPORT_STATUS = {
+  pending: { label: 'Pending review', style: 'background-color: #FEF3EC; color: #92400E;' },
+  investigating: { label: 'Investigating', style: 'background-color: #EFF6FF; color: #1D4ED8;' },
+  resolved: { label: 'Resolved', style: 'background-color: #E8F5EE; color: #166534;' },
+  dismissed: { label: 'Dismissed', style: 'background-color: #F3F4F6; color: #4B5563;' },
+}
+
+const REPORT_REASON_LABELS = {
+  misleading_info: 'Misleading information',
+  policy_violation: 'Policy violation',
+  incorrect_product_info: 'Incorrect product info',
+  inappropriate_content: 'Inappropriate content',
+  seller_misconduct: 'Seller misconduct',
+  buyer_misconduct: 'Buyer misconduct',
+  other: 'Other',
+}
+
+/**
+ * The signed-in user's own reports, so they can follow what happened to them.
+ *
+ * No RLS change is needed: reports_select_own_or_admin already exposes a row to
+ * its reporter, admin_notes included — which is the whole point, since the notes
+ * are the moderator's reply.
+ */
+export async function fetchMyReports() {
+  const { data, error } = await supabase
+    .from('reports')
+    .select(
+      `id, reason, description, status, admin_notes, created_at, updated_at,
+       listing:listings!reports_reported_listing_id_fkey(id, title, brand, images),
+       user:profiles!reports_reported_user_id_fkey(username, full_name)`,
+    )
+    .eq('reporter_id', userId.value)
+    .order('created_at', { ascending: false })
+
+  if (error) throw error
+
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    reason: row.reason,
+    reasonLabel: REPORT_REASON_LABELS[row.reason] ?? row.reason,
+    description: row.description,
+    status: row.status,
+    statusLabel: MY_REPORT_STATUS[row.status]?.label ?? row.status,
+    statusStyle: MY_REPORT_STATUS[row.status]?.style ?? MY_REPORT_STATUS.pending.style,
+    adminNotes: row.admin_notes,
+    // Only shown once a moderator has actually replied.
+    hasReply: Boolean(row.admin_notes),
+    subject:
+      row.listing?.title ??
+      (row.user ? `@${row.user.username}` : 'The reported item no longer exists'),
+    subjectBrand: row.listing?.brand ?? null,
+    subjectImage: row.listing?.images?.[0] ?? null,
+    subjectListingId: row.listing?.id ?? null,
+    filedOn: new Date(row.created_at).toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    }),
+  }))
+}
+
 /**
  * Updates a report's status and adds admin notes.
  */
@@ -738,70 +800,9 @@ const FEATURED_FIELDS = `
   listing:listings(id, title, brand, images, listing_price, seller_id)
 `
 
-/**
- * Fetches featured listings in order.
- */
-export async function getFeaturedListings() {
-  const { data, error } = await supabase
-    .from('featured_listings')
-    .select(FEATURED_FIELDS)
-    .order('position', { ascending: true })
-
-  if (error) throw error
-
-  return (data ?? []).map((item) => ({
-    id: item.id,
-    listingId: item.listing_id,
-    position: item.position,
-    listing: {
-      id: item.listing.id,
-      title: item.listing.title,
-      brand: item.listing.brand,
-      image: item.listing.images?.[0] || '/demo/bag1.png',
-      price: Number(item.listing.listing_price),
-      sellerId: item.listing.seller_id,
-    },
-  }))
-}
-
-/**
- * Adds a listing to featured.
- */
-export async function addFeaturedListing(listingId, position = 0) {
-  const { error } = await supabase.from('featured_listings').insert({
-    listing_id: listingId,
-    position,
-    added_by_id: userId.value,
-  })
-
-  if (error) throw error
-}
-
-/**
- * Removes a listing from featured.
- */
-export async function removeFeaturedListing(listingId) {
-  const { error } = await supabase
-    .from('featured_listings')
-    .delete()
-    .eq('listing_id', listingId)
-
-  if (error) throw error
-}
-
-/**
- * Reorders featured listings.
- */
-export async function updateFeaturedListingsOrder(updates) {
-  // updates is an array of { id, position }. Promise.all resolves to an array
-  // of results, so the error has to be picked out of each one.
-  const results = await Promise.all(
-    updates.map((u) => supabase.from('featured_listings').update({ position: u.position }).eq('id', u.id)),
-  )
-
-  const failed = results.find((result) => result.error)
-  if (failed) throw failed.error
-}
+// Featured-listing curation was removed: the homepage and product pages both
+// show "New In" (newest active listings) instead, so an approved listing reaches
+// buyers without an admin curating it.
 
 // =============================================================================
 // PROMO CODES MANAGEMENT

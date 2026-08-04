@@ -26,8 +26,7 @@
         </div>
       </dl>
       <p v-if="role === 'moderator'" class="text-sm text-gray-600 mt-4">
-        Moderators can review listings, reports and messages. Featured products and promo codes
-        are admin-only.
+        Moderators can review listings, reports and messages. Promo codes are admin-only.
       </p>
     </div>
 

@@ -121,53 +121,9 @@ export async function fetchListing(id) {
   }
 }
 
-/** Same category first, excluding the listing being viewed. */
-export async function fetchRelatedListings(listing, limit = 8) {
-  if (!listing) return []
-  const { data, error } = await supabase
-    .from('listings')
-    .select(CARD_FIELDS)
-    .eq('status', 'active')
-    .neq('id', listing.id)
-    .eq('category', listing.category)
-    .order('created_at', { ascending: false })
-    .limit(limit)
-
-  if (error) throw error
-  if (data?.length) return data.map(toCard)
-
-  // Nothing else in that category yet — fall back to the newest listings.
-  const { data: fallback, error: fallbackError } = await supabase
-    .from('listings')
-    .select(CARD_FIELDS)
-    .eq('status', 'active')
-    .neq('id', listing.id)
-    .order('created_at', { ascending: false })
-    .limit(limit)
-
-  if (fallbackError) throw fallbackError
-  return (fallback ?? []).map(toCard)
-}
-
-/**
- * The homepage carousel, in the order an admin arranged it on
- * /admin/featured. Returns [] when nothing is curated so the caller can decide
- * on a fallback; a sold or withdrawn listing is skipped rather than shown.
- */
-export async function fetchFeaturedListings(limit = 8) {
-  const { data, error } = await supabase
-    .from('featured_listings')
-    .select(`position, listing:listings(${CARD_FIELDS})`)
-    .order('position', { ascending: true })
-    .limit(limit)
-
-  if (error) throw error
-
-  return (data ?? [])
-    .map((row) => row.listing)
-    .filter((listing) => listing?.status === 'active')
-    .map(toCard)
-}
+// fetchFeaturedListings() is gone with the admin curation feature. The homepage
+// and product pages both show "New In" via fetchNewestListings() instead, so an
+// approved listing surfaces without anyone curating it.
 
 export async function fetchNewestListings(limit = 8) {
   const { data, error } = await supabase

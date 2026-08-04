@@ -1,5 +1,7 @@
 <template>
-  <div class="flex h-screen bg-gray-100 overflow-hidden">
+  <!-- Cream shell with a gutter, so the sidebar and content read as floating
+       panels the way the storefront's navbar pill does. -->
+  <div class="flex h-screen overflow-hidden gap-4 p-4" style="background-color: #F7F5F0;">
     <AdminSidebar
       :collapsed="collapsed"
       :mobile-open="mobileOpen"
@@ -9,10 +11,10 @@
 
     <!-- min-w-0 so a wide table scrolls inside the main column instead of
          stretching the flex row and pushing the sidebar off screen. -->
-    <div class="flex-1 flex flex-col overflow-hidden min-w-0">
+    <div class="flex-1 flex flex-col overflow-hidden min-w-0 gap-4">
       <AdminHeader :title="pageTitle" @open-menu="mobileOpen = true" />
 
-      <main class="flex-1 overflow-y-auto">
+      <main class="flex-1 overflow-y-auto rounded-2xl bg-white/60 shadow-sm">
         <div class="p-4 sm:p-6 lg:p-8">
           <router-view />
         </div>
@@ -68,7 +70,6 @@ const routeTitles = {
   'admin-trustcheck': 'TrustCheck Review',
   'admin-trustcheck-details': 'TrustCheck Details',
   'admin-brands': 'Brands',
-  'admin-featured': 'Featured Products',
   'admin-promos': 'Promo Codes',
   'admin-enquiries': 'Enquiries',
   'admin-enquiry-details': 'Enquiry',

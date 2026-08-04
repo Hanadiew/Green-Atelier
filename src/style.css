@@ -1,5 +1,39 @@
 @import "tailwindcss";
 
+/* --- Brand palette ----------------------------------------------------------
+   The storefront hardcodes its colours as inline hex (#1B3A2D deep green,
+   #C9A96E gold, cream backgrounds). The admin portal was built separately
+   against Tailwind's stock `emerald` and shipped looking like a different
+   product.
+
+   Rather than touch ~100 utility classes across 18 admin pages, the `emerald`
+   scale itself is redefined here as the GAFS greens. Every existing
+   `bg-emerald-600` / `text-emerald-600` / `focus:ring-emerald-500` picks up the
+   brand colour with no markup churn, and 600 -> 700 still darkens so hover
+   states keep working.
+
+   This is safe because `emerald` is used nowhere on the storefront except
+   ReportDialog, which should match the brand anyway. Reach for `--color-brand-*`
+   below in new code; the emerald aliases exist for the pages already written. */
+@theme {
+  --color-brand-green: #1B3A2D;
+  --color-brand-sage: #7A9E8E;
+  --color-brand-gold: #C9A96E;
+  --color-brand-cream: #FBF9F4;
+  --color-brand-sand: #F7F5F0;
+
+  --color-emerald-50: #EFF4F1;
+  --color-emerald-100: #DCE7E1;
+  --color-emerald-200: #BCD0C6;
+  --color-emerald-300: #9BB9AB;
+  --color-emerald-400: #7A9E8E;
+  --color-emerald-500: #4E7A66;
+  --color-emerald-600: #2E5844;
+  --color-emerald-700: #1B3A2D;
+  --color-emerald-800: #142C22;
+  --color-emerald-900: #0E1F18;
+}
+
 @keyframes scroll {
   0% { transform: translateX(0); }
   100% { transform: translateX(-25%); }

@@ -8,19 +8,23 @@
 
   <aside
     :class="[
-      'bg-gradient-to-b from-slate-900 to-slate-800 text-white flex flex-col border-r border-slate-700',
-      // Off-canvas drawer below lg, part of the flex row from lg up.
-      'fixed inset-y-0 left-0 z-40 transition-transform duration-200 lg:static lg:translate-x-0 lg:transition-[width]',
+      // Floating panel, echoing the storefront's rounded navbar pill.
+      'text-white flex flex-col rounded-2xl shadow-lg shadow-black/10 overflow-hidden',
+      // Off-canvas drawer below lg, part of the flex row from lg up. The drawer
+      // keeps square edges on the left so it meets the screen edge cleanly.
+      'fixed inset-y-0 left-0 z-40 transition-transform duration-200 max-lg:rounded-l-none',
+      'lg:static lg:translate-x-0 lg:transition-[width]',
       mobileOpen ? 'translate-x-0' : '-translate-x-full',
       // Collapsing is a desktop affordance; the drawer is always full width.
       collapsed ? 'w-64 lg:w-20' : 'w-64',
     ]"
+    style="background: linear-gradient(to bottom, #1B3A2D, #142C22);"
   >
     <!-- Brand. Collapsed on desktop there is no room for the logo and the
          toggle side by side, so they stack. -->
     <div
       :class="[
-        'px-3 py-4 border-b border-slate-700 flex items-center gap-2',
+        'px-3 py-4 border-b border-white/10 flex items-center gap-2',
         collapsed ? 'lg:flex-col' : '',
       ]"
     >
@@ -33,13 +37,13 @@
         @click="$emit('close')"
       >
         <div
-          class="w-10 h-10 flex-shrink-0 bg-emerald-500 rounded-lg flex items-center justify-center font-bold"
+          class="w-10 h-10 flex-shrink-0 bg-brand-gold rounded-lg flex items-center justify-center font-bold"
         >
           GA
         </div>
         <div :class="['min-w-0', collapsed ? 'lg:hidden' : '']">
           <div class="font-bold text-sm truncate">Green Atelier</div>
-          <div class="text-xs text-slate-400">Admin</div>
+          <div class="text-xs text-white/50">Admin</div>
         </div>
       </router-link>
 
@@ -48,7 +52,7 @@
         @click="$emit('toggle-collapse')"
         :title="collapsed ? 'Expand sidebar' : 'Collapse sidebar'"
         :aria-label="collapsed ? 'Expand sidebar' : 'Collapse sidebar'"
-        class="hidden lg:flex w-8 h-8 flex-shrink-0 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-700 hover:text-white transition"
+        class="hidden lg:flex w-8 h-8 flex-shrink-0 items-center justify-center rounded-lg text-white/50 hover:bg-white/10 hover:text-white transition"
       >
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -64,7 +68,7 @@
       <button
         @click="$emit('close')"
         aria-label="Close menu"
-        class="lg:hidden w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-700 hover:text-white transition"
+        class="lg:hidden w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg text-white/50 hover:bg-white/10 hover:text-white transition"
       >
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -84,14 +88,14 @@
         <template v-if="section.title">
           <h3
             :class="[
-              'px-4 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider',
+              'px-4 py-2 text-xs font-semibold text-white/50 uppercase tracking-wider',
               collapsed ? 'lg:hidden' : '',
             ]"
           >
             {{ section.title }}
           </h3>
           <!-- Collapsed, a rule stands in for the section heading. -->
-          <div v-if="collapsed" class="hidden lg:block mx-2 my-2 border-t border-slate-700"></div>
+          <div v-if="collapsed" class="hidden lg:block mx-2 my-2 border-t border-white/10"></div>
         </template>
 
         <div class="space-y-1">
@@ -99,10 +103,10 @@
             v-for="item in section.items"
             :key="item.to"
             :to="item.to"
-            active-class="bg-emerald-600 text-white"
+            active-class="!bg-brand-gold !text-[#1B3A2D] font-semibold"
             :title="collapsed ? item.label : null"
             :class="[
-              'flex items-center gap-3 py-2 rounded-lg text-slate-200 hover:bg-slate-700 transition',
+              'flex items-center gap-3 py-2 rounded-lg text-white/80 hover:bg-white/10 transition',
               collapsed ? 'px-4 lg:px-2 lg:justify-center' : 'px-4',
             ]"
             @click="$emit('close')"
@@ -118,12 +122,12 @@
 
     <!-- Footer: signing out is the only account action an admin has here. The
          storefront profile is deliberately not reachable from the portal. -->
-    <div :class="['border-t border-slate-700 py-4', collapsed ? 'px-3 lg:px-2' : 'px-3']">
+    <div :class="['border-t border-white/10 py-4', collapsed ? 'px-3 lg:px-2' : 'px-3']">
       <button
         @click="showLogout = true"
         :title="collapsed ? 'Log out' : null"
         :class="[
-          'w-full flex items-center gap-3 py-2 rounded-lg text-slate-200 hover:bg-red-600 hover:text-white transition',
+          'w-full flex items-center gap-3 py-2 rounded-lg text-white/80 hover:bg-red-600 hover:text-white transition',
           collapsed ? 'px-4 lg:px-2 lg:justify-center' : 'px-4',
         ]"
       >
@@ -210,11 +214,6 @@ const NAV = [
         to: '/admin/brands',
         label: 'Brands',
         icon: 'M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z',
-      },
-      {
-        to: '/admin/featured',
-        label: 'Featured',
-        icon: 'M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z',
       },
     ],
   },

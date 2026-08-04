@@ -86,7 +86,110 @@
             </button>
           </div>
 
-          <p v-if="cartError" class="text-xs text-red-400 mb-5">{{ cartError }}</p>
+          <p v-if="cartError" class="text-xs text-red-400 mb-3">{{ cartError }}</p>
+
+          <!-- ===== OFFERS =====
+               Only appears on listings whose seller ticked Accept Offers. The
+               RLS policy enforces the same conditions server-side. -->
+          <div v-if="product.acceptOffers && product.status === 'active'" class="mb-8">
+
+            <!-- Buyer side -->
+            <template v-if="!isOwnListing">
+              <div v-if="myOffer && myOffer.status !== 'withdrawn'"
+                class="rounded-lg px-4 py-3" style="background-color: #F7F5F0;">
+                <div class="flex items-center justify-between gap-3 mb-1">
+                  <p class="text-xs text-gray-600">
+                    Your offer: <span class="font-medium">RM {{ myOffer.amount.toLocaleString() }}.00</span>
+                  </p>
+                  <span class="px-2 py-0.5 rounded-full text-xs font-medium" :style="myOffer.statusStyle">
+                    {{ myOffer.statusLabel }}
+                  </span>
+                </div>
+                <p v-if="myOffer.status === 'accepted'" class="text-xs text-gray-500 leading-relaxed">
+                  The seller accepted. Add the item to your bag to complete the purchase.
+                </p>
+                <div v-else-if="myOffer.status === 'pending'" class="flex gap-3 mt-1">
+                  <button @click="openOfferForm" class="text-xs text-gray-500 hover:text-gray-700 underline">
+                    Change offer
+                  </button>
+                  <button @click="handleWithdrawOffer" class="text-xs text-gray-400 hover:text-red-500">
+                    Withdraw
+                  </button>
+                </div>
+              </div>
+
+              <button v-else-if="!showOfferForm" @click="openOfferForm"
+                class="w-full py-2.5 text-xs rounded-md border transition hover:bg-gray-50"
+                style="border-color: #C9A96E; color: #C9A96E;">
+                Make an Offer
+              </button>
+
+              <!-- Simple inline form rather than a modal: it is two fields. -->
+              <div v-if="showOfferForm" class="rounded-lg px-4 py-4 mt-2" style="background-color: #F7F5F0;">
+                <label class="text-xs text-gray-500 mb-1 block">Your offer (RM)</label>
+                <input v-model="offerForm.amount" type="number" min="1" step="1"
+                  :placeholder="String(product.price)"
+                  class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm outline-none bg-white mb-3" />
+
+                <label class="text-xs text-gray-500 mb-1 block">Message (optional)</label>
+                <textarea v-model="offerForm.message" rows="2"
+                  placeholder="Anything the seller should know"
+                  class="w-full border border-gray-200 rounded-md px-3 py-2 text-xs outline-none bg-white resize-y mb-3"></textarea>
+
+                <p v-if="offerError" class="text-xs text-red-500 mb-2">{{ offerError }}</p>
+
+                <div class="flex gap-2">
+                  <button @click="submitOffer" :disabled="offerSubmitting"
+                    class="flex-1 py-2 text-xs text-white rounded-md disabled:opacity-60"
+                    style="background-color: #1B3A2D;">
+                    {{ offerSubmitting ? 'Sending…' : 'Send Offer' }}
+                  </button>
+                  <button @click="showOfferForm = false"
+                    class="px-4 py-2 text-xs text-gray-500 border border-gray-200 rounded-md hover:bg-white transition">
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </template>
+
+            <!-- Seller side: the offers received on your own listing. -->
+            <template v-else>
+              <p class="text-xs tracking-widest uppercase text-gray-400 mb-2" style="font-size: 10px;">
+                Offers received
+              </p>
+              <p v-if="!receivedOffers.length" class="text-xs text-gray-400">
+                No offers yet. Buyers can negotiate because you enabled Accept Offers.
+              </p>
+              <div v-else class="space-y-2">
+                <div v-for="offer in receivedOffers" :key="offer.id"
+                  class="rounded-lg px-4 py-3" style="background-color: #F7F5F0;">
+                  <div class="flex items-center justify-between gap-3 mb-1">
+                    <p class="text-xs text-gray-700">
+                      <span class="font-medium">RM {{ offer.amount.toLocaleString() }}.00</span>
+                      <span class="text-gray-400"> · {{ offer.buyerName }}</span>
+                    </p>
+                    <span class="px-2 py-0.5 rounded-full text-xs font-medium" :style="offer.statusStyle">
+                      {{ offer.statusLabel }}
+                    </span>
+                  </div>
+                  <p v-if="offer.message" class="text-xs text-gray-500 leading-relaxed mb-2">
+                    "{{ offer.message }}"
+                  </p>
+                  <div v-if="offer.status === 'pending'" class="flex gap-2">
+                    <button @click="respond(offer, 'accepted')" :disabled="respondingId === offer.id"
+                      class="px-3 py-1.5 text-xs text-white rounded-md disabled:opacity-60"
+                      style="background-color: #1B3A2D;">
+                      Accept
+                    </button>
+                    <button @click="respond(offer, 'declined')" :disabled="respondingId === offer.id"
+                      class="px-3 py-1.5 text-xs text-gray-500 border border-gray-200 rounded-md hover:bg-white transition">
+                      Decline
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </div>
           <div v-else class="mb-8"></div>
 
           <!-- Specs -->
@@ -215,10 +318,10 @@
         </div>
       </div>
 
-      <!-- ===== YOU MAY ALSO LIKE ====================================================================================================================================================================================================================================== -->
+      <!-- ===== NEW IN ====================================================================================================================================================================================================================================== -->
       <div v-if="relatedProducts.length" class="mt-16">
         <div class="flex items-center justify-between mb-6">
-          <h2 class="text-lg font-light text-gray-800" style="font-family: 'Georgia', serif;">You May Also Like</h2>
+          <h2 class="text-lg font-light text-gray-800" style="font-family: 'Georgia', serif;">New In</h2>
           <RouterLink to="/shop" class="text-xs text-gray-400 hover:text-gray-600">View All →</RouterLink>
         </div>
 
@@ -288,7 +391,14 @@ import Footer from '../components/Footer.vue'
 import TrustCheckCard from '../components/TrustCheckCard.vue'
 import ReportDialog from '../components/ReportDialog.vue'
 import { fetchAssessment } from '../lib/trustcheck/index.js'
-import { fetchListing, fetchRelatedListings, incrementViews } from '../lib/listings.js'
+import { fetchListing, fetchNewestListings, incrementViews } from '../lib/listings.js'
+import {
+  fetchMyOffer,
+  fetchOffersForListing,
+  placeOffer,
+  respondToOffer,
+  withdrawOffer,
+} from '../lib/offers.js'
 import { isAuthenticated, userId } from '../lib/auth.js'
 import { toggleWishlist, wishlistIds } from '../lib/wishlist.js'
 
@@ -334,6 +444,79 @@ const unavailableLabel = computed(
 )
 
 const inCart = computed(() => cartItems.value.some((i) => i.id === product.value?.id))
+
+// ===== Offers =====
+const myOffer = ref(null)
+const receivedOffers = ref([])
+const showOfferForm = ref(false)
+const offerForm = ref({ amount: '', message: '' })
+const offerError = ref('')
+const offerSubmitting = ref(false)
+const respondingId = ref(null)
+
+const loadOffers = async () => {
+  myOffer.value = null
+  receivedOffers.value = []
+  if (!product.value?.acceptOffers || !userId.value) return
+  try {
+    if (isOwnListing.value) {
+      receivedOffers.value = await fetchOffersForListing(product.value.id)
+    } else {
+      myOffer.value = await fetchMyOffer(product.value.id)
+    }
+  } catch (error) {
+    // Offers are secondary to the page; a failure here must not hide the item.
+    console.error('Could not load offers:', error.message)
+  }
+}
+
+const openOfferForm = () => {
+  offerError.value = ''
+  offerForm.value = {
+    amount: myOffer.value?.amount ?? '',
+    message: myOffer.value?.message ?? '',
+  }
+  showOfferForm.value = true
+}
+
+const submitOffer = async () => {
+  offerError.value = ''
+  offerSubmitting.value = true
+  try {
+    await placeOffer({
+      listingId: product.value.id,
+      amount: offerForm.value.amount,
+      message: offerForm.value.message,
+    })
+    showOfferForm.value = false
+    await loadOffers()
+  } catch (error) {
+    offerError.value = error.message
+  } finally {
+    offerSubmitting.value = false
+  }
+}
+
+const handleWithdrawOffer = async () => {
+  try {
+    await withdrawOffer(myOffer.value.id)
+    await loadOffers()
+  } catch (error) {
+    offerError.value = error.message
+  }
+}
+
+const respond = async (offer, status) => {
+  respondingId.value = offer.id
+  try {
+    await respondToOffer(offer.id, status)
+    await loadOffers()
+  } catch (error) {
+    console.error('Could not respond to the offer:', error.message)
+  } finally {
+    respondingId.value = null
+  }
+}
 const isSaved = computed(() => product.value && wishlistIds.value.has(product.value.id))
 
 const accordions = ref([
@@ -368,7 +551,11 @@ const load = async (id) => {
     accordions.value[0].content = row.description || 'The seller has not added a description.'
     // Only some listings carry an assessment; the card hides itself when absent.
     trustCheck.value = await fetchAssessment(id)
-    relatedProducts.value = await fetchRelatedListings(row)
+    // "New In" here means the same thing it does on the homepage: newest active
+    // listings, not category-matched suggestions. Excludes the one being viewed.
+    const newest = await fetchNewestListings(9)
+    relatedProducts.value = newest.filter((p) => p.id !== row.id).slice(0, 8)
+    await loadOffers()
     incrementViews(id)
   } catch (error) {
     errorMsg.value = error.message

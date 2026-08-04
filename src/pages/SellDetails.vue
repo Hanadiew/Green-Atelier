@@ -248,6 +248,12 @@
             Upload at least 3 photos
             <span class="inline-flex items-center justify-center w-4 h-4 rounded-full border border-gray-300 text-gray-400 text-xs cursor-help" title="Include front, back, label, and any flaws.">?</span>
           </p>
+          <!-- Carries the guidance the three labelled slots used to give, now that
+               the photo grid below is the only listing of uploads. -->
+          <p class="text-xs text-gray-400 -mt-3">
+            The first three are used for authenticity checks — front, back, then the
+            interior or brand label. Add any flaws too.
+          </p>
 
           <!-- Drag & drop zone -->
           <div
@@ -279,17 +285,10 @@
   </div>
 </div>
 
-          <!-- 3 labeled upload slots -->
-          <div class="flex gap-4">
-            <div v-for="slot in mediaSlots" :key="slot.key"
-              @click="triggerMediaUpload"
-              class="flex-1 border border-gray-200 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-gray-300 transition overflow-hidden"
-              style="height: 100px;">
-              <img v-if="details.images[slot.index]" :src="details.images[slot.index]" class="w-full h-full object-cover" />
-              <span v-else class="text-2xl text-gray-300">+</span>
-              <p v-if="!details.images[slot.index]" class="text-xs text-gray-400 mt-1 text-center px-2">{{ slot.label }}</p>
-            </div>
-          </div>
+          <!-- The three large labelled slots that used to sit here showed the
+               first three photos a second time. The grid below is the single
+               place uploads are listed, and it is the one with remove buttons
+               and the Main badge. -->
 
           <!-- All uploaded photos -->
           <div v-if="details.images.length" class="pt-2">
@@ -600,10 +599,13 @@
     </div>
     <button
       @click="details.acceptOffers = details.acceptOffers === 'Yes' ? 'No' : 'Yes'"
-      class="relative flex-shrink-0 w-12 h-6 rounded-full transition-colors duration-300"
+      class="relative flex-shrink-0 w-12 h-6 p-0 rounded-full transition-colors duration-300"
       :style="details.acceptOffers === 'Yes' ? 'background-color: #C9A96E;' : 'background-color: #e5e7eb;'">
+      <!-- left-0 matters: without it the knob is absolutely positioned at its
+           static position, which the button's default UA padding pushes inward,
+           so translateX then carried it past the right edge of the track. -->
       <span
-        class="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-300"
+        class="absolute top-0.5 left-0 w-5 h-5 bg-white rounded-full shadow transition-transform duration-300"
         :style="details.acceptOffers === 'Yes' ? 'transform: translateX(26px)' : 'transform: translateX(2px)'">
       </span>
     </button>
@@ -792,14 +794,6 @@ const originOptions = [
   'Private or staff sale',
   'Bought on Vestiaire Collective',
   'Other',
-]
-
-// The first three photos double as TrustCheck's required evidence, so the slot
-// labels name them explicitly. Order matters: front, back, interior.
-const mediaSlots = [
-  { key: 'front', label: 'Front (main photo)', index: 0 },
-  { key: 'back', label: 'Back', index: 1 },
-  { key: 'interior', label: 'Interior / brand label', index: 2 },
 ]
 
 const CATEGORIES = ['Blouses', 'Tops', 'Bottoms', 'Bags', 'Accessories', 'Shoes']

@@ -56,6 +56,7 @@ const router = createRouter({
     { path: '/orders', redirect: { path: '/profile', query: { tab: 'Orders' } } },
     { path: '/listings', redirect: { path: '/profile', query: { tab: 'Listings' } } },
     { path: '/wishlist', redirect: { path: '/profile', query: { tab: 'Wishlist' } } },
+    { path: '/reports', redirect: { path: '/profile', query: { tab: 'Reports' } } },
     { path: '/support', redirect: '/contact' },
 
     // Admin routes
@@ -78,7 +79,6 @@ const router = createRouter({
         { path: 'trustcheck', name: 'admin-trustcheck', component: () => import('./pages/admin/AdminTrustCheck.vue') },
         { path: 'trustcheck/:id', name: 'admin-trustcheck-details', component: () => import('./pages/admin/AdminTrustCheckDetails.vue') },
         { path: 'brands', name: 'admin-brands', component: () => import('./pages/admin/AdminBrands.vue') },
-        { path: 'featured', name: 'admin-featured', component: () => import('./pages/admin/AdminFeatured.vue') },
         { path: 'promos', name: 'admin-promos', component: () => import('./pages/admin/AdminPromos.vue') },
         // "Enquiries" is the Contact Us inbox — not the buyer/seller chat,
         // which stays entirely between the two of them.

@@ -86,18 +86,20 @@
           </div>
         </router-link>
 
+        <!-- Featured-product curation was removed. The homepage shows "New In",
+             so approving a listing is what puts it on the front page. -->
         <router-link
-          to="/admin/featured"
+          to="/admin/trustcheck"
           class="flex items-start gap-4 p-4 border border-gray-200 rounded-lg hover:border-emerald-500 hover:bg-emerald-50 transition group"
         >
           <div class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center group-hover:bg-emerald-200 transition">
             <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H7a2 2 0 01-2-2V5z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
           <div>
-            <p class="font-semibold text-gray-900">Manage Featured Products</p>
-            <p class="text-sm text-gray-600">Curate homepage showcase</p>
+            <p class="font-semibold text-gray-900">TrustCheck Review</p>
+            <p class="text-sm text-gray-600">Verify authenticity evidence</p>
           </div>
         </router-link>
       </div>
