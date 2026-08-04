@@ -75,7 +75,28 @@ async function loadServerCart() {
       .in('listing_id', stale.map((r) => r.listing_id))
   }
 
-  cartItems.value = rows.map((r) => toCartItem(r.listing))
+  // An accepted offer is the agreed price, and create_pending_order() charges it.
+  // The bag has to show the same figure or the buyer sees one number here and a
+  // different one on Stripe. Still server-decided: my_agreed_prices() only ever
+  // returns offers the seller accepted, for the caller, that have not expired.
+  const agreed = new Map()
+  const { data: agreedRows, error: agreedError } = await supabase.rpc('my_agreed_prices')
+  if (agreedError) {
+    // Fall back to listing prices. The server total remains authoritative either
+    // way, so the worst case is the bag reading high until this succeeds.
+    console.error('Could not load accepted offer prices:', agreedError.message)
+  } else {
+    for (const row of agreedRows ?? []) agreed.set(row.listing_id, Number(row.agreed_price))
+  }
+
+  cartItems.value = rows.map((r) => {
+    const item = toCartItem(r.listing)
+    const offerPrice = agreed.get(r.listing.id)
+    if (offerPrice != null && offerPrice < item.price) {
+      return { ...item, price: offerPrice, listPrice: item.price, fromAcceptedOffer: true }
+    }
+    return item
+  })
 }
 
 async function mergeGuestCartIntoServer() {
