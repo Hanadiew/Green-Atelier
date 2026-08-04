@@ -57,7 +57,7 @@
           </div>
 
           <div class="w-full flex flex-col gap-2">
-            <RouterLink :to="`/receipt/${order.id}`"
+            <RouterLink :to="{ path: '/profile', query: { tab: 'Orders' } }"
               class="w-full py-2.5 text-xs text-white rounded-md text-center transition hover:opacity-90"
               style="background-color: #1B3A2D;">
               View My Order

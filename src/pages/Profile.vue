@@ -288,7 +288,7 @@
     <!-- Order cards -->
     <div v-else class="space-y-4">
       <div v-for="order in filteredOrders" :key="order.id"
-        @click="router.push('/receipt/' + order.orderUuid)"
+        @click="openOrderDetail(order.orderUuid)"
         class="bg-white rounded-xl border border-gray-100 p-5 flex items-center gap-5 shadow-sm cursor-pointer transition hover:border-gray-200 hover:shadow-md">
 
         <!-- Product image -->
@@ -346,6 +346,125 @@
     <Footer />
   </div>
 
+<!-- ===== ORDER DETAIL MODAL ===== -->
+<Teleport to="body">
+  <div v-if="orderDetailOpen"
+    @click.self="closeOrderDetail"
+    class="order-modal-root fixed inset-0 z-50 flex items-start justify-center overflow-y-auto py-10 px-4
+           bg-black/50 backdrop-blur-sm">
+    <div class="order-modal-card bg-white rounded-2xl shadow-xl w-full max-w-md relative">
+
+      <!-- Close -->
+      <button @click="closeOrderDetail"
+        class="no-print absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition"
+        aria-label="Close">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+
+      <div class="px-8 py-8">
+        <div v-if="orderDetailLoading" class="py-12 text-center">
+          <div class="w-6 h-6 border-2 rounded-full animate-spin mx-auto"
+            style="border-color: #C9A96E; border-top-color: transparent;"></div>
+          <p class="text-xs text-gray-400 mt-3">Loading order…</p>
+        </div>
+
+        <p v-else-if="orderDetailError" class="py-12 text-center text-xs text-red-500">
+          {{ orderDetailError }}
+        </p>
+
+        <div v-else-if="orderDetail">
+          <p class="text-xs tracking-widest uppercase text-center mb-1" style="color: #C9A96E;">Green Atelier</p>
+          <h3 class="text-base font-semibold text-gray-800 text-center mb-5">Order Details</h3>
+
+          <div class="flex justify-between items-start border-t border-b border-gray-100 py-3 mb-4">
+            <div>
+              <p class="text-xs text-gray-400 mb-0.5">Order Number</p>
+              <p class="text-xs font-medium text-gray-800">#{{ orderDetail.orderId }}</p>
+            </div>
+            <div class="text-right">
+              <p class="text-xs text-gray-400 mb-0.5">Placed On</p>
+              <p class="text-xs font-medium text-gray-800">{{ orderDetail.date }} · {{ orderDetail.time }}</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 mb-5 flex-wrap">
+            <span class="px-3 py-0.5 rounded-full text-xs font-medium" :style="statusStyle(orderDetail.status)">
+              {{ orderDetail.status }}
+            </span>
+            <span class="px-3 py-0.5 rounded-full text-xs font-medium" :style="paymentStyle(orderDetail.paymentStatus)">
+              Payment {{ orderDetail.paymentStatus }}
+            </span>
+            <span v-if="orderDetail.paymentMethod" class="text-xs text-gray-400">
+              Via {{ orderDetail.paymentMethod }}
+            </span>
+          </div>
+
+          <p class="text-xs tracking-widest uppercase text-gray-400 mb-2">Items</p>
+          <div class="space-y-3 mb-5">
+            <div v-for="item in orderDetail.items" :key="item.id" class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
+                <img :src="item.image" :alt="item.name" class="w-full h-full object-cover" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs text-gray-400 uppercase tracking-widest" style="font-size: 10px;">{{ item.brand }}</p>
+                <p class="text-xs text-gray-800 truncate">{{ item.name }}</p>
+              </div>
+              <p class="text-xs text-gray-700 flex-shrink-0">RM {{ item.price.toLocaleString() }}.00</p>
+            </div>
+          </div>
+
+          <div v-if="orderDetail.shippingAddress" class="mb-5">
+            <p class="text-xs tracking-widest uppercase text-gray-400 mb-2">Shipping To</p>
+            <div class="text-xs text-gray-600 leading-relaxed">
+              <p>{{ orderDetail.shippingAddress.first_name }} {{ orderDetail.shippingAddress.surname }}</p>
+              <p>
+                {{ orderDetail.shippingAddress.street_address }}<span v-if="orderDetail.shippingAddress.apartment">, {{ orderDetail.shippingAddress.apartment }}</span>
+              </p>
+              <p>{{ orderDetail.shippingAddress.postcode }} {{ orderDetail.shippingAddress.city }}, {{ orderDetail.shippingAddress.country }}</p>
+              <p v-if="orderDetail.shippingAddress.phone">
+                {{ orderDetail.shippingAddress.phone_code }} {{ orderDetail.shippingAddress.phone }}
+              </p>
+            </div>
+          </div>
+
+          <div class="border-t border-gray-100 pt-3 space-y-1.5 mb-3">
+            <div class="flex justify-between text-xs text-gray-500">
+              <span>Subtotal</span><span>RM {{ orderDetail.subtotal.toLocaleString() }}.00</span>
+            </div>
+            <div class="flex justify-between text-xs text-gray-500">
+              <span>Shipping</span><span>RM {{ orderDetail.shippingFee.toLocaleString() }}.00</span>
+            </div>
+            <div class="flex justify-between text-xs text-gray-500">
+              <span>Service fee</span><span>RM {{ orderDetail.serviceFee.toLocaleString() }}.00</span>
+            </div>
+            <div v-if="orderDetail.discount > 0" class="flex justify-between text-xs text-green-600">
+              <span>Promo discount{{ orderDetail.promoCode ? ` (${orderDetail.promoCode})` : '' }}</span>
+              <span>- RM {{ orderDetail.discount.toLocaleString() }}.00</span>
+            </div>
+          </div>
+
+          <div class="border-t border-gray-100 pt-3 flex justify-between items-center mb-6">
+            <span class="text-sm font-semibold text-gray-800">Total Paid</span>
+            <span class="text-sm font-semibold text-gray-800">RM {{ orderDetail.total.toLocaleString() }}.00</span>
+          </div>
+
+          <button @click="handleSaveOrderPdf"
+            class="no-print w-full py-2.5 text-xs text-white rounded-md text-center transition hover:opacity-90"
+            style="background-color: #1B3A2D;">
+            Save as PDF
+          </button>
+          <p class="no-print text-xs text-gray-400 text-center mt-2 leading-relaxed">
+            In the dialog that opens, set <span class="text-gray-500">Destination</span> to
+            <span class="text-gray-500">Save as PDF</span>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</Teleport>
+
 <Teleport to="body">
   <div v-if="deleteTarget" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
     <div class="bg-white rounded-2xl shadow-xl px-8 py-8 max-w-sm w-full mx-4 text-center">
@@ -371,7 +490,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
@@ -379,7 +498,7 @@ import ReportDialog from '../components/ReportDialog.vue'
 import { isAuthenticated, profile as ownProfile, userId } from '../lib/auth.js'
 import { fetchProfileByUsername, fetchProfileStats } from '../lib/profiles.js'
 import { fetchWishlist, removeFromWishlist } from '../lib/wishlist.js'
-import { fetchOrders } from '../lib/orders.js'
+import { fetchOrderById, fetchOrders } from '../lib/orders.js'
 import { paymentStatusLabel } from '../lib/payments.js'
 import {
   fetchSellerListings,
@@ -403,6 +522,86 @@ const showSold = ref(false)
 
 // Orders filter
 const orderStatuses = ['All', 'Processing', 'Shipped', 'Delivered', 'Cancelled']
+
+// ===== Order detail modal =====
+// Opens over the Orders tab rather than navigating away, so closing it returns
+// the buyer to exactly the list position they were at.
+const orderDetailOpen = ref(false)
+const orderDetail = ref(null)
+const orderDetailLoading = ref(false)
+const orderDetailError = ref('')
+
+const ORDER_STATUS_STYLES = {
+  Pending: 'background-color: #F3F4F6; color: #4B5563;',
+  Processing: 'background-color: #FEF3EC; color: #92400E;',
+  Shipped: 'background-color: #EFF6FF; color: #1D4ED8;',
+  Delivered: 'background-color: #E8F5EE; color: #166534;',
+  Cancelled: 'background-color: #FEF2F2; color: #B91C1C;',
+}
+const statusStyle = (s) => ORDER_STATUS_STYLES[s] ?? ORDER_STATUS_STYLES.Processing
+
+const PAYMENT_STATUS_STYLES = {
+  pending: 'background-color: #FEF3EC; color: #92400E;',
+  paid: 'background-color: #E8F5EE; color: #166534;',
+  failed: 'background-color: #FEF2F2; color: #B91C1C;',
+  refunded: 'background-color: #F3F4F6; color: #4B5563;',
+}
+const paymentStyle = (s) => PAYMENT_STATUS_STYLES[s] ?? PAYMENT_STATUS_STYLES.pending
+
+const closeOrderDetail = () => {
+  orderDetailOpen.value = false
+  orderDetail.value = null
+  orderDetailError.value = ''
+}
+
+const openOrderDetail = async (orderUuid) => {
+  orderDetailOpen.value = true
+  orderDetailLoading.value = true
+  orderDetail.value = null
+  orderDetailError.value = ''
+  try {
+    const detail = await fetchOrderById(orderUuid)
+    if (!detail) orderDetailError.value = 'This order could not be found.'
+    else orderDetail.value = detail
+  } catch (error) {
+    orderDetailError.value = error.message
+  } finally {
+    orderDetailLoading.value = false
+  }
+}
+
+// Escape closes it, which is what anyone expects of a modal.
+const handleModalKeydown = (e) => {
+  if (e.key === 'Escape' && orderDetailOpen.value) closeOrderDetail()
+}
+
+/**
+ * Opens the browser's save/print dialog for the order details.
+ *
+ * window.print() is the only API a page has here — no browser lets a script pick
+ * "Save as PDF" as the destination, or write a file directly. Choosing PDF is
+ * the user's step in that dialog, which is why the hint below the button says so.
+ *
+ * The document title is swapped for the order number first, because that is what
+ * the browser suggests as the PDF filename (and prints in the page header).
+ */
+const handleSaveOrderPdf = () => {
+  const previousTitle = document.title
+  if (orderDetail.value) {
+    document.title = `Green Atelier Order ${orderDetail.value.orderId}`
+  }
+
+  const restore = () => {
+    document.title = previousTitle
+    window.removeEventListener('afterprint', restore)
+  }
+  window.addEventListener('afterprint', restore)
+
+  window.print()
+
+  // Safari never fires afterprint; restore on the next tick as a fallback.
+  setTimeout(restore, 1000)
+}
 const activeOrderStatus = ref('All')
 
 const STATUS_BADGES = {
@@ -528,7 +727,12 @@ const load = async () => {
   }
 }
 
-onMounted(load)
+onMounted(() => {
+  load()
+  window.addEventListener('keydown', handleModalKeydown)
+})
+
+onUnmounted(() => window.removeEventListener('keydown', handleModalKeydown))
 watch(() => route.params.username, load)
 // The profile arrives asynchronously on a hard refresh of /profile.
 watch(ownProfile, (p) => { if (p && !route.params.username && !profileRow.value) load() })
@@ -580,3 +784,37 @@ const filteredOrders = computed(() => {
   return orderCards.value.filter((o) => o.status === activeOrderStatus.value)
 })
 </script>
+
+<!-- Unscoped on purpose: the order modal is Teleported to <body>, so it sits
+     outside this component's DOM subtree and scoped selectors would not reach
+     the sibling elements this needs to hide. -->
+<style>
+@media print {
+  /* Guarded with :has() so Ctrl+P with no modal open still prints the page
+     normally instead of a blank sheet. Browsers without :has() simply ignore
+     these rules and print the whole page — a harmless degradation. */
+  body:has(.order-modal-root) > *:not(.order-modal-root) {
+    display: none !important;
+  }
+
+  body:has(.order-modal-root) .order-modal-root {
+    position: static !important;
+    display: block !important;
+    overflow: visible !important;
+    /* Drop the dimmed, blurred backdrop — it would render as a grey wash. */
+    background: none !important;
+    backdrop-filter: none !important;
+    padding: 0 !important;
+  }
+
+  body:has(.order-modal-root) .order-modal-card {
+    max-width: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}
+</style>

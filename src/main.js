@@ -30,7 +30,9 @@ const router = createRouter({
       component: () => import('./pages/Checkout.vue'),
       meta: { requiresAuth: true },
     },
-    { path: '/receipt/:orderId', component: () => import('./pages/Receipt.vue'), meta: { requiresAuth: true } },
+    // The standalone receipt page is gone — order details are a modal on the
+    // Orders tab now, printable from there. Old links redirect rather than 404.
+    { path: '/receipt/:orderId', redirect: { path: '/profile', query: { tab: 'Orders' } } },
 
     // Stripe's success_url and cancel_url. Both carry ?order=<uuid>; the success
     // page reads the real payment state from the database rather than believing
