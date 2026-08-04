@@ -66,6 +66,45 @@ export async function cancelPendingOrder(orderId) {
   if (error) throw error
 }
 
+// --- Saved cards ---------------------------------------------------------------
+// Card details are never stored by GAFS — they live on a Stripe Customer. So
+// these all go through Edge Functions: reading them needs the secret key.
+
+/**
+ * Attaches one of Stripe's test cards to the user, so checkout has a card ready
+ * without them typing one. Test mode only — the function refuses otherwise,
+ * because attaching a card nobody entered is not something a live account may do.
+ */
+export async function attachTestCard(card = 'visa') {
+  const { data, error } = await supabase.functions.invoke('attach-test-card', {
+    body: { card },
+  })
+  if (error) throw await invokeError(error)
+  return data.card
+}
+
+/** The caller's saved cards. Empty when they have no Stripe customer yet. */
+export async function fetchSavedCards() {
+  const { data, error } = await supabase.functions.invoke('list-payment-methods', {
+    body: {},
+  })
+  if (error) throw await invokeError(error)
+  return data.cards ?? []
+}
+
+export async function removeSavedCard(paymentMethodId) {
+  const { error } = await supabase.functions.invoke('list-payment-methods', {
+    body: { action: 'detach', paymentMethodId },
+  })
+  if (error) throw await invokeError(error)
+}
+
+export const TEST_CARD_CHOICES = [
+  { key: 'visa', label: 'Visa — payment succeeds' },
+  { key: 'mastercard', label: 'Mastercard — payment succeeds' },
+  { key: 'declined', label: 'Visa — always declined' },
+]
+
 export const PAYMENT_STATUS_LABELS = {
   pending: 'Payment pending',
   paid: 'Paid',

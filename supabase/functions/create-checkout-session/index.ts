@@ -132,6 +132,15 @@ serve(async (req) => {
     }
     pendingOrderId = orderId as string
 
+    // If the buyer has a Stripe customer with a saved card, hand it to Checkout so
+    // the card is already there instead of being retyped.
+    const { data: buyerProfile } = await supabaseAdmin
+      .from('profiles')
+      .select('stripe_customer_id')
+      .eq('id', user.id)
+      .maybeSingle()
+    const stripeCustomerId = buyerProfile?.stripe_customer_id ?? null
+
     // Read the authoritative totals back out. Note this is the service-role
     // client reading what Postgres computed — not what the browser claimed.
     const { data: order, error: orderError } = await supabaseAdmin
@@ -198,7 +207,16 @@ serve(async (req) => {
         mode: 'payment',
         line_items: lineItems,
         discounts,
-        customer_email: user.email ?? undefined,
+        // customer and customer_email are mutually exclusive in Checkout: passing
+        // both is an error, so the customer wins when there is one.
+        ...(stripeCustomerId
+          ? { customer: stripeCustomerId }
+          : { customer_email: user.email ?? undefined }),
+        // Saves whatever card is used back onto the customer, so a buyer who
+        // never added a test card still only types it once.
+        ...(stripeCustomerId
+          ? { payment_intent_data: { setup_future_usage: 'off_session' as const } }
+          : {}),
         expires_at: Math.floor(Date.now() / 1000) + SESSION_TTL_SECONDS,
         // The webhook reads these back. client_reference_id is the primary link;
         // metadata is a redundant copy for the Stripe dashboard.

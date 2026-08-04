@@ -294,14 +294,72 @@
 
         <!-- ===== PAYMENT METHODS SECTION ===== -->
         <div v-if="activeSection === 'payment'">
-          <h2 class="text-base font-semibold text-gray-800 mb-6">Payment methods</h2>
-          <div class="border border-dashed border-gray-200 rounded-xl py-12 flex flex-col items-center justify-center text-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-200 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
-            </svg>
-            <p class="text-sm text-gray-400 mb-1">No payment methods saved</p>
-            <p class="text-xs text-gray-300">Add a card to make checkout faster</p>
+          <h2 class="text-base font-semibold text-gray-800 mb-1">Payment methods</h2>
+          <p class="text-xs text-gray-400 mb-6 leading-relaxed max-w-lg">
+            Cards are held securely by Stripe — Green Atelier never stores your card
+            number. A saved card appears ready to use on the payment page.
+          </p>
+
+          <div v-if="cardsLoading" class="py-12 text-center">
+            <div class="w-6 h-6 border-2 rounded-full animate-spin mx-auto"
+              style="border-color: #C9A96E; border-top-color: transparent;"></div>
           </div>
+
+          <template v-else>
+            <!-- Saved cards -->
+            <div v-if="savedCards.length" class="space-y-3 mb-6">
+              <div v-for="card in savedCards" :key="card.id"
+                class="border border-gray-200 rounded-xl px-5 py-4 flex items-center gap-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                </svg>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm text-gray-800 capitalize">
+                    {{ card.brand }} •••• {{ card.last4 }}
+                    <span v-if="card.isDefault" class="ml-2 text-xs px-2 py-0.5 rounded-full"
+                      style="background-color: #F7F5F0; color: #92400E;">Default</span>
+                  </p>
+                  <p v-if="card.expMonth" class="text-xs text-gray-400">
+                    Expires {{ String(card.expMonth).padStart(2, '0') }}/{{ card.expYear }}
+                  </p>
+                </div>
+                <button @click="removeCard(card)" :disabled="cardBusy"
+                  class="text-xs text-gray-400 hover:text-red-500 transition disabled:opacity-50">
+                  Remove
+                </button>
+              </div>
+            </div>
+
+            <div v-else class="border border-dashed border-gray-200 rounded-xl py-10 flex flex-col items-center justify-center text-center mb-6">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-200 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+              </svg>
+              <p class="text-sm text-gray-400 mb-1">No payment methods saved</p>
+              <p class="text-xs text-gray-300">Save a card so you don't type it at checkout</p>
+            </div>
+
+            <!-- Test cards. Stripe supplies these tokens for test mode, so no real
+                 card details are ever entered or held here. -->
+            <div class="rounded-xl px-5 py-4" style="background-color: #F7F5F0;">
+              <p class="text-sm text-gray-700 mb-1">Save a test card</p>
+              <p class="text-xs text-gray-400 mb-3 leading-relaxed">
+                Green Atelier runs on Stripe test mode, so these are Stripe's own test
+                cards — no real money is ever charged. Saving one means the payment page
+                already has a card and you can pay in a click.
+              </p>
+              <div class="flex flex-wrap gap-2">
+                <button v-for="choice in TEST_CARD_CHOICES" :key="choice.key"
+                  @click="addTestCard(choice.key)" :disabled="cardBusy"
+                  class="px-4 py-2 text-xs rounded-md border bg-white hover:bg-gray-50 transition disabled:opacity-50"
+                  style="border-color: #e5e7eb;">
+                  {{ choice.label }}
+                </button>
+              </div>
+            </div>
+
+            <p v-if="cardError" class="text-xs text-red-500 mt-3">{{ cardError }}</p>
+            <p v-if="cardDone" class="text-xs text-green-600 mt-3">{{ cardDone }}</p>
+          </template>
         </div>
 
       </div>
@@ -317,6 +375,12 @@ import { useRoute } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
 import ToggleSwitch from '../components/ToggleSwitch.vue'
+import {
+  attachTestCard,
+  fetchSavedCards,
+  removeSavedCard,
+  TEST_CARD_CHOICES,
+} from '../lib/payments.js'
 import { changeEmail, loadProfile, profile, setPassword, userEmail, userId } from '../lib/auth.js'
 import { fetchSettings, updateProfile, updateSettings, uploadAvatar } from '../lib/profiles.js'
 import { deleteAddress, fetchAddresses, setDefaultAddress, toDisplay } from '../lib/addresses.js'
@@ -331,6 +395,68 @@ const activeSection = ref(
     ? route.query.section
     : 'account',
 )
+// ===== Saved cards =====
+// Loaded lazily: the list comes from Stripe via an Edge Function, so there is no
+// reason to pay for that call unless the buyer opens this tab.
+const savedCards = ref([])
+const cardsLoading = ref(false)
+const cardsLoaded = ref(false)
+const cardBusy = ref(false)
+const cardError = ref('')
+const cardDone = ref('')
+
+const loadCards = async () => {
+  if (cardsLoaded.value) return
+  cardsLoading.value = true
+  cardError.value = ''
+  try {
+    savedCards.value = await fetchSavedCards()
+    cardsLoaded.value = true
+  } catch (error) {
+    cardError.value = error.message
+  } finally {
+    cardsLoading.value = false
+  }
+}
+
+const refreshCards = async () => {
+  try {
+    savedCards.value = await fetchSavedCards()
+  } catch (error) {
+    cardError.value = error.message
+  }
+}
+
+const addTestCard = async (choice) => {
+  cardBusy.value = true
+  cardError.value = ''
+  cardDone.value = ''
+  try {
+    const card = await attachTestCard(choice)
+    await refreshCards()
+    cardDone.value = `Saved ${card.brand} •••• ${card.last4}. It will be ready at checkout.`
+  } catch (error) {
+    cardError.value = error.message
+  } finally {
+    cardBusy.value = false
+  }
+}
+
+const removeCard = async (card) => {
+  cardBusy.value = true
+  cardError.value = ''
+  cardDone.value = ''
+  try {
+    await removeSavedCard(card.id)
+    await refreshCards()
+    cardDone.value = 'Card removed.'
+  } catch (error) {
+    cardError.value = error.message
+  } finally {
+    cardBusy.value = false
+  }
+}
+
 const editPersonal = ref(false)
 const editAccount = ref(false)
 const newPassword = ref('')
@@ -412,6 +538,16 @@ const load = async () => {
 
 onMounted(load)
 watch(profile, hydrate)
+
+// Fetch saved cards the first time the Payment methods tab is opened, including
+// when a deep link lands directly on it.
+watch(
+  activeSection,
+  (section) => {
+    if (section === 'payment') loadCards()
+  },
+  { immediate: true },
+)
 
 const savePersonal = async () => {
   errorMsg.value = ''
