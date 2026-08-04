@@ -217,11 +217,25 @@ export async function getAdminListings({
  * Fetches a single listing with all its details for admin review.
  */
 export async function getAdminListing(listingId) {
+  // Everything the seller filled in, not just the card fields — a moderator
+  // cannot decide on a listing they can only see the title and price of. The
+  // extra columns stay out of LISTING_FIELDS so the paginated table query is
+  // not dragged down by them.
   const { data, error } = await supabase
     .from('listings')
     .select(
-      `${LISTING_FIELDS},
-       listing_verification(ocr_text, receipt_path, certificate_path, serial_image_path)`,
+      `id, title, brand, category, item_type, condition, color, material, size,
+       is_vintage, description, year_purchased, origin, packaging,
+       listing_price, original_price, accept_offers, images, status,
+       rejection_reason, created_at, updated_at, seller_id,
+       seller:profiles!listings_seller_id_fkey(id, username, full_name, first_name, last_name, avatar_url),
+       listing_verification(serial_number, authenticity_document_url, review_notes,
+                            ocr_text, ocr_engine, receipt_path, certificate_path,
+                            serial_image_path),
+       trustcheck:trustcheck_assessments(brand, model, reference_country,
+                            has_front, has_back, has_interior, has_receipt,
+                            has_serial, has_certificate, ocr_origin_match,
+                            evidence_score, status, assessed_at)`,
     )
     .eq('id', listingId)
     .maybeSingle()
@@ -229,9 +243,71 @@ export async function getAdminListing(listingId) {
   if (error) throw error
   if (!data) return null
 
+  // maybeSingle on a one-to-one embed still hands back an object here, but a
+  // missing row arrives as null — both callers below tolerate that.
+  const v = data.listing_verification ?? {}
+  const tc = Array.isArray(data.trustcheck) ? data.trustcheck[0] : data.trustcheck
+
   return {
-    ...formatListingForAdmin(data),
-    verification: data.listing_verification || {},
+    id: data.id,
+    title: data.title,
+    brand: data.brand,
+    category: data.category,
+    itemType: data.item_type,
+    condition: data.condition,
+    color: data.color,
+    material: data.material,
+    size: data.size,
+    isVintage: data.is_vintage,
+    description: data.description,
+    yearPurchased: data.year_purchased,
+    origin: data.origin,
+    packaging: data.packaging ?? [],
+    price: Number(data.listing_price),
+    originalPrice: data.original_price ? Number(data.original_price) : null,
+    acceptOffers: data.accept_offers,
+    images: data.images ?? [],
+    image: data.images?.[0] || '/demo/bag1.png',
+    status: data.status,
+    rejectionReason: data.rejection_reason,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+    seller: {
+      id: data.seller?.id,
+      username: data.seller?.username,
+      fullName: personName(data.seller),
+      avatarUrl: data.seller?.avatar_url,
+    },
+    verification: {
+      serialNumber: v.serial_number ?? null,
+      // Stored as a private storage path, not a URL, despite the column name.
+      authenticityDocPath: v.authenticity_document_url ?? null,
+      receiptPath: v.receipt_path ?? null,
+      certificatePath: v.certificate_path ?? null,
+      serialImagePath: v.serial_image_path ?? null,
+      ocrText: v.ocr_text ?? null,
+      ocrEngine: v.ocr_engine ?? null,
+      reviewNotes: v.review_notes ?? null,
+    },
+    trustcheck: tc
+      ? {
+          brand: tc.brand,
+          model: tc.model,
+          referenceCountry: tc.reference_country,
+          score: tc.evidence_score,
+          status: tc.status,
+          assessedAt: tc.assessed_at,
+          evidence: {
+            hasFront: tc.has_front,
+            hasBack: tc.has_back,
+            hasInterior: tc.has_interior,
+            hasReceipt: tc.has_receipt,
+            hasSerial: tc.has_serial,
+            hasCertificate: tc.has_certificate,
+            ocrOriginMatch: tc.ocr_origin_match,
+          },
+        }
+      : null,
   }
 }
 
@@ -301,8 +377,9 @@ export async function rejectListing(listingId, reason = null) {
 // =============================================================================
 
 const USER_FIELDS = `
-  id, username, full_name, first_name, last_name, avatar_url,
-  email, city, state, country, created_at, is_trusted_seller
+  id, username, full_name, first_name, last_name, avatar_url, bio, phone,
+  email, email_confirmed_at, last_sign_in_at, banned_until,
+  city, state, country, created_at, updated_at, is_trusted_seller
 `
 
 /**
@@ -342,15 +419,51 @@ export async function getAdminUser(userId) {
   if (error) throw error
   if (!data) return null
 
-  // Fetch user stats from profile_stats view
-  const { data: statsData } = await supabase
-    .from('profile_stats')
-    .select('*')
-    .eq('user_id', userId)
-    .maybeSingle()
+  // Everything else a moderator needs on one screen: the saved addresses, the
+  // bank details a payout would go to, and what is owed. Each is read separately
+  // and tolerated failing — one missing panel beats a blank page.
+  const [statsResult, addressResult, bankResult, payoutResult] = await Promise.all([
+    supabase.from('profile_stats').select('*').eq('user_id', userId).maybeSingle(),
+    supabase
+      .from('addresses')
+      .select(
+        `id, address_type, first_name, surname, company, phone_code, phone,
+         street_address, apartment, city, state, postcode, country, is_default`,
+      )
+      .eq('user_id', userId)
+      .order('is_default', { ascending: false }),
+    // Admin read is allowed by seller_payout_accounts_own; addresses needed a new
+    // policy (see 20260805000300) because that one was owner-only.
+    supabase
+      .from('seller_payout_accounts')
+      .select('id, bank_name, account_holder_name, account_number, is_default, created_at')
+      .eq('user_id', userId)
+      .order('is_default', { ascending: false }),
+    supabase.from('payouts').select('amount, status').eq('seller_id', userId),
+  ])
+
+  for (const [name, result] of Object.entries({
+    stats: statsResult,
+    addresses: addressResult,
+    bank: bankResult,
+    payouts: payoutResult,
+  })) {
+    if (result.error) console.error(`Admin user "${name}" lookup failed:`, result.error.message)
+  }
+
+  const statsData = statsResult.data
+  const payouts = payoutResult.data ?? []
+  const sumBy = (status) =>
+    payouts.filter((p) => p.status === status).reduce((s, p) => s + Number(p.amount), 0)
 
   return {
     ...formatUserForAdmin(data),
+    bio: data.bio,
+    phone: data.phone,
+    emailConfirmedAt: data.email_confirmed_at,
+    lastSignInAt: data.last_sign_in_at,
+    bannedUntil: data.banned_until,
+    updatedAt: data.updated_at,
     stats: statsData
       ? {
           listingCount: statsData.listing_count ?? 0,
@@ -358,7 +471,87 @@ export async function getAdminUser(userId) {
           purchaseCount: statsData.purchase_count ?? 0,
         }
       : { listingCount: 0, salesCount: 0, purchaseCount: 0 },
+    addresses: (addressResult.data ?? []).map((a) => ({
+      id: a.id,
+      type: a.address_type,
+      name: [a.first_name, a.surname].filter(Boolean).join(' '),
+      company: a.company,
+      phone: a.phone ? `${a.phone_code ?? ''} ${a.phone}`.trim() : null,
+      line1: a.apartment ? `${a.street_address}, ${a.apartment}` : a.street_address,
+      line2: [a.postcode, a.city].filter(Boolean).join(' '),
+      line3: [a.state, a.country].filter(Boolean).join(', '),
+      isDefault: a.is_default,
+    })),
+    bankAccounts: (bankResult.data ?? []).map((b) => ({
+      id: b.id,
+      bankName: b.bank_name,
+      accountHolder: b.account_holder_name,
+      accountNumber: b.account_number,
+      isDefault: b.is_default,
+    })),
+    payoutSummary: {
+      pending: sumBy('pending') + sumBy('processing'),
+      paid: sumBy('paid'),
+      failed: sumBy('failed'),
+      count: payouts.length,
+    },
   }
+}
+
+/**
+ * Grants or revokes the Trusted Seller badge.
+ *
+ * No new policy was needed: profiles_update_own already admits is_admin(), and
+ * guard_profile_privileges() — which pins is_trusted_seller back to its old value
+ * for everyone else — explicitly exempts admins. That guard is the reason a
+ * seller cannot award themselves the badge.
+ */
+export async function setTrustedSeller(userId, trusted) {
+  const { data, error } = await supabase
+    .from('profiles')
+    .update({ is_trusted_seller: Boolean(trusted) })
+    .eq('id', userId)
+    .select('is_trusted_seller')
+    .single()
+
+  if (error) throw error
+  return data.is_trusted_seller
+}
+
+/**
+ * Suspends, restores or permanently deletes an account.
+ *
+ * Routed through the admin-manage-user Edge Function because all three need the
+ * service role: banning and deleting live in auth.users, which the browser key
+ * cannot touch at all.
+ */
+async function manageUser(action, userId, extra = {}) {
+  const { data, error } = await supabase.functions.invoke('admin-manage-user', {
+    body: { action, userId, ...extra },
+  })
+  if (error) {
+    const detail = await error.context?.json?.().catch(() => null)
+    throw new Error(detail?.error ?? error.message)
+  }
+  return data
+}
+
+/** Blocks sign-in without touching any records. The reversible option. */
+export function suspendUser(userId, days = 3650) {
+  return manageUser('suspend', userId, { days })
+}
+
+export function reactivateUser(userId) {
+  return manageUser('reactivate', userId)
+}
+
+/**
+ * Permanent, and destructive well beyond the user themselves: order_items.seller_id
+ * cascades, so deleting a seller removes their items from other people's order
+ * history. The Edge Function refuses when that would happen — suspend instead.
+ */
+export function deleteUser(userId) {
+  return manageUser('delete', userId)
 }
 
 function formatUserForAdmin(user) {

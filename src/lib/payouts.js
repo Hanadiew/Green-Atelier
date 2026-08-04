@@ -105,6 +105,16 @@ export async function savePayoutAccount(userId, fields) {
 
   const { data, error } = await query.select('*').single()
   if (error) throw error
+
+  // Sales made before these bank details existed were left unsettled, because
+  // there was nowhere to send them. Settle them now so the seller is not left
+  // holding a permanently "pending" balance.
+  const { error: settleError } = await supabase.rpc('settle_my_pending_payouts')
+  if (settleError) {
+    // The account itself saved, which is what the caller asked for.
+    console.error('Could not settle earlier payouts:', settleError.message)
+  }
+
   return toAccountDisplay(data)
 }
 
@@ -226,13 +236,22 @@ export async function fetchPayoutHistory(userId) {
 }
 
 // --- Payout provider abstraction -------------------------------------------------
-// Deliberately unimplemented. A real payout provider integration lands here
-// later; until then a payout stays 'pending' rather than being faked as paid.
-// This function exists so the rest of the app (and this file's callers) has a
-// single seam to call once a provider is wired up.
+// Settlement happens in the database now, inside finalize_paid_order(): the
+// seller's share is marked paid the moment the buyer's payment is confirmed, with
+// payouts.payout_provider = 'simulated'.
+//
+// That word is load-bearing. This project runs on Stripe TEST MODE, so the
+// buyer's payment is simulated too and the platform balance is always zero —
+// there is nothing to transfer. Real transfers to a seller's bank need Stripe
+// Connect, which this project does not implement. A 'simulated' row means the
+// lifecycle ran, not that money arrived.
+//
+// This function stays as the seam for a real provider. When one is wired up it
+// should write 'stripe' or 'manual' — never 'simulated'.
 
 export async function processSellerPayout(_payoutId) {
   throw new Error(
-    'No payout provider is connected yet. Payouts remain pending until one is configured.',
+    'Payouts settle automatically at payment in this build. Wire a real provider ' +
+      'here to perform actual bank transfers.',
   )
 }

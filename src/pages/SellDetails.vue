@@ -1139,7 +1139,17 @@ try {
     }
   }
 
-  showToast('Listing submitted for review.')
+  // The listing is saved either way, but the seller has to know if their serial
+  // number and paperwork did not make it — otherwise it looks submitted and the
+  // reviewer sees nothing to check.
+  if (listing && listing.verificationSaved === false) {
+    showToast(
+      'Listing submitted, but your authenticity details could not be saved. Edit the listing to add them again.',
+      'error',
+    )
+  } else {
+    showToast('Listing submitted for review.')
+  }
   router.push({ path: '/profile', query: { tab: 'Listings', submitted: '1' } })
 } catch (error) {
   errorMsg.value = error.message

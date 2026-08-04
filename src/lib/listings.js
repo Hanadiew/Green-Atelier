@@ -274,6 +274,12 @@ export async function createListing({
 
   if (error) throw error
 
+  // Reported back to the caller rather than only logged. Losing this quietly is
+  // the worst case for a review queue: the seller believes they submitted their
+  // serial number and paperwork, and the moderator sees a listing with no
+  // evidence and rejects it.
+  let verificationSaved = true
+
   if (serialNumber?.trim() || docPath) {
     const { error: verificationError } = await supabase.from('listing_verification').insert({
       listing_id: data.id,
@@ -283,10 +289,11 @@ export async function createListing({
     // The listing itself is saved; surface this without discarding it.
     if (verificationError) {
       console.error('Verification details not saved:', verificationError.message)
+      verificationSaved = false
     }
   }
 
-  return data
+  return { ...data, verificationSaved }
 }
 
 export async function deleteListing(id) {

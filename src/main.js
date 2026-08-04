@@ -84,10 +84,6 @@ const router = createRouter({
         // which stays entirely between the two of them.
         { path: 'enquiries', name: 'admin-enquiries', component: () => import('./pages/admin/AdminEnquiries.vue') },
         { path: 'enquiries/:id', name: 'admin-enquiry-details', component: () => import('./pages/admin/AdminEnquiryDetails.vue') },
-        // No storefront-facing account page here on purpose — an admin session
-        // manages the platform and has no shopper profile to edit.
-        { path: 'staff', name: 'admin-staff', component: () => import('./pages/admin/AdminStaff.vue') },
-        { path: 'settings', redirect: 'staff' },
       ],
     },
 

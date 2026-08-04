@@ -73,7 +73,6 @@ const routeTitles = {
   'admin-promos': 'Promo Codes',
   'admin-enquiries': 'Enquiries',
   'admin-enquiry-details': 'Enquiry',
-  'admin-staff': 'Staff & Access',
 }
 
 const pageTitle = computed(() => {
