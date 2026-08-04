@@ -14,6 +14,8 @@ Reselling a single garment extends its active life by an average of 2.2 years, r
 * **Build Tool:** Vite
 * **Styling:** Tailwind CSS (Vanilla CSS configurations)
 * **Backend Database & Authentication:** Supabase (PostgreSQL database, Auth services, and Storage)
+* **Server-side logic:** Supabase Edge Functions (Deno) — everything needing a secret key
+* **Payments:** Stripe Checkout, **test mode only**
 * **Routing:** Vue Router 5
 
 ---
@@ -25,10 +27,14 @@ GAFS/
 ├── src/
 │   ├── assets/               # Local static image and icon assets
 │   ├── components/
-│   │   ├── Navbar.vue        # Main application navigation with search & profile dropdowns
+│   │   ├── Navbar.vue        # Main navigation, search & profile dropdowns, offer badges
 │   │   ├── Footer.vue        # Styled platform footer link list
 │   │   ├── HeroSection.vue   # Top banner landing components
-│   │   └── CartDrawer.vue    # Slide-over shopping cart panel
+│   │   ├── CartDrawer.vue    # Slide-over shopping cart panel
+│   │   ├── ToggleSwitch.vue  # The one switch component — see "Toggles" below
+│   │   ├── PromoTab.vue      # Slide-out "Offers" drawer on the right edge
+│   │   ├── WelcomePromoDialog.vue  # First-order welcome code popup
+│   │   └── admin/            # Admin-portal chrome (sidebar, header, table frame, badges)
 │   ├── pages/
 │   │   ├── Home.vue          # Platform landing page with carousel and sustainability stats
 │   │   ├── Shop.vue          # Catalog with dynamic filter and sort features
@@ -37,15 +43,28 @@ GAFS/
 │   │   ├── SellDetails.vue   # Multi-step submission form for detailed item specifications
 │   │   ├── login.vue         # Client auth credentials login portal
 │   │   ├── signup.vue        # Multi-step signup form (Email -> OTP Verification -> Password)
-│   │   ├── Profile.vue       # Public user profile (stats, active listings, orders)
-│   │   └── Account.vue       # Settings panel (profile editing, preferences, addresses)
+│   │   ├── Profile.vue       # Public profile: listings, wishlist, orders, reports
+│   │   ├── Account.vue       # Settings: profile, preferences, addresses, payout, cards
+│   │   ├── Checkout.vue      # Bag → shipping → payment, then off to Stripe
+│   │   ├── PaymentSuccess.vue    # Stripe success_url — polls for the webhook
+│   │   ├── PaymentCancelled.vue  # Stripe cancel_url — releases the reservation
+│   │   ├── SalesOrders.vue   # Seller's incoming sales and fulfilment status
+│   │   ├── Wallet.vue        # Seller earnings and payout history
+│   │   └── admin/            # 16 admin pages (listings, users, orders, reports, …)
 │   ├── lib/                  # Data-access layer (all Supabase queries live here)
 │   │   ├── auth.js           # Reactive session + profile, sign up / in / out
 │   │   ├── listings.js       # Catalogue queries, Storage uploads, listing creation
 │   │   ├── profiles.js       # Profile editing, avatars, stats
 │   │   ├── addresses.js      # Address CRUD
 │   │   ├── wishlist.js       # Saved items
-│   │   ├── orders.js         # Checkout RPC, order & sales history
+│   │   ├── orders.js         # Order & sales history
+│   │   ├── payments.js       # Stripe session, payment state, saved cards
+│   │   ├── promos.js         # Live promo discovery and best-code selection
+│   │   ├── offers.js         # Price negotiation + seller notification badges
+│   │   ├── payouts.js        # Payout accounts, earnings, payout history
+│   │   ├── salesOrders.js    # Seller-side order management
+│   │   ├── admin.js          # Every admin-portal query
+│   │   ├── trustcheck/       # Evidence scoring, OCR, reference models
 │   │   ├── brands.js         # Brand reference data
 │   │   └── contact.js        # Contact form submissions
 │   ├── router/
@@ -55,8 +74,15 @@ GAFS/
 │   └── main.js               # Routes, auth guards, app bootstrap
 ├── supabase/
 │   ├── migrations/           # Versioned schema, RLS and Storage definitions
+│   ├── functions/            # Edge Functions (Deno) — anything needing a secret
+│   │   ├── create-checkout-session/  # Prices the order, opens Stripe Checkout
+│   │   ├── stripe-webhook/           # The ONLY thing that marks an order paid
+│   │   ├── attach-test-card/         # Saves a Stripe test card to a user
+│   │   ├── list-payment-methods/     # Reads/removes saved cards
+│   │   └── admin-manage-user/        # Suspend / restore / delete an account
 │   ├── seed.sql              # Brands, promo codes, demo seller and catalogue
 │   └── config.toml           # Supabase CLI project config
+├── docs/                     # Admin portal reference docs (see below)
 ├── public/demo/              # Images for the seeded demo listings
 ├── .env.example              # Template for local credentials
 ├── index.html                # App template shell
@@ -100,16 +126,28 @@ Then load the reference data and demo catalogue:
 ```sh
 npx supabase db push --include-seed
 ```
-Alternatively, paste the contents of each file into the dashboard **SQL Editor**, in this order:
+`db push` applies every migration in `supabase/migrations/` in filename order, which
+is the only supported route — several later migrations depend on earlier ones, and
+one of them (`20260805000000_stripe_enums.sql`) **must** run in its own transaction
+because Postgres will not let a newly added enum value be used by the statement that
+adds it.
 
-| Order | File | Creates |
-|---|---|---|
-| 1 | `supabase/migrations/20260730090000_schema.sql` | Tables, enums, indexes, triggers, RPCs |
-| 2 | `supabase/migrations/20260730090100_rls.sql` | Row Level Security policies and column guards |
-| 3 | `supabase/migrations/20260730090200_storage.sql` | Storage buckets and their policies |
-| 4 | `supabase/seed.sql` | Brands, promo codes, demo seller and catalogue |
+Roughly what they build, oldest to newest:
 
-Every file is idempotent, so re-running one is safe.
+| Migrations | Add |
+|---|---|
+| `…090000` – `…090200` | Tables, enums, RLS policies, column guards, Storage buckets |
+| `…090300` – `…090700` | Policy fixes, performance rewrites, legacy cleanup |
+| `…090800` – `…091200` | TrustCheck, seller sales orders, payout accounts, payouts |
+| `…091300` – `…091400` | Reports, contact inbox, admin views |
+| `…0804…` | Seller listing lifecycle (no self-publishing, real deletes) |
+| `…0805…` | Stripe payments, auto-settled payouts, accepted-offer pricing, flat fee |
+
+Every file is idempotent, so re-running one is safe. If you must use the dashboard
+**SQL Editor** instead, run them in the same filename order and execute the
+`stripe_enums` file as its own query.
+
+Then load the reference data and demo catalogue if you skipped `--include-seed`.
 
 ### 4. Turn off email confirmation (for development)
 In **Authentication → Sign In / Providers → Email**, switch **"Confirm email" OFF**.
@@ -144,7 +182,10 @@ npm run build
 
 GAFS uses **Stripe Test Mode** for development and FYP demonstrations. **No real money is charged, and the platform does not process real payments.** `create-checkout-session` refuses to start if `STRIPE_SECRET_KEY` is not an `sk_test_` key, so a live key cannot be used by accident.
 
-Seller payouts are deliberately **not** implemented — no Stripe Connect, no bank transfers. The flow covered here is **Buyer → Stripe Test Payment → GAFS** only. The 85/15 split is still recorded on `order_items` as bookkeeping, but no money leaves the platform.
+**Stripe Connect is deliberately not implemented**, so no money is ever transferred to a
+seller's bank. The flow covered here is **Buyer → Stripe Test Payment → GAFS**. Payout
+rows are auto-settled and marked `payout_provider = 'simulated'` for demonstration —
+see *Payouts* below for exactly what that does and does not mean.
 
 ### How it works
 
@@ -163,6 +204,17 @@ Two properties worth knowing:
 - **Payment survives a dead browser.** If the buyer's connection drops on the way back from Stripe, the webhook still settles the order.
 
 Listings sit in a `reserved` state while a buyer is mid-payment, so a second buyer cannot reach Stripe for the same one-of-a-kind item — nobody gets charged for something they can't receive. Cancelling releases the hold immediately; abandoning it releases via Stripe's `checkout.session.expired` after 30 minutes.
+
+### Saved test cards
+
+Stripe test mode ships ready-made payment-method tokens (`pm_card_visa`), which can be
+attached to a Customer server-side. **Account → Payment methods** offers three of them,
+so a tester ends up with a saved card having typed nothing, and Checkout is handed the
+`customer` so the card is already there.
+
+Only those named tokens are accepted, detaching verifies the card belongs to the caller,
+and `attach-test-card` refuses to run on a live key — attaching a card nobody entered is
+fine in test mode and would be fraud in production.
 
 ### 1. Create a Stripe test account
 
@@ -250,7 +302,7 @@ The order stays paid, no second order appears, and the log says the duplicate wa
 
 - Test payments are simulated. Nothing settles, and no funds exist.
 - Only Stripe's test cards work; a real card is rejected in test mode.
-- Sellers are never paid — there is no payout mechanism in this project.
+- Sellers are never actually paid. Payout rows reach `paid` with `payout_provider = 'simulated'`, which records that the lifecycle ran — not that money arrived.
 - MYR is used as the currency, matching the RM pricing in the UI.
 
 ---
@@ -270,32 +322,120 @@ The order stays paid, no second order appears, and the log says the duplicate wa
 | `trustcheck_assessments` | TrustCheck evidence score and status per listing. Publicly readable (buyers see it on the product page); score/status are recomputed server-side by trigger, never trusted from the client. |
 | `addresses` | Shipping and billing addresses. A partial unique index plus a trigger enforce one default per user. |
 | `wishlists` / `cart_items` | Saved and in-bag items. No quantity column — resale items are one-of-a-kind. |
-| `offers` | Price negotiation when a seller enables "Accept Offers". |
+| `offers` | Price negotiation when a seller enables "Accept Offers". A trigger decides who may change what — see below. |
 | `promo_codes` | Discount codes with expiry, minimum spend and usage limits. |
+| `seller_payout_accounts` | A seller's bank details. **No public read** — owner and staff only. |
+| `payouts` | What the platform owes each seller per sold item, and whether it is settled. |
+| `reports` | Buyer/seller reports for moderation. The reporter can read their own, including the admin's reply. |
 | `orders` / `order_items` | Purchases. Items carry a **snapshot** of title, brand and image so history survives a listing being edited or deleted, and each item has its own status because a multi-seller order ships in separate parcels. |
 | `conversations` / `messages` | Buyer↔seller messaging (schema only — no chat UI yet). |
 | `contact_messages` | Contact form submissions. Anyone may insert; only the sender and staff can read. |
 
-Plus the `profile_stats` view (listing and sale counts, `security_invoker`).
+Plus two views: `profile_stats` (listing and sale counts) and `seller_earnings_stats`
+(total / paid / pending earnings, computed from `payouts`). Both use
+`security_invoker`, so a normal user only ever aggregates rows they may read.
+`admin_users` is a third view, gated on `is_admin()`, joining `profiles` to
+`auth.users` for the admin user list.
 
 ### Security model
 
 The anon key is public, so **RLS is the security boundary.** Two things RLS alone cannot express are enforced with triggers, since RLS is row-level and cannot protect individual columns:
 
-* A seller cannot award themselves the **Trusted Seller** badge (`guard_profile_privileges`).
+* A seller cannot award themselves the **Trusted Seller** badge, nor repoint their `stripe_customer_id` at someone else's saved cards (`guard_profile_privileges`).
 * A seller cannot publish their own listing or mark it sold — going live requires review, and `sold` is reachable only through checkout (`guard_listing_status`, `force_new_listing_pending`).
+* A seller cannot change any listing status at all: their only controls are edit and remove (`guard_listing_status`, since `20260804000000`).
+* A buyer cannot edit `payment_status`, `paid_at`, the Stripe identifiers, or any money column on their own order (`guard_order_payment_fields`). Without this, `orders_update_buyer` would have allowed it.
+* A buyer cannot accept **their own** offer. Only the seller may accept or decline; only the buyer may withdraw; the amount freezes once answered (`guard_offer_transition`). This matters because an accepted offer sets the price — see *Offers* below.
+* A seller cannot move an unpaid order item to shipped, and unpaid orders are invisible to them entirely (`order_awaiting_payment`).
 
 ### Checkout
 
-Ordering goes through the `place_order()` database function rather than direct inserts — `orders` has no INSERT policy at all. The function:
+Ordering goes through database functions rather than direct inserts — `orders` has no
+INSERT policy at all. What was one `place_order()` is now split in three, because a
+real payment has a gap in the middle:
 
-1. re-computes every amount from **stored** listing prices, so a tampered client cannot set its own total;
-2. verifies the shipping address belongs to the buyer;
-3. locks each listing `FOR UPDATE`, so two buyers racing for the same one-of-a-kind item cannot both succeed;
-4. refuses to let a seller buy their own listing;
-5. marks items sold, records the 85/15 payout split, and clears the item from **every** cart — all in one transaction.
+| Function | Called by | Does |
+|---|---|---|
+| `create_pending_order()` | the buyer, via `create-checkout-session` | Prices the cart, validates it, **reserves** the listings. Order is `pending` / payment `pending`. Nothing is sold. |
+| `finalize_paid_order()` | the Stripe webhook only | Marks paid, order → `processing`, reserved listings → `sold`, clears carts, creates the payouts. |
+| `release_pending_order()` | webhook or the buyer cancelling | Hands the listings back on cancel, expiry or failure. |
 
-Fees: RM 15 flat shipping, RM 20 flat buyer platform fee, 15% GAFS fee on the seller side (85% seller payout). These constants live in `create_pending_order()` — which `place_order()` now wraps — and the checkout page mirrors them for display only. An accepted offer replaces the listing price there, so the agreed figure is what gets charged.
+`place_order()` still exists and still has the same signature, but is now a thin
+wrapper over the first two — so the pricing rules live in exactly **one** place
+rather than being duplicated per payment path.
+
+`create_pending_order()`:
+
+1. re-computes every amount from **stored** prices, so a tampered client cannot set its own total;
+2. uses the buyer's **accepted offer** price where one is live, otherwise the listing price;
+3. verifies the shipping address belongs to the buyer;
+4. locks each listing `FOR UPDATE`, so two buyers racing for the same one-of-a-kind item cannot both succeed;
+5. refuses to let a seller buy their own listing;
+6. reserves the listings so a second buyer cannot even reach Stripe for the same item.
+
+`finalize_paid_order()` and `release_pending_order()` are **not granted to
+`authenticated`** — only the service role may settle a payment. Note that revoking
+from `anon, authenticated` alone is not enough: Postgres grants EXECUTE to `PUBLIC`
+on every new function, so the revoke has to name `public` (see
+`20260805000200_lock_payment_functions.sql`).
+
+Fees: RM 15 flat shipping, RM 20 flat buyer platform fee, 15% GAFS fee on the seller
+side (85% seller payout). These constants live in `create_pending_order()`; the
+checkout page mirrors them for display only.
+
+### Reserved listings
+
+`listing_status` has a `reserved` value between `active` and `sold`. A listing is
+reserved while its buyer is on Stripe's payment page, which is what stops two buyers
+being **charged** for the same one-of-a-kind item rather than merely stopping the
+second sale. It is released three ways:
+
+* the buyer cancels → `cancel_my_pending_order()` from the cancel page, immediately;
+* the buyer abandons → Stripe's `checkout.session.expired` webhook, after 30 minutes;
+* a missed webhook → `create_pending_order()` clears the buyer's own stale holds older than 30 minutes, so nobody is deadlocked by their own abandoned checkout.
+
+### Offers
+
+When a seller enables **Accept Offers**, buyers can negotiate from the product page.
+An accepted offer becomes the price `create_pending_order()` charges, and the bag
+shows the same figure via `my_agreed_prices()` so the cart and Stripe never disagree.
+
+Only offers that are `accepted`, belong to that buyer, and have not expired count — a
+lapsed acceptance is not a standing discount. Sellers see a gold dot on the profile
+icon, a count in the Listings dropdown, and a badge on the listing card itself. That
+is refreshed on navigation, not pushed: a seller sitting still on one page will not
+see a new offer until they move.
+
+### Promo codes
+
+Buyers had no way to discover a code existed, so:
+
+* a **welcome popup** appears once for a buyer with zero orders, if a `WELCOME…` code is live;
+* an **Offers drawer** on the right edge lists every live code with its conditions;
+* checkout **auto-applies** whichever live code saves the most, and re-evaluates when the bag changes.
+
+A code the buyer typed themselves is never overridden, even if ours would save more.
+Every candidate is validated by `validate_promo_code()` in Postgres, which
+`create_pending_order()` calls again before charging — the browser never decides a
+discount.
+
+> **Known gap:** `WELCOME15` is only *advertised* to first-time buyers. The code
+> itself has no first-order condition in the database, so anyone who learns it can
+> reuse it. Enforcing that needs a check inside `validate_promo_code()`.
+
+### Payouts
+
+A seller's 85% is settled the moment the buyer's payment is confirmed — Green Atelier
+does not sit on seller funds. The payout row is created inside
+`finalize_paid_order()`, and only when the seller has a default payout account on
+file; otherwise it stays `pending` until they add one, at which point
+`settle_my_pending_payouts()` catches it up.
+
+> **`payout_provider = 'simulated'` means no money moved.** Stripe test mode has no
+> funds and the platform balance is always zero — the buyer's payment is simulated
+> too. Real transfers to a third party's bank need Stripe Connect, which this project
+> does not implement. `processSellerPayout()` in `src/lib/payouts.js` is the seam for
+> a real provider; it must write `'stripe'` or `'manual'`, never `'simulated'`.
 
 ### Storage
 
@@ -314,6 +454,10 @@ The seed creates a demo seller with 8 active listings:
 ```
 demo.seller@greenatelier.test / DemoSeller123
 ```
+
+> Supabase Auth rejects the `.test` TLD as an invalid address, so the Account page shows
+> `Email address "…" is invalid` for this account. Harmless — it only blocks changing the
+> email — but change the seed address if it bothers you during a demo.
 
 Delete the `DEMO SELLER` and `DEMO CATALOGUE` sections of `supabase/seed.sql` before going to production.
 
