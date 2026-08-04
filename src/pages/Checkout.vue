@@ -379,13 +379,14 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { cartItems, cartSubtotal, removeFromCart } from '../cart.js'
 import { userId } from '../lib/auth.js'
 import { createAddress, fetchAddresses, toDisplay } from '../lib/addresses.js'
 import { validatePromoCode } from '../lib/orders.js'
 import { createCheckoutSession } from '../lib/payments.js'
+import { bestPromoFor } from '../lib/promos.js'
 
 const router = useRouter()
 
@@ -412,6 +413,8 @@ const copyTestCard = async () => {
 const promoCode = ref('')
 const promoMsg = ref('')
 const promoValid = ref(false)
+// True when we chose the code, not the buyer — so it can be re-evaluated freely.
+const autoApplied = ref(false)
 const discount = ref(0)
 const selectedPayment = ref('card')
 const placing = ref(false)
@@ -457,7 +460,51 @@ const loadAddresses = async () => {
   }
 }
 
-onMounted(loadAddresses)
+/**
+ * Applies the best code the bag qualifies for, so a buyer is not penalised for
+ * not knowing one exists.
+ *
+ * Never overrides a code the buyer typed themselves — if they entered one, that is
+ * a deliberate choice even when ours would save more. Re-runs when the bag total
+ * changes, because adding an item can cross a minimum spend threshold.
+ */
+const autoApplyBestPromo = async () => {
+  if (promoCode.value.trim()) return
+  if (cartSubtotal.value <= 0) return
+
+  try {
+    const best = await bestPromoFor(cartSubtotal.value)
+    if (!best) return
+    promoCode.value = best.code
+    promoValid.value = true
+    discount.value = best.discount
+    promoMsg.value = `${best.code} applied — you save RM ${best.discount.toLocaleString()}.`
+    autoApplied.value = true
+  } catch (error) {
+    // No discount is a worse outcome than a crash here, but not much worse.
+    console.error('Could not auto-apply a promo code:', error.message)
+  }
+}
+
+onMounted(async () => {
+  await loadAddresses()
+  await autoApplyBestPromo()
+})
+
+// An added or removed item can change which codes qualify.
+watch(cartSubtotal, () => {
+  if (autoApplied.value || !promoCode.value.trim()) {
+    // Clear an auto-applied code first so a bag that drops below the threshold
+    // does not keep a discount it no longer qualifies for.
+    if (autoApplied.value) {
+      promoCode.value = ''
+      discount.value = 0
+      promoValid.value = false
+      autoApplied.value = false
+    }
+    autoApplyBestPromo()
+  }
+})
 
 // Validated in the database so expiry, spend thresholds and usage limits are
 // enforced server-side rather than trusted from the browser.

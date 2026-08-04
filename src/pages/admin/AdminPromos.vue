@@ -2,7 +2,7 @@
   <div class="space-y-6">
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex justify-end">
       <button
-        @click="showCreate = !showCreate"
+        @click="toggleForm"
         class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition"
       >
         {{ showCreate ? 'Close' : 'New promo code' }}
@@ -10,12 +10,19 @@
     </div>
 
     <div v-if="showCreate" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 space-y-4">
-      <h3 class="font-bold text-gray-900">New promo code</h3>
+      <div class="flex items-center justify-between gap-3">
+        <h3 class="font-bold text-gray-900">
+          {{ editingCode ? `Edit ${editingCode}` : 'New promo code' }}
+        </h3>
+        <button v-if="editingCode" @click="cancelEdit"
+          class="text-sm text-gray-500 hover:text-gray-700">Cancel edit</button>
+      </div>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Code</label>
           <input
             v-model="form.code"
+            :disabled="Boolean(editingCode)"
             type="text"
             placeholder="RAYA25"
             class="w-full px-3 py-2 border border-gray-300 rounded-lg uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -84,7 +91,7 @@
         :disabled="saving || !canSubmit"
         class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition disabled:opacity-50"
       >
-        {{ saving ? 'Saving...' : 'Create' }}
+        {{ saving ? 'Saving...' : editingCode ? 'Save changes' : 'Create' }}
       </button>
     </div>
 
@@ -142,6 +149,12 @@
             </td>
             <td class="px-6 py-4">
               <button
+                @click="startEdit(promo)"
+                class="text-emerald-600 hover:text-emerald-700 text-sm font-medium mr-4"
+              >
+                Edit
+              </button>
+              <button
                 @click="toggleActive(promo)"
                 :disabled="togglingCode === promo.code"
                 class="text-emerald-600 hover:text-emerald-700 text-sm font-medium disabled:opacity-50"
@@ -171,6 +184,8 @@ const total = ref(0)
 const perPage = 20
 
 const showCreate = ref(false)
+// null when creating, the promo's code when editing an existing one.
+const editingCode = ref(null)
 const saving = ref(false)
 const formError = ref(null)
 const togglingCode = ref(null)
@@ -189,6 +204,33 @@ const form = ref(emptyForm())
 const canSubmit = computed(
   () => form.value.code.trim().length > 0 && Number(form.value.discountValue) > 0,
 )
+
+function toggleForm() {
+  showCreate.value = !showCreate.value
+  if (!showCreate.value) cancelEdit()
+}
+
+function startEdit(promo) {
+  editingCode.value = promo.code
+  formError.value = null
+  form.value = {
+    code: promo.code,
+    description: promo.description ?? '',
+    discountType: promo.discountType,
+    discountValue: promo.discountValue,
+    minSubtotal: promo.minSubtotal,
+    usageLimit: promo.usageLimit,
+    // The input is type=date, which needs YYYY-MM-DD rather than a timestamp.
+    validUntil: promo.validUntil ? promo.validUntil.slice(0, 10) : '',
+  }
+  showCreate.value = true
+}
+
+function cancelEdit() {
+  editingCode.value = null
+  form.value = emptyForm()
+  formError.value = null
+}
 
 watch(page, fetchCodes)
 onMounted(fetchCodes)
@@ -215,16 +257,24 @@ async function submitPromo() {
 
   try {
     // The table has a `code = upper(code)` check constraint.
-    await createPromoCode({
-      code: form.value.code.trim().toUpperCase(),
+    const fields = {
       description: form.value.description.trim() || null,
       discount_type: form.value.discountType,
       discount_value: Number(form.value.discountValue),
       min_subtotal: Number(form.value.minSubtotal) || 0,
       usage_limit: form.value.usageLimit || null,
       valid_until: form.value.validUntil || null,
-    })
-    form.value = emptyForm()
+    }
+
+    if (editingCode.value) {
+      // The code itself is never updated: it is the primary key and placed orders
+      // reference it, so changing it would orphan their promo_code.
+      await updatePromoCode(editingCode.value, fields)
+    } else {
+      await createPromoCode({ ...fields, code: form.value.code.trim().toUpperCase() })
+    }
+
+    cancelEdit()
     showCreate.value = false
     await fetchCodes()
   } catch (err) {
