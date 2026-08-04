@@ -144,14 +144,7 @@
     </div>
     <div class="flex items-center gap-2">
       <span class="text-xs text-gray-400">Sold items</span>
-      <button @click="showSold = !showSold"
-        class="relative w-10 h-5 p-0 rounded-full transition-colors duration-300"
-        :style="showSold ? 'background-color: #C9A96E;' : 'background-color: #e5e7eb;'">
-        <!-- left-0 anchors the knob to the track; see the note on the Sell form's
-             Accept Offers toggle for why its absence drifts it out of the pill. -->
-        <span class="absolute top-0.5 left-0 w-4 h-4 bg-white rounded-full shadow transition-transform duration-300"
-          :style="showSold ? 'transform: translateX(22px)' : 'transform: translateX(2px)'"></span>
-      </button>
+      <ToggleSwitch v-model="showSold" size="sm" />
     </div>
   </div>
 </div>
@@ -586,6 +579,7 @@ import { useRoute, useRouter } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
 import ReportDialog from '../components/ReportDialog.vue'
+import ToggleSwitch from '../components/ToggleSwitch.vue'
 import { isAuthenticated, profile as ownProfile, userId } from '../lib/auth.js'
 import { fetchProfileByUsername, fetchProfileStats } from '../lib/profiles.js'
 import { fetchWishlist, removeFromWishlist } from '../lib/wishlist.js'

@@ -173,13 +173,11 @@
                 <p class="text-sm text-gray-700 mb-0.5">{{ pref.label }}</p>
                 <p class="text-xs text-gray-400">{{ pref.desc }}</p>
               </div>
-              <button
-                @click="togglePref(pref)"
-                class="relative flex-shrink-0 w-12 h-6 rounded-full transition-colors duration-300 ml-6 mt-1"
-                :style="pref.enabled ? 'background-color: #C9A96E;' : 'background-color: #e5e7eb;'">
-                <span class="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-300"
-                  :style="pref.enabled ? 'transform: translateX(26px)' : 'transform: translateX(2px)'"></span>
-              </button>
+              <ToggleSwitch
+                :model-value="pref.enabled"
+                @update:model-value="togglePref(pref)"
+                class="ml-6 mt-1"
+              />
             </div>
           </div>
         </div>
@@ -318,6 +316,7 @@ import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
+import ToggleSwitch from '../components/ToggleSwitch.vue'
 import { changeEmail, loadProfile, profile, setPassword, userEmail, userId } from '../lib/auth.js'
 import { fetchSettings, updateProfile, updateSettings, uploadAvatar } from '../lib/profiles.js'
 import { deleteAddress, fetchAddresses, setDefaultAddress, toDisplay } from '../lib/addresses.js'

@@ -101,12 +101,7 @@
                 Select if this item is over 10 years old. Our experts will carefully review your listing to ensure it meets the standards for genuine vintage.
               </p>
             </div>
-            <button @click="details.vintage = !details.vintage"
-              class="relative flex-shrink-0 w-12 h-6 rounded-full transition-colors duration-300 mt-1"
-              :style="details.vintage ? 'background-color: #C9A96E;' : 'background-color: #e5e7eb;'">
-              <span class="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-300"
-                :style="details.vintage ? 'transform: translateX(26px)' : 'transform: translateX(2px)'"></span>
-            </button>
+            <ToggleSwitch v-model="details.vintage" class="mt-1" />
           </div>
         </div>
 
@@ -597,18 +592,12 @@
       <p class="text-sm text-gray-700 mb-0.5">Accept Offers</p>
       <p class="text-xs text-gray-400">Allow buyers to negotiate the price with you.</p>
     </div>
-    <button
-      @click="details.acceptOffers = details.acceptOffers === 'Yes' ? 'No' : 'Yes'"
-      class="relative flex-shrink-0 w-12 h-6 p-0 rounded-full transition-colors duration-300"
-      :style="details.acceptOffers === 'Yes' ? 'background-color: #C9A96E;' : 'background-color: #e5e7eb;'">
-      <!-- left-0 matters: without it the knob is absolutely positioned at its
-           static position, which the button's default UA padding pushes inward,
-           so translateX then carried it past the right edge of the track. -->
-      <span
-        class="absolute top-0.5 left-0 w-5 h-5 bg-white rounded-full shadow transition-transform duration-300"
-        :style="details.acceptOffers === 'Yes' ? 'transform: translateX(26px)' : 'transform: translateX(2px)'">
-      </span>
-    </button>
+    <!-- acceptOffers is stored as the strings 'Yes'/'No' on the form model, so it
+         is mapped to a boolean for the switch rather than changing the payload. -->
+    <ToggleSwitch
+      :model-value="details.acceptOffers === 'Yes'"
+      @update:model-value="details.acceptOffers = $event ? 'Yes' : 'No'"
+    />
   </div>
 
   <!-- Payout breakdown -->
@@ -745,6 +734,7 @@ import { useRouter, useRoute } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
 import TrustCheckPanel from '../components/TrustCheckPanel.vue'
+import ToggleSwitch from '../components/ToggleSwitch.vue'
 import { userId } from '../lib/auth.js'
 import { createAddress, fetchDefaultAddress, toDisplay } from '../lib/addresses.js'
 import { matchBrand, saveAssessment } from '../lib/trustcheck/index.js'

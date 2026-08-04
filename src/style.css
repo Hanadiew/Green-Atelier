@@ -60,13 +60,25 @@
   animation-play-state: paused;
 }
 
+/* Kept in one place so .page-shell and .site-footer cannot disagree about how
+   tall the footer is — the shell's height is derived from it. */
+:root {
+  --footer-height: 26rem;
+}
+
 /* --- Page shell -------------------------------------------------------------
-   Every storefront page is a full-height column so the footer lands at the
-   bottom of the viewport on short pages instead of floating mid-screen. Pages
-   used to set min-height ad hoc (two of ten did), which is why the footer moved
-   as you navigated. Footer carries mt-auto to take up the slack. */
+   Every storefront page is a column: content, then footer (which carries
+   mt-auto to take up the slack).
+
+   The shell is a full viewport PLUS the footer's height, which is what gives
+   every page the same minimum content area. Because the footer is pushed to the
+   bottom of that taller box, its top edge lands at exactly 100vh — so it sits
+   just below the fold and is reached by scrolling rather than being parked
+   mid-screen on a short page like Payment methods.
+
+   Long pages are unaffected: the shell simply grows past its minimum. */
 .page-shell {
-  min-height: 100vh;
+  min-height: calc(100vh + var(--footer-height));
   display: flex;
   flex-direction: column;
   background-color: #FAFAF8;
@@ -78,6 +90,24 @@
    not use this. */
 .page-top {
   padding-top: 7rem;
+}
+
+/* --- Footer -----------------------------------------------------------------
+   One height on every page. The footer's own content is a fixed set of rows, so
+   the only thing that ever changed its height was the wordmark being sized in vw
+   (see Footer.vue) — that is fixed at source. This floor keeps it identical even
+   if a row's content differs, and mt-auto in .page-shell still pins it to the
+   bottom of short pages.
+
+   min-height rather than height: below ~900px wide the nav row wraps, and a hard
+   height would clip it. If it does wrap, the footer grows past --footer-height
+   and will peek above the fold — acceptable, and the alternative is clipping the
+   links. */
+.site-footer {
+  min-height: var(--footer-height);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
 }
 
 /* Scrolls, but without the visible track — for panels like the admin sidebar

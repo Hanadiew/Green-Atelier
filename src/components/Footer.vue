@@ -1,7 +1,7 @@
 <template>
   <!-- mt-auto takes up the slack in the .page-shell column, so a short page
        still puts the footer at the bottom of the viewport. -->
-  <footer class="mt-auto" style="background-color: #1B3A2D;">
+  <footer class="site-footer mt-auto" style="background-color: #1B3A2D;">
 
     <!-- Stay Connected -->
     <div class="flex flex-col items-center pt-12 pb-8">
@@ -56,10 +56,14 @@
       </div>
     </div>
 
-    <!-- GREEN ATELIER static text -->
+    <!-- GREEN ATELIER static text.
+         Fixed font-size on purpose. This used to be clamp(3rem, 8vw, 6rem), and
+         because vw counts the scrollbar, a page that scrolled rendered this a few
+         pixels smaller than one that did not — so the footer changed height as you
+         navigated. A fixed size cannot drift. -->
     <div class="w-full overflow-hidden py-4">
       <p class="font-light opacity-20 text-white whitespace-nowrap w-full text-center"
-        style="font-family: 'Georgia', serif; font-size: clamp(3rem, 8vw, 6rem); letter-spacing: 0.1em;">
+        style="font-family: 'Georgia', serif; font-size: 4.5rem; line-height: 1.15; letter-spacing: 0.1em;">
         GREEN ATELIER — GREEN ATELIER
       </p>
     </div>
