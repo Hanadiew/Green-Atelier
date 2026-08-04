@@ -295,7 +295,7 @@ Ordering goes through the `place_order()` database function rather than direct i
 4. refuses to let a seller buy their own listing;
 5. marks items sold, records the 85/15 payout split, and clears the item from **every** cart — all in one transaction.
 
-Fees: RM 15 flat shipping, 5% buyer service fee, 15% platform commission (85% seller payout). These constants live in `place_order()`; the checkout page mirrors them for display only.
+Fees: RM 15 flat shipping, RM 20 flat buyer platform fee, 15% GAFS fee on the seller side (85% seller payout). These constants live in `create_pending_order()` — which `place_order()` now wraps — and the checkout page mirrors them for display only. An accepted offer replaces the listing price there, so the agreed figure is what gets charged.
 
 ### Storage
 

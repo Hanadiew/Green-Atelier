@@ -328,7 +328,7 @@
               <span>RM {{ shipping.toLocaleString() }}.00</span>
             </div>
             <div class="flex justify-between text-xs text-gray-500">
-              <span>Service fee (5%)</span>
+              <span>Platform fee</span>
               <span>RM {{ serviceFee.toLocaleString() }}.00</span>
             </div>
             <div v-if="discount > 0" class="flex justify-between text-xs text-green-500">
@@ -421,11 +421,14 @@ const errorMsg = ref('')
 // actually prices the order and what Stripe is told to charge. They exist here
 // only so the buyer sees a breakdown before they commit — the server total is
 // authoritative and this figure is never sent anywhere.
+// Both are flat per-order amounts. The platform fee used to be 5% of the subtotal,
+// which reached RM355 on a RM7,100 bag — a handling fee should not scale with the
+// item's price.
 const SHIPPING_FEE = 15
-const SERVICE_FEE_RATE = 0.05
+const SERVICE_FEE = 20
 
 const shipping = ref(SHIPPING_FEE)
-const serviceFee = computed(() => Math.round(cartSubtotal.value * SERVICE_FEE_RATE * 100) / 100)
+const serviceFee = ref(SERVICE_FEE)
 const total = computed(() => cartSubtotal.value + shipping.value + serviceFee.value - discount.value)
 
 const savedAddresses = ref([])

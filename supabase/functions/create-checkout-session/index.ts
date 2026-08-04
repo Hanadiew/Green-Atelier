@@ -184,7 +184,7 @@ serve(async (req) => {
         price_data: {
           currency: CURRENCY,
           unit_amount: toMinorUnits(order.service_fee),
-          product_data: { name: 'Service fee (5%)' },
+          product_data: { name: 'Platform fee' },
         },
       })
     }

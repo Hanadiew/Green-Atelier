@@ -569,9 +569,10 @@
     <p class="text-xs text-gray-400 mt-1">Shown to buyers so they can see the saving.</p>
   </div>
 
-  <!-- Service fee note -->
+  <!-- Platform fee note. This is the buyer-side flat fee, separate from the 15%
+       commission shown in the payout breakdown above. -->
   <p class="text-xs text-gray-400">
-    The buyer will also pay a service fee.
+    The buyer will also pay a flat RM20 platform fee.
     <button @click="serviceFeeModal = true" class="underline hover:text-gray-600 transition">Learn more</button>
   </p>
 
@@ -607,7 +608,7 @@
       <span>RM {{ Number(details.listingPrice).toLocaleString() }}.00</span>
     </div>
     <div class="flex justify-between">
-      <span>Platform fee (15%)</span>
+      <span>GAFS Fee (15%)</span>
       <span>- RM {{ (Number(details.listingPrice) * 0.15).toLocaleString() }}.00</span>
     </div>
     <div class="flex justify-between font-semibold text-gray-700 border-t border-gray-100 pt-2">
@@ -630,8 +631,11 @@
         </svg>
       </button>
 
-      <h3 class="text-base font-semibold text-gray-800 mb-2">Buyer service fee</h3>
-      <p class="text-xs text-gray-400 mb-6">This fee gives buyers</p>
+      <h3 class="text-base font-semibold text-gray-800 mb-2">Buyer platform fee</h3>
+      <p class="text-xs text-gray-400 mb-6">
+        A flat RM20 per order, whatever the item costs. It does not come out of your
+        payout. This fee gives buyers
+      </p>
 
       <!-- Fee benefits -->
       <div class="space-y-5 mb-6">
@@ -687,7 +691,7 @@
       </div>
 
       <p class="text-xs mb-6">
-        <a href="#" class="underline text-gray-500 hover:text-gray-700 transition">Learn more about our buyer service fee</a>
+        <a href="#" class="underline text-gray-500 hover:text-gray-700 transition">Learn more about our buyer platform fee</a>
       </p>
 
       <button

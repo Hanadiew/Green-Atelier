@@ -87,7 +87,7 @@
               <dd class="text-gray-900">{{ formatMoney(order.shippingFee) }}</dd>
             </div>
             <div class="flex justify-between">
-              <dt class="text-gray-600">Service fee</dt>
+              <dt class="text-gray-600">Platform fee</dt>
               <dd class="text-gray-900">{{ formatMoney(order.serviceFee) }}</dd>
             </div>
             <div v-if="order.discount > 0" class="flex justify-between">

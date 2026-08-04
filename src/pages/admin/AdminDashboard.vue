@@ -44,7 +44,7 @@
         icon="TrendingUpIcon"
       />
       <AdminStatCard
-        label="Platform Commission"
+        label="GAFS Fee Earned"
         :value="stats.platformCommission"
         format="currency"
         variant="primary"

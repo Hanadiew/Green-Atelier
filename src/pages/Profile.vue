@@ -64,30 +64,33 @@
              sale — a brand-new buyer-only account never sees this. -->
         <div v-if="isOwnProfile && isSeller" class="flex-shrink-0" style="width: 260px;">
           <p class="text-xs tracking-widest uppercase text-gray-400 mb-3">Seller Overview</p>
-          <div class="bg-white rounded-xl shadow-sm px-5 py-4 grid grid-cols-2 gap-x-4 gap-y-4">
-            <div>
-              <p class="text-xs text-gray-400 mb-0.5">Total Earnings</p>
-              <p class="text-sm font-semibold text-gray-800">
-                RM {{ earnings.totalEarnings.toLocaleString() }}.00
-              </p>
+
+          <!-- Items Sold and Active Listings were removed: both are already stated
+               under the profile name above, so the panel was repeating itself. The
+               whole card is now the link to Wallet — a bigger target than the old
+               text link underneath it, and it keeps the action inside the card. -->
+          <RouterLink to="/wallet"
+            class="block bg-white rounded-xl shadow-sm px-5 py-4 transition hover:shadow-md group">
+            <div class="flex items-center justify-between gap-3">
+              <div class="min-w-0">
+                <p class="text-xs text-gray-400 mb-0.5">Total Earnings</p>
+                <p class="text-lg font-semibold text-gray-800">
+                  RM {{ earnings.totalEarnings.toLocaleString() }}.00
+                </p>
+              </div>
+              <svg xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5 flex-shrink-0 transition-transform group-hover:translate-x-0.5"
+                style="color: #C9A96E;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
             </div>
-            <div>
-              <p class="text-xs text-gray-400 mb-0.5">Items Sold</p>
-              <p class="text-sm font-semibold text-gray-800">{{ stats.sold }}</p>
-            </div>
-            <div>
-              <p class="text-xs text-gray-400 mb-0.5">Active Listings</p>
-              <p class="text-sm font-semibold text-gray-800">{{ stats.itemsForSale }}</p>
-            </div>
-            <div>
-              <p class="text-xs text-gray-400 mb-0.5">Paid Out</p>
-              <p class="text-sm font-semibold text-gray-800">
+
+            <div class="flex items-center justify-between gap-3 mt-3 pt-3 border-t border-gray-100">
+              <p class="text-xs text-gray-400">Paid Out</p>
+              <p class="text-xs font-medium text-gray-700">
                 RM {{ earnings.paidOut.toLocaleString() }}.00
               </p>
             </div>
-          </div>
-          <RouterLink to="/wallet" class="block text-center mt-3 text-xs underline" style="color: #C9A96E;">
-            View Earnings
           </RouterLink>
         </div>
 
@@ -521,7 +524,7 @@
               <span>Shipping</span><span>RM {{ orderDetail.shippingFee.toLocaleString() }}.00</span>
             </div>
             <div class="flex justify-between text-xs text-gray-500">
-              <span>Service fee</span><span>RM {{ orderDetail.serviceFee.toLocaleString() }}.00</span>
+              <span>Platform fee</span><span>RM {{ orderDetail.serviceFee.toLocaleString() }}.00</span>
             </div>
             <div v-if="orderDetail.discount > 0" class="flex justify-between text-xs text-green-600">
               <span>Promo discount{{ orderDetail.promoCode ? ` (${orderDetail.promoCode})` : '' }}</span>
