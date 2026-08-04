@@ -111,21 +111,11 @@
           <span class="text-sm font-semibold text-gray-800">RM {{ order.total.toLocaleString() }}.00</span>
         </div>
 
-        <!-- Email status -->
-        <div class="rounded-md px-4 py-3 mb-6 text-xs no-print" :style="emailBoxStyle">
-          {{ emailStatusText }}
-        </div>
-
         <!-- Actions -->
         <div class="flex flex-col gap-2 no-print">
           <button @click="handlePrint"
             class="w-full py-2.5 text-xs border rounded-md text-gray-600 hover:bg-gray-50 transition" style="border-color: #e5e7eb;">
             Print / Save as PDF
-          </button>
-          <button @click="handleResend" :disabled="resending"
-            class="w-full py-2.5 text-xs text-white rounded-md transition hover:opacity-90 disabled:opacity-60"
-            style="background-color: #C9A96E;">
-            {{ resending ? 'Sending…' : 'Resend Email Receipt' }}
           </button>
           <RouterLink :to="{ path: '/profile', query: { tab: 'Orders' } }"
             class="w-full py-2.5 text-xs text-white rounded-md text-center transition hover:opacity-90"
@@ -142,18 +132,16 @@
 </template>
 
 <script setup>
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import Footer from '../components/Footer.vue'
-import { fetchOrderById, sendReceiptEmail } from '../lib/orders.js'
+import { fetchOrderById } from '../lib/orders.js'
 
 const route = useRoute()
 
 const order = ref(null)
 const loading = ref(true)
 const errorMsg = ref('')
-const resending = ref(false)
-const emailState = ref('sending') // 'sending' | 'sent' | 'failed'
 
 const STATUS_STYLES = {
   Processing: 'background-color: #FEF3EC; color: #92400E;',
@@ -171,17 +159,6 @@ const PAYMENT_STYLES = {
 }
 const paymentStyle = (s) => PAYMENT_STYLES[s] ?? PAYMENT_STYLES.pending
 
-const emailBoxStyle = computed(() => {
-  if (emailState.value === 'sent') return 'background-color: #E8F5EE; color: #166534;'
-  if (emailState.value === 'failed') return 'background-color: #FEF3EC; color: #92400E;'
-  return 'background-color: #F7F5F0; color: #6B7280;'
-})
-const emailStatusText = computed(() => {
-  if (emailState.value === 'sent') return 'A copy of this receipt has been emailed to you.'
-  if (emailState.value === 'failed') return 'We could not email this receipt automatically — try "Resend Email Receipt" below.'
-  return 'Sending a copy of this receipt to your email…'
-})
-
 const load = async () => {
   loading.value = true
   errorMsg.value = ''
@@ -195,29 +172,9 @@ const load = async () => {
   }
 }
 
-const sendEmail = async () => {
-  emailState.value = 'sending'
-  try {
-    await sendReceiptEmail(route.params.orderId)
-    emailState.value = 'sent'
-  } catch (error) {
-    console.error('Receipt email failed:', error.message)
-    emailState.value = 'failed'
-  }
-}
-
-const handleResend = async () => {
-  resending.value = true
-  await sendEmail()
-  resending.value = false
-}
-
 const handlePrint = () => window.print()
 
-onMounted(async () => {
-  await load()
-  if (order.value) sendEmail()
-})
+onMounted(load)
 </script>
 
 <style scoped>

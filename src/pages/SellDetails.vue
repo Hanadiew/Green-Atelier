@@ -17,14 +17,14 @@
               <!-- Clickable circle -->
               <button
                 @click="goToStep(i)"
-                class="w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition"
+                class="w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition hover:border-yellow-600"
                 :class="currentStep === i
                   ? 'border-yellow-600 bg-white'
-                  : currentStep > i
+                  : stepComplete(i)
                   ? 'border-yellow-600 bg-yellow-600'
                   : 'border-gray-200 bg-white'">
                 <div v-if="currentStep === i" class="w-2 h-2 rounded-full" style="background-color: #C9A96E;"></div>
-                <svg v-else-if="currentStep > i" xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg v-else-if="stepComplete(i)" xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
                 </svg>
               </button>
@@ -35,8 +35,8 @@
             <!-- Clickable label -->
             <button
               @click="goToStep(i)"
-              class="text-xs pt-1 font-medium transition text-left"
-              :class="currentStep === i ? 'text-yellow-700' : currentStep > i ? 'text-gray-500' : 'text-gray-300'"
+              class="text-xs pt-1 font-medium transition text-left hover:text-yellow-700"
+              :class="currentStep === i ? 'text-yellow-700' : stepComplete(i) ? 'text-gray-500' : 'text-gray-400'"
               style="letter-spacing: 0.08em;">
               {{ step.label.toUpperCase() }}
             </button>
@@ -957,10 +957,14 @@ const confirmAddress = async () => {
   }
 }
 
+// Any section, in any order. Sellers fill these out of sequence — pricing
+// before media, say — and used to have to press Continue through every step in
+// between. Gaps are still caught on submit, which re-validates all of them and
+// jumps back to the first one that fails.
 const goToStep = (i) => {
-  if (i <= currentStep.value) {
-    currentStep.value = i
-  }
+  if (i === currentStep.value) return
+  errorMsg.value = ''
+  currentStep.value = i
 }
 
 const MAX_DOC_BYTES = 10 * 1024 * 1024 // matches the authenticity-docs bucket limit
@@ -1047,21 +1051,30 @@ const validateStep = (step) => {
   return null
 }
 
+// Drives the stepper ticks. Since sellers can jump around freely, "done" has to
+// mean "this section validates", not "I have walked past it".
+const stepComplete = (step) => step !== currentStep.value && validateStep(step) === null
+
 const handleContinue = async () => {
   errorMsg.value = ''
 
-  const problem = validateStep(currentStep.value)
-  if (problem) {
-    errorMsg.value = problem
-    return
+  // On a new listing this button walks the seller forward one section at a time.
+  // When editing it reads "Save Changes", so it has to save from whichever
+  // section they happen to be on — the stepper is how they move around.
+  if (!isEditMode.value) {
+    const problem = validateStep(currentStep.value)
+    if (problem) {
+      errorMsg.value = problem
+      return
+    }
+
+    if (currentStep.value < steps.length - 1) {
+      currentStep.value++
+      return
+    }
   }
 
-  if (currentStep.value < steps.length - 1) {
-    currentStep.value++
-    return
-  }
-
-  // Final step — re-check the earlier steps in case one was skipped.
+  // Submitting or saving — re-check every section in case one was skipped.
   for (let step = 0; step < steps.length; step++) {
     const earlier = validateStep(step)
     if (earlier) {

@@ -283,7 +283,8 @@
     <!-- Order cards -->
     <div v-else class="space-y-4">
       <div v-for="order in filteredOrders" :key="order.id"
-        class="bg-white rounded-xl border border-gray-100 p-5 flex items-center gap-5 shadow-sm">
+        @click="router.push('/receipt/' + order.orderUuid)"
+        class="bg-white rounded-xl border border-gray-100 p-5 flex items-center gap-5 shadow-sm cursor-pointer transition hover:border-gray-200 hover:shadow-md">
 
         <!-- Product image -->
         <div class="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
@@ -301,16 +302,19 @@
           </div>
           <p class="text-xs text-gray-400 mb-2">Order #{{ order.orderId }} · {{ order.date }}</p>
 
-          <!-- Status badge -->
-          <span class="inline-block px-3 py-0.5 rounded-full text-xs font-medium"
-            :class="{
-              'bg-yellow-50 text-yellow-600': order.status === 'Processing',
-              'bg-blue-50 text-blue-600': order.status === 'Shipped',
-              'bg-green-50 text-green-600': order.status === 'Delivered',
-              'bg-red-50 text-red-400': order.status === 'Cancelled',
-            }">
-            {{ order.status }}
-          </span>
+          <div class="flex items-center justify-between">
+            <!-- Status badge -->
+            <span class="inline-block px-3 py-0.5 rounded-full text-xs font-medium"
+              :class="{
+                'bg-yellow-50 text-yellow-600': order.status === 'Processing',
+                'bg-blue-50 text-blue-600': order.status === 'Shipped',
+                'bg-green-50 text-green-600': order.status === 'Delivered',
+                'bg-red-50 text-red-400': order.status === 'Cancelled',
+              }">
+              {{ order.status }}
+            </span>
+            <span class="text-xs text-gray-400">View details →</span>
+          </div>
         </div>
 
       </div>
@@ -361,8 +365,7 @@ import { fetchWishlist, removeFromWishlist } from '../lib/wishlist.js'
 import { fetchOrders } from '../lib/orders.js'
 import {
   fetchSellerListings,
-  deleteListing,
-  archiveListing
+  deleteListing
 } from '../lib/listings.js'
 import { fetchSellerEarnings } from '../lib/payouts.js'
 import { showToast } from '../lib/toast.js'
@@ -425,10 +428,6 @@ const confirmDelete = async () => {
   try {
     if (item.status === 'sold') {
       showToast('Sold items are part of order history and cannot be deleted.', 'error')
-    } else if (item.status === 'active') {
-      await archiveListing(item.id)
-      listings.value = listings.value.filter((i) => i.id !== item.id)
-      showToast('Listing removed from the shop.')
     } else {
       await deleteListing(item.id)
       listings.value = listings.value.filter((i) => i.id !== item.id)
@@ -543,6 +542,8 @@ const orderCards = computed(() =>
   orders.value.flatMap((o) =>
     o.items.map((item) => ({
       id: item.id,
+      // orderId is the human-readable GA-… number; the receipt route needs the uuid.
+      orderUuid: o.id,
       orderId: o.orderId,
       name: item.name,
       brand: item.brand,

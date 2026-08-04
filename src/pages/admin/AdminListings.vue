@@ -23,6 +23,8 @@
             <option value="active">Active</option>
             <option value="sold">Sold</option>
             <option value="rejected">Rejected</option>
+            <option value="draft">Draft</option>
+            <option value="archived">Archived</option>
           </select>
         </div>
         <div>
@@ -140,7 +142,7 @@
                     :to="`/admin/listings/${listing.id}`"
                     class="text-emerald-600 hover:text-emerald-700 text-sm font-medium"
                   >
-                    View
+                    {{ isDecidable(listing.status) ? 'Review' : 'View' }}
                   </router-link>
                 </div>
               </td>
@@ -180,7 +182,9 @@
 import { ref, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import AdminBadge from '../../components/admin/AdminBadge.vue'
-import { getAdminListings } from '../../lib/admin.js'
+import { getAdminListings, isDecidableListingStatus } from '../../lib/admin.js'
+
+const isDecidable = isDecidableListingStatus
 
 const route = useRoute()
 

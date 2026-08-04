@@ -87,8 +87,6 @@ export async function fetchOrders(userId) {
   }))
 }
 
-// Add near the top with the other exports, or anywhere below statusLabel()
-
 /** Full detail for one order — used by the receipt page. */
 export async function fetchOrderById(orderId) {
   const { data, error } = await supabase
@@ -143,17 +141,6 @@ export async function fetchOrderById(orderId) {
   }
 }
 
-/**
- * Emails the receipt via the send-receipt-email Edge Function.
- * Best-effort — callers should not block the checkout flow on this failing.
- */
-export async function sendReceiptEmail(orderId) {
-  const { data, error } = await supabase.functions.invoke('send-receipt-email', {
-    body: { orderId },
-  })
-  if (error) throw new Error(error.message)
-  return data
-}
 
 /** Items the signed-in user has sold, for a seller dashboard. */
 export async function fetchSales(userId) {

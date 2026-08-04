@@ -361,13 +361,6 @@ export async function updateListing(id, fields) {
   return data
 }
 
-/**
- * "Soft delete" for active listings. Your RLS delete policy only allows a
- * real delete when status is draft/pending_review/rejected/archived — active
- * and sold listings can't be removed outright, so this hides an active one
- * from the shop instead.
- */
-export async function archiveListing(id) {
-  const { error } = await supabase.from('listings').update({ status: 'archived' }).eq('id', id)
-  if (error) throw error
-}
+// Archiving used to stand in for deleting an active listing. It is gone on
+// purpose: a seller's only controls are edit and remove, and deleteListing()
+// now covers every status except 'sold'.

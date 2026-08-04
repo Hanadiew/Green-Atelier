@@ -382,7 +382,6 @@ import { cartItems, cartSubtotal, removeFromCart, resetCartState } from '../cart
 import { userId } from '../lib/auth.js'
 import { createAddress, fetchAddresses, toDisplay } from '../lib/addresses.js'
 import { placeOrder, validatePromoCode } from '../lib/orders.js'
-import { sendReceiptEmail } from '../lib/orders.js'
 
 const router = useRouter()
 
@@ -506,9 +505,6 @@ const handlePlaceOrder = async () => {
       promoCode: promoValid.value ? promoCode.value : null,
     })
     resetCartState()
-    orderPlaced.value = true
-// Best-effort — the order is already placed either way.
-// sendReceiptEmail(placedOrderId.value).catch((e) => console.error('Receipt email failed:', e.message))
     orderPlaced.value = true
   } catch (error) {
     errorMsg.value = error.message

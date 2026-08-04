@@ -70,7 +70,7 @@
             :disabled="isOwnListing || product.status !== 'active' || inCart"
             class="flex-1 py-3 text-sm border rounded-md transition hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             style="border-color: #C9A96E; color: #C9A96E;">
-            {{ product.status !== 'active' ? 'Sold'
+            {{ product.status !== 'active' ? unavailableLabel
                : isOwnListing ? 'This is your listing'
                : inCart ? 'In your Bag'
                : addedToCart ? 'Added to Bag ✓' : 'Add to Bag' }}
@@ -319,6 +319,20 @@ const CONDITION_BLURBS = {
 const conditionBlurb = computed(() => CONDITION_BLURBS[product.value?.condition] ?? '')
 
 const isOwnListing = computed(() => product.value && product.value.sellerId === userId.value)
+
+// Only the seller and staff can reach a listing that isn't live yet, so the
+// button has to say why it isn't buyable rather than always claiming "Sold".
+const UNAVAILABLE_LABELS = {
+  sold: 'Sold',
+  pending_review: 'In review',
+  draft: 'Draft',
+  rejected: 'Not approved',
+  archived: 'Not listed',
+}
+const unavailableLabel = computed(
+  () => UNAVAILABLE_LABELS[product.value?.status] ?? 'Unavailable',
+)
+
 const inCart = computed(() => cartItems.value.some((i) => i.id === product.value?.id))
 const isSaved = computed(() => product.value && wishlistIds.value.has(product.value.id))
 

@@ -264,6 +264,18 @@ function formatListingForAdmin(listing) {
 }
 
 /**
+ * Statuses a moderator can still make a publish/reject call on. 'active' needs
+ * no decision and 'sold' is order history, so those two are the only ones that
+ * leave a listing read-only. 'archived' is included so anything stranded there
+ * by the old seller soft-delete can be brought back.
+ */
+const DECIDABLE_LISTING_STATUSES = ['pending_review', 'draft', 'archived', 'rejected']
+
+export function isDecidableListingStatus(status) {
+  return DECIDABLE_LISTING_STATUSES.includes(status)
+}
+
+/**
  * Approves a pending listing by changing its status to active.
  */
 export async function approveListing(listingId) {

@@ -7,8 +7,10 @@
 -- running this more than once is safe, and a later `supabase db push` will
 -- re-run them harmlessly.
 --
--- Requires the base migrations (090000-091200) to already be applied, which
--- they are — the storefront depends on them.
+-- Requires the base migrations (090000-091200) to already be applied. Do not
+-- assume they are: 091100 and 091200 were missed on the live project even
+-- though this file ran, which left seller_payout_accounts and payouts absent.
+-- apply_payouts_and_listing_lifecycle.sql backfills them.
 -- =============================================================================
 
 
