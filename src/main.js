@@ -31,6 +31,20 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     { path: '/receipt/:orderId', component: () => import('./pages/Receipt.vue'), meta: { requiresAuth: true } },
+
+    // Stripe's success_url and cancel_url. Both carry ?order=<uuid>; the success
+    // page reads the real payment state from the database rather than believing
+    // the redirect, so refreshing or sharing the URL changes nothing.
+    {
+      path: '/payment-success',
+      component: () => import('./pages/PaymentSuccess.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/payment-cancelled',
+      component: () => import('./pages/PaymentCancelled.vue'),
+      meta: { requiresAuth: true },
+    },
     { path: '/sales-orders', component: () => import('./pages/SalesOrders.vue'), meta: { requiresAuth: true } },
     { path: '/wallet', component: () => import('./pages/Wallet.vue'), meta: { requiresAuth: true } },
     { path: '/about', component: () => import('./pages/About.vue') },

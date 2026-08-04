@@ -114,7 +114,9 @@
   <!-- ===== LISTINGS TAB ===== -->
   <div v-if="activeTab === 'Listings'">
 
-    <div v-if="listings.length > 0 || isOwnProfile" class="flex items-center justify-between gap-4 mb-6 flex-wrap">
+    <!-- Hidden entirely when there is nothing to list: the empty state below
+         carries its own Add Item button, and two of them read as a mistake. -->
+    <div v-if="listings.length > 0" class="flex items-center justify-between gap-4 mb-6 flex-wrap">
   <RouterLink v-if="isOwnProfile" to="/sell"
     class="px-5 py-2 text-xs text-white rounded-md transition hover:opacity-90 flex items-center gap-1.5 flex-shrink-0"
     style="background-color: #1B3A2D;">
@@ -158,8 +160,11 @@
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
       </svg>
       <p class="text-sm font-medium text-gray-500 mb-1">No listings yet</p>
-      <p class="text-xs text-gray-400 mb-6">Start selling your pre-loved pieces</p>
-      <RouterLink to="/sell"
+      <p class="text-xs text-gray-400 mb-6">
+        {{ isOwnProfile ? 'Start selling your pre-loved pieces' : 'This seller has nothing for sale right now.' }}
+      </p>
+      <!-- The only Add Item button in the empty state, and only on your own page. -->
+      <RouterLink v-if="isOwnProfile" to="/sell"
   class="px-6 py-2.5 text-xs text-white rounded-md"
   style="background-color: #1B3A2D;">
   + Add Item
@@ -303,16 +308,28 @@
           <p class="text-xs text-gray-400 mb-2">Order #{{ order.orderId }} · {{ order.date }}</p>
 
           <div class="flex items-center justify-between">
-            <!-- Status badge -->
-            <span class="inline-block px-3 py-0.5 rounded-full text-xs font-medium"
-              :class="{
-                'bg-yellow-50 text-yellow-600': order.status === 'Processing',
-                'bg-blue-50 text-blue-600': order.status === 'Shipped',
-                'bg-green-50 text-green-600': order.status === 'Delivered',
-                'bg-red-50 text-red-400': order.status === 'Cancelled',
-              }">
-              {{ order.status }}
-            </span>
+            <div class="flex items-center gap-2">
+              <!-- Payment and fulfilment are separate facts and are shown as such. -->
+              <span class="inline-block px-3 py-0.5 rounded-full text-xs font-medium"
+                :class="{
+                  'bg-green-50 text-green-600': order.paymentStatus === 'paid',
+                  'bg-yellow-50 text-yellow-600': order.paymentStatus === 'pending',
+                  'bg-red-50 text-red-400': order.paymentStatus === 'failed',
+                  'bg-gray-100 text-gray-500': order.paymentStatus === 'refunded',
+                }">
+                {{ order.paymentLabel }}
+              </span>
+              <span class="inline-block px-3 py-0.5 rounded-full text-xs font-medium"
+                :class="{
+                  'bg-yellow-50 text-yellow-600': order.status === 'Processing',
+                  'bg-blue-50 text-blue-600': order.status === 'Shipped',
+                  'bg-green-50 text-green-600': order.status === 'Delivered',
+                  'bg-red-50 text-red-400': order.status === 'Cancelled',
+                  'bg-gray-100 text-gray-500': order.status === 'Pending',
+                }">
+                {{ order.status }}
+              </span>
+            </div>
             <span class="text-xs text-gray-400">View details →</span>
           </div>
         </div>
@@ -363,6 +380,7 @@ import { isAuthenticated, profile as ownProfile, userId } from '../lib/auth.js'
 import { fetchProfileByUsername, fetchProfileStats } from '../lib/profiles.js'
 import { fetchWishlist, removeFromWishlist } from '../lib/wishlist.js'
 import { fetchOrders } from '../lib/orders.js'
+import { paymentStatusLabel } from '../lib/payments.js'
 import {
   fetchSellerListings,
   deleteListing
@@ -389,7 +407,7 @@ const activeOrderStatus = ref('All')
 
 const STATUS_BADGES = {
   active: { label: 'Active', style: 'background-color: #1B3A2D; color: white;' },
-  pending_review: { label: 'In review', style: 'background-color: #C9A96E; color: white;' },
+  pending_review: { label: 'In Review', style: 'background-color: #C9A96E; color: white;' },
   draft: { label: 'Draft', style: 'background-color: #9CA3AF; color: white;' },
   rejected: { label: 'Rejected', style: 'background-color: #DC2626; color: white;' },
   archived: { label: 'Archived', style: 'background-color: #6B7280; color: white;' },
@@ -545,6 +563,8 @@ const orderCards = computed(() =>
       // orderId is the human-readable GA-… number; the receipt route needs the uuid.
       orderUuid: o.id,
       orderId: o.orderId,
+      paymentStatus: o.paymentStatus,
+      paymentLabel: paymentStatusLabel(o.paymentStatus),
       name: item.name,
       brand: item.brand,
       price: item.price,

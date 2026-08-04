@@ -35,10 +35,13 @@ export function isLocked(status) {
   return status === 'delivered' || status === 'cancelled'
 }
 
+// !inner so the payment_status filter below can apply to the joined order. RLS
+// already hides unpaid orders from sellers (order_awaiting_payment); this keeps
+// the query honest about it too rather than relying on the policy alone.
 const SALE_FIELDS = `
   id, order_id, listing_id, title_snapshot, brand_snapshot, image_snapshot,
   price_paid, platform_fee, seller_payout, status, created_at, updated_at,
-  order:orders (
+  order:orders!inner (
     order_number, placed_at, total, payment_method, payment_status,
     buyer:profiles ( username, first_name, last_name, full_name ),
     shipping_address:addresses ( first_name, surname, street_address, apartment, city, state, postcode, country, phone_code, phone )
@@ -84,6 +87,9 @@ export async function fetchSellerSalesOrders(sellerId, { page = 1, perPage = 10 
     .from('order_items')
     .select(SALE_FIELDS, { count: 'exact' })
     .eq('seller_id', sellerId)
+    // An order awaiting payment is not a sale yet — a buyer part-way through
+    // Stripe must not surface as work for the seller.
+    .neq('order.payment_status', 'pending')
     .order('created_at', { ascending: false })
     .range(from, from + perPage - 1)
 

@@ -50,9 +50,11 @@ create policy listings_delete_own on public.listings
   );
 
 -- 3. One-time repair. Every listing currently sitting in 'archived' got there
---    through the old soft-delete path, not through a review decision — seed.sql
---    inserts its catalogue as 'active'. Put them back so the shop has stock.
---    auth.uid() is null here, so the guard above lets this through.
+--    through the old soft-delete path, not through a review decision. Send them
+--    back to 'pending_review' rather than straight to 'active': the seller sees
+--    "In review" and the admin portal gets them in its Pending Review queue to
+--    approve or reject. auth.uid() is null here, so the guard above lets this
+--    through.
 update public.listings
-   set status = 'active'
+   set status = 'pending_review'
  where status = 'archived';

@@ -1,6 +1,9 @@
 import { supabase } from '../supabase.js'
 
 const STATUS_LABELS = {
+  // 'pending' means the order exists but payment has not been confirmed yet.
+  // It is fulfilment state, kept deliberately separate from payment_status.
+  pending: 'Pending',
   processing: 'Processing',
   shipped: 'Shipped',
   delivered: 'Delivered',

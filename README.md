@@ -140,6 +140,119 @@ npm run build
 
 ---
 
+## 💳 Stripe Payment Testing
+
+GAFS uses **Stripe Test Mode** for development and FYP demonstrations. **No real money is charged, and the platform does not process real payments.** `create-checkout-session` refuses to start if `STRIPE_SECRET_KEY` is not an `sk_test_` key, so a live key cannot be used by accident.
+
+Seller payouts are deliberately **not** implemented — no Stripe Connect, no bank transfers. The flow covered here is **Buyer → Stripe Test Payment → GAFS** only. The 85/15 split is still recorded on `order_items` as bookkeeping, but no money leaves the platform.
+
+### How it works
+
+```
+Cart → Checkout → create_pending_order()      order: pending / payment: pending
+                                              listings: reserved
+     → Stripe Checkout (hosted by Stripe)
+     → stripe-webhook verifies the signature
+     → finalize_paid_order()                  order: processing / payment: paid
+                                              listings: sold, carts cleared
+```
+
+Two properties worth knowing:
+
+- **The success page is not authoritative.** `/payment-success` only *reads* the order and polls until the webhook lands. Refreshing it, sharing it, or visiting it directly changes nothing.
+- **Payment survives a dead browser.** If the buyer's connection drops on the way back from Stripe, the webhook still settles the order.
+
+Listings sit in a `reserved` state while a buyer is mid-payment, so a second buyer cannot reach Stripe for the same one-of-a-kind item — nobody gets charged for something they can't receive. Cancelling releases the hold immediately; abandoning it releases via Stripe's `checkout.session.expired` after 30 minutes.
+
+### 1. Create a Stripe test account
+
+Sign up at [stripe.com](https://dashboard.stripe.com/register). No business details or bank account are needed for test mode. Make sure the dashboard's **Test mode** toggle is ON.
+
+### 2. Get your test credentials
+
+From **Developers → API keys**, copy the **Secret key** (`sk_test_…`). GAFS does not need the publishable key — Stripe hosts the payment page itself.
+
+### 3. Set the server-side secrets
+
+These are **Edge Function secrets, never `VITE_` variables**. The Stripe secret key must never reach the browser.
+
+```sh
+npx supabase login
+npx supabase link --project-ref your-project-ref
+
+npx supabase secrets set STRIPE_SECRET_KEY=sk_test_your_key
+npx supabase secrets set SITE_URL=http://localhost:5173
+```
+
+### 4. Deploy the functions
+
+```sh
+npx supabase functions deploy create-checkout-session
+npx supabase functions deploy stripe-webhook --no-verify-jwt
+```
+
+`--no-verify-jwt` is required on the webhook: Stripe does not send a Supabase JWT, and the Stripe signature is what authenticates the request.
+
+### 5. Listen to the webhook locally
+
+Install the [Stripe CLI](https://stripe.com/docs/stripe-cli), then:
+
+```sh
+stripe login
+stripe listen --forward-to https://your-project-ref.supabase.co/functions/v1/stripe-webhook
+```
+
+`stripe listen` prints a signing secret (`whsec_…`). Register it and redeploy so the function picks it up:
+
+```sh
+npx supabase secrets set STRIPE_WEBHOOK_SECRET=whsec_printed_by_stripe_listen
+npx supabase functions deploy stripe-webhook --no-verify-jwt
+```
+
+For a deployed site instead, add the endpoint under **Developers → Webhooks** and use the signing secret shown there. Events to subscribe to:
+
+| Event | Effect |
+|---|---|
+| `checkout.session.completed` | Order becomes paid, listings sold, carts cleared |
+| `checkout.session.expired` | Reservation released, listings back on sale |
+| `checkout.session.async_payment_succeeded` | Same as `completed`, for delayed methods |
+| `checkout.session.async_payment_failed` | Payment marked failed, listings released |
+| `payment_intent.payment_failed` | Payment marked failed, listings released |
+
+### 6. Test with Stripe's test cards
+
+Run `npm run dev`, add an item to your bag, and go through checkout.
+
+| Card | Result |
+|---|---|
+| `4242 4242 4242 4242` | Payment succeeds |
+| `4000 0000 0000 0002` | Card declined |
+| `4000 0000 0000 9995` | Insufficient funds |
+| `4000 0027 6000 3184` | Requires 3D Secure authentication |
+
+Any future expiry date, any 3-digit CVC, any postcode.
+
+Watch the result land in the `stripe listen` output and in **Edge Functions → Logs** in the Supabase dashboard.
+
+### Replaying a webhook
+
+Idempotency is a hard requirement — Stripe retries. To check it yourself, resend a delivered event:
+
+```sh
+stripe events resend evt_xxx
+```
+
+The order stays paid, no second order appears, and the log says the duplicate was ignored.
+
+### Test-mode limitations
+
+- Test payments are simulated. Nothing settles, and no funds exist.
+- Only Stripe's test cards work; a real card is rejected in test mode.
+- Sellers are never paid — there is no payout mechanism in this project.
+- MYR is used as the currency, matching the RM pricing in the UI.
+
+---
+
 ## 📊 Database
 
 17 tables, all with Row Level Security enabled. The full definition lives in `supabase/migrations/`.

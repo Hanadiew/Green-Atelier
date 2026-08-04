@@ -238,36 +238,23 @@
               </label>
             </div>
 
-            <!-- Card details if credit card selected -->
-            <div v-if="selectedPayment === 'card'" class="space-y-4 pt-2">
-              <div>
-                <label class="text-xs text-gray-400 mb-1 block">Card number</label>
-                <input v-model="card.number" type="text" placeholder="1234 5678 9012 3456"
-                  class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm outline-none bg-white placeholder-gray-300" />
-              </div>
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <label class="text-xs text-gray-400 mb-1 block">Expiry date</label>
-                  <input v-model="card.expiry" type="text" placeholder="MM/YY"
-                    class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm outline-none bg-white placeholder-gray-300" />
-                </div>
-                <div>
-                  <label class="text-xs text-gray-400 mb-1 block">CVV</label>
-                  <input v-model="card.cvv" type="text" placeholder="123"
-                    class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm outline-none bg-white placeholder-gray-300" />
-                </div>
-              </div>
-              <div>
-                <label class="text-xs text-gray-400 mb-1 block">Name on card</label>
-                <input v-model="card.name" type="text" placeholder="Full name"
-                  class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm outline-none bg-white placeholder-gray-300" />
-              </div>
+            <!-- Card details are collected by Stripe on its own hosted page, so
+                 GAFS never sees or stores a card number. -->
+            <div class="flex items-start gap-3 rounded-lg px-4 py-3" style="background-color: #F7F5F0;">
+              <span class="text-sm leading-none mt-0.5">🔒</span>
+              <p class="text-xs text-gray-500 leading-relaxed">
+                You'll be taken to Stripe's secure payment page to complete this order.
+                Your card details are never stored by Green Atelier.
+                <span class="block mt-1 text-gray-400">
+                  Test mode — use card 4242 4242 4242 4242 with any future expiry and any CVC.
+                </span>
+              </p>
             </div>
 
-            <button @click="handlePlaceOrder" :disabled="placing"
+            <button @click="handleProceedToPayment" :disabled="placing"
               class="w-full py-3 text-sm text-white rounded-md transition hover:opacity-90 mt-2 disabled:opacity-60"
               style="background-color: #1B3A2D;">
-              {{ placing ? 'Placing order…' : 'Place Order' }}
+              {{ placing ? 'Redirecting to Stripe…' : 'Proceed to Payment' }}
             </button>
 
           </div>
@@ -331,13 +318,13 @@
             <span class="text-sm font-semibold text-gray-800">RM {{ total.toLocaleString() }}.00</span>
           </div>
 
-          <!-- Place order -->
-          <button @click="handlePlaceOrder"
+          <!-- Proceed to Stripe -->
+          <button @click="handleProceedToPayment"
             class="w-full py-3 text-sm text-white rounded-md transition hover:opacity-90"
             :class="cartItems.length === 0 || placing ? 'opacity-40 cursor-not-allowed' : ''"
             :disabled="cartItems.length === 0 || placing"
             style="background-color: #1B3A2D;">
-            {{ placing ? 'Placing order…' : 'Place Order' }}
+            {{ placing ? 'Redirecting to Stripe…' : 'Proceed to Payment' }}
           </button>
 
           <p class="text-xs text-gray-400 text-center mt-4 leading-relaxed">
@@ -350,27 +337,8 @@
 
     </div>
 
-    <!-- ===== ORDER SUCCESS MODAL ===== -->
-    <Teleport to="body">
-      <div v-if="orderPlaced" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-        <div class="bg-white rounded-2xl shadow-xl px-10 py-10 flex flex-col items-center text-center max-w-sm w-full mx-4">
-          <div class="w-16 h-16 rounded-full flex items-center justify-center mb-5" style="background-color: #E8F5EE;">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-            </svg>
-          </div>
-          <h3 class="text-lg font-semibold text-gray-800 mb-2">Order Placed!</h3>
-          <p class="text-xs text-gray-400 leading-relaxed mb-6">
-            Thank you for your purchase. Your order is being processed and you'll receive a confirmation shortly.
-          </p>
-          <button @click="handleOrderDone"
-            class="w-full py-3 text-sm text-white rounded-md"
-            style="background-color: #1B3A2D;">
-            View My Orders
-          </button>
-        </div>
-      </div>
-    </Teleport>
+    <!-- No success modal here on purpose: the order is not placed until Stripe
+         confirms it. /payment-success reports the real state from the database. -->
 
   </div>
 </template>
@@ -378,17 +346,16 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { cartItems, cartSubtotal, removeFromCart, resetCartState } from '../cart.js'
+import { cartItems, cartSubtotal, removeFromCart } from '../cart.js'
 import { userId } from '../lib/auth.js'
 import { createAddress, fetchAddresses, toDisplay } from '../lib/addresses.js'
-import { placeOrder, validatePromoCode } from '../lib/orders.js'
+import { validatePromoCode } from '../lib/orders.js'
+import { createCheckoutSession } from '../lib/payments.js'
 
 const router = useRouter()
 
 const activeStep = ref(1)
 const showAddressForm = ref(false)
-const orderPlaced = ref(false)
-const placedOrderId = ref(null)
 const promoCode = ref('')
 const promoMsg = ref('')
 const promoValid = ref(false)
@@ -397,9 +364,10 @@ const selectedPayment = ref('card')
 const placing = ref(false)
 const errorMsg = ref('')
 
-// These rates mirror the constants inside the place_order() database function,
-// which is what actually prices the order. They are shown for transparency; the
-// server total is authoritative.
+// These rates mirror the constants inside create_pending_order(), which is what
+// actually prices the order and what Stripe is told to charge. They exist here
+// only so the buyer sees a breakdown before they commit — the server total is
+// authoritative and this figure is never sent anywhere.
 const SHIPPING_FEE = 15
 const SERVICE_FEE_RATE = 0.05
 
@@ -414,8 +382,6 @@ const shippingAddress = computed(
 )
 
 const newShipping = ref({ firstName: '', lastName: '', street: '', city: '', postcode: '' })
-
-const card = ref({ number: '', expiry: '', cvv: '', name: '' })
 
 const paymentMethods = [
   { key: 'card', label: 'Credit / Debit Card', icon: '💳' },
@@ -485,9 +451,13 @@ const saveShipping = async () => {
   }
 }
 
-const handlePlaceOrder = async () => {
+const handleProceedToPayment = async () => {
   errorMsg.value = ''
   if (cartItems.value.length === 0) return
+  if (!userId.value) {
+    router.push({ path: '/login', query: { redirect: '/checkout' } })
+    return
+  }
   if (!shippingAddressId.value) {
     activeStep.value = 2
     showAddressForm.value = savedAddresses.value.length === 0
@@ -496,26 +466,20 @@ const handlePlaceOrder = async () => {
 
   placing.value = true
   try {
-    // place_order() re-prices everything from stored listing prices, verifies
-    // each item is still available, marks them sold and clears the cart in a
-    // single transaction.
-    placedOrderId.value = await placeOrder({
+    // Creates the pending order (server-priced, listings reserved) and its Stripe
+    // Checkout Session. The cart is deliberately NOT cleared here — it is cleared
+    // when the webhook confirms payment, so a cancelled checkout leaves the
+    // buyer's bag intact.
+    const { url } = await createCheckoutSession({
       shippingAddressId: shippingAddressId.value,
       paymentMethod: selectedPayment.value,
       promoCode: promoValid.value ? promoCode.value : null,
     })
-    resetCartState()
-    orderPlaced.value = true
+    // Full navigation, not router.push — Stripe is off-site.
+    window.location.href = url
   } catch (error) {
     errorMsg.value = error.message
-    activeStep.value = 1
-  } finally {
     placing.value = false
   }
-}
-
-const handleOrderDone = () => {
-  orderPlaced.value = false
-  router.push(`/receipt/${placedOrderId.value}`)
 }
 </script>

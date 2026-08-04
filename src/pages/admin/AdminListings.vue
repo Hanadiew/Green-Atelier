@@ -19,7 +19,7 @@
             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
           >
             <option value="">All Statuses</option>
-            <option value="pending_review">Pending Review</option>
+            <option value="pending_review">In Review</option>
             <option value="active">Active</option>
             <option value="sold">Sold</option>
             <option value="rejected">Rejected</option>
@@ -236,7 +236,7 @@ async function fetchListings() {
 
 function formatStatus(status) {
   const map = {
-    pending_review: 'Pending Review',
+    pending_review: 'In Review',
     active: 'Active',
     sold: 'Sold',
     rejected: 'Rejected',

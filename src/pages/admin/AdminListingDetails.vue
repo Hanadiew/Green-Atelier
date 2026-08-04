@@ -110,7 +110,7 @@ async function doReject() {
   }
 }
 
-const fmtStatus = (s) => ({pending_review:'Pending', active:'Active', sold:'Sold', rejected:'Rejected', draft:'Draft'}[s] || s)
+const fmtStatus = (s) => ({pending_review:'In Review', active:'Active', sold:'Sold', rejected:'Rejected', draft:'Draft', archived:'Archived'}[s] || s)
 const getVar = (s) => ({pending_review:'warning', active:'success', sold:'default', rejected:'danger'}[s] || 'default')
 const getTVar = (s) => ({likely_consistent:'success', needs_review:'warning', insufficient_evidence:'info'}[s] || 'default')
 </script>

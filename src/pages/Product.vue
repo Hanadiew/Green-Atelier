@@ -324,7 +324,7 @@ const isOwnListing = computed(() => product.value && product.value.sellerId === 
 // button has to say why it isn't buyable rather than always claiming "Sold".
 const UNAVAILABLE_LABELS = {
   sold: 'Sold',
-  pending_review: 'In review',
+  pending_review: 'In Review',
   draft: 'Draft',
   rejected: 'Not approved',
   archived: 'Not listed',
