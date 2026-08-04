@@ -242,13 +242,25 @@
                  GAFS never sees or stores a card number. -->
             <div class="flex items-start gap-3 rounded-lg px-4 py-3" style="background-color: #F7F5F0;">
               <span class="text-sm leading-none mt-0.5">🔒</span>
-              <p class="text-xs text-gray-500 leading-relaxed">
-                You'll be taken to Stripe's secure payment page to complete this order.
-                Your card details are never stored by Green Atelier.
-                <span class="block mt-1 text-gray-400">
-                  Test mode — use card 4242 4242 4242 4242 with any future expiry and any CVC.
-                </span>
-              </p>
+              <div class="text-xs text-gray-500 leading-relaxed">
+                <p>
+                  You'll be taken to Stripe's secure payment page to complete this order.
+                  Your card details are never stored by Green Atelier.
+                </p>
+                <!-- Stripe's test card numbers are fixed on their side and cannot be
+                     customised, so the next best thing is making this one copyable. -->
+                <p class="mt-1.5 text-gray-400">
+                  Test mode — pay with
+                  <button @click="copyTestCard"
+                    class="font-mono px-1.5 py-0.5 rounded border transition hover:bg-white"
+                    style="border-color: #e5e7eb;"
+                    :title="testCardCopied ? 'Copied' : 'Click to copy'">
+                    {{ TEST_CARD }}
+                  </button>
+                  <span v-if="testCardCopied" class="text-green-600">copied ✓</span>
+                  <span class="block mt-0.5">Any future expiry date, any 3-digit CVC.</span>
+                </p>
+              </div>
             </div>
 
             <button @click="handleProceedToPayment" :disabled="placing"
@@ -269,14 +281,26 @@
           <h3 class="text-sm font-semibold text-gray-800 mb-5">Order Summary</h3>
 
           <!-- Price details -->
-          <div class="flex items-center justify-between mb-4">
-            <button class="text-xs text-gray-500 flex items-center gap-1">
+          <div class="flex items-center justify-between" :class="showPriceDetails ? 'mb-2' : 'mb-4'">
+            <button @click="showPriceDetails = !showPriceDetails"
+              class="text-xs text-gray-500 flex items-center gap-1 hover:text-gray-700 transition"
+              :aria-expanded="showPriceDetails">
               Price details ({{ cartItems.length }} item{{ cartItems.length > 1 ? 's' : '' }})
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 transition-transform"
+                :class="showPriceDetails ? 'rotate-180' : ''"
+                fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
               </svg>
             </button>
             <span class="text-xs font-medium text-gray-700">RM {{ cartSubtotal.toLocaleString() }}.00</span>
+          </div>
+
+          <!-- Per-item breakdown behind the disclosure above. -->
+          <div v-if="showPriceDetails" class="mb-4 pl-1 space-y-1.5 border-l-2" style="border-color: #F7F5F0;">
+            <div v-for="item in cartItems" :key="item.id" class="flex justify-between gap-3 pl-3">
+              <span class="text-xs text-gray-400 truncate">{{ item.name }}</span>
+              <span class="text-xs text-gray-500 flex-shrink-0">RM {{ item.price.toLocaleString() }}.00</span>
+            </div>
           </div>
 
           <!-- Promo code -->
@@ -327,6 +351,17 @@
             {{ placing ? 'Redirecting to Stripe…' : 'Proceed to Payment' }}
           </button>
 
+          <button @click="handleCancelCheckout"
+            class="w-full py-2.5 text-xs text-gray-500 border rounded-md mt-2 hover:bg-gray-50 hover:text-gray-700 transition"
+            style="border-color: #e5e7eb;">
+            Cancel Order
+          </button>
+
+          <RouterLink to="/home"
+            class="block w-full py-2.5 text-xs text-gray-400 text-center mt-1 hover:text-gray-600 transition">
+            ← Back to Home
+          </RouterLink>
+
           <p class="text-xs text-gray-400 text-center mt-4 leading-relaxed">
             By placing your order, you agree to our
             <a href="#" class="underline">Terms & Conditions</a>
@@ -356,6 +391,24 @@ const router = useRouter()
 
 const activeStep = ref(1)
 const showAddressForm = ref(false)
+const showPriceDetails = ref(false)
+
+// Stripe's canonical "payment succeeds" test card. The number is defined by
+// Stripe and is not configurable — each test number maps to a specific simulated
+// outcome, so it cannot be swapped for an arbitrary one.
+const TEST_CARD = '4242 4242 4242 4242'
+const testCardCopied = ref(false)
+
+const copyTestCard = async () => {
+  try {
+    await navigator.clipboard.writeText(TEST_CARD.replace(/\s/g, ''))
+    testCardCopied.value = true
+    setTimeout(() => (testCardCopied.value = false), 2000)
+  } catch {
+    // Clipboard is blocked (no permission, or a non-secure origin) — the number
+    // is on screen either way, so there is nothing to recover from.
+  }
+}
 const promoCode = ref('')
 const promoMsg = ref('')
 const promoValid = ref(false)
@@ -449,6 +502,14 @@ const saveShipping = async () => {
   } catch (error) {
     errorMsg.value = error.message
   }
+}
+
+// Nothing has been ordered yet at this point — the order row is only created when
+// the buyer proceeds to Stripe — so this just backs out of checkout. The bag is
+// deliberately left alone: losing it would be a nasty surprise.
+const handleCancelCheckout = () => {
+  errorMsg.value = ''
+  router.push('/shop')
 }
 
 const handleProceedToPayment = async () => {

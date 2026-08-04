@@ -50,11 +50,40 @@ function toMinorUnits(amount: number) {
   return Math.round(Number(amount) * 100)
 }
 
+/**
+ * Where Stripe sends the buyer back to.
+ *
+ * Prefers the origin the request actually came from, so a dev server on a
+ * non-default port still gets the buyer home without anyone having to keep
+ * SITE_URL in sync. Deliberately narrow about it: only localhost, or an exact
+ * match for SITE_URL. Echoing an arbitrary Origin back into success_url would be
+ * an open redirect, and while the redirect carries no secret and never settles a
+ * payment, it is not worth the hole.
+ */
+function resolveReturnOrigin(req: Request) {
+  const origin = req.headers.get('Origin')
+  if (!origin) return SITE_URL
+
+  if (origin === SITE_URL) return origin
+
+  try {
+    const { hostname, protocol } = new URL(origin)
+    if ((hostname === 'localhost' || hostname === '127.0.0.1') && protocol === 'http:') {
+      return origin
+    }
+  } catch {
+    // Unparseable Origin — fall through to the configured value.
+  }
+
+  return SITE_URL
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405)
 
   let pendingOrderId: string | null = null
+  const returnOrigin = resolveReturnOrigin(req)
 
   try {
     if (!STRIPE_SECRET_KEY) {
@@ -175,8 +204,8 @@ serve(async (req) => {
         // metadata is a redundant copy for the Stripe dashboard.
         client_reference_id: order.id,
         metadata: { gafs_order_id: order.id, gafs_order_number: order.order_number },
-        success_url: `${SITE_URL}/payment-success?order=${order.id}`,
-        cancel_url: `${SITE_URL}/payment-cancelled?order=${order.id}`,
+        success_url: `${returnOrigin}/payment-success?order=${order.id}`,
+        cancel_url: `${returnOrigin}/payment-cancelled?order=${order.id}`,
       },
       // Retrying this request must not open a second session for the same order.
       { idempotencyKey: `gafs-checkout-${order.id}` },

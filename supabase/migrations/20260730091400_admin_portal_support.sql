@@ -61,7 +61,11 @@ do $$ begin
     check (reported_listing_id is not null or reported_user_id is not null);
 exception when duplicate_object then null; end $$;
 
+-- Drop the policy being replaced AND the one about to be created. Without the
+-- second drop this migration is not re-runnable, which broke `db push` on a
+-- project where apply_admin_schema.sql had already created these by hand.
 drop policy if exists reports_insert_any on public.reports;
+drop policy if exists reports_insert_own on public.reports;
 create policy reports_insert_own on public.reports
   for insert to authenticated
   with check (reporter_id = (select auth.uid()));
@@ -70,6 +74,7 @@ create policy reports_insert_own on public.reports
 -- every read evaluate both (multiple_permissive_policies).
 drop policy if exists reports_select_own on public.reports;
 drop policy if exists reports_select_admin on public.reports;
+drop policy if exists reports_select_own_or_admin on public.reports;
 create policy reports_select_own_or_admin on public.reports
   for select to authenticated
   using (reporter_id = (select auth.uid()) or (select public.is_admin()));

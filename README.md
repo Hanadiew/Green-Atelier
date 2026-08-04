@@ -184,6 +184,8 @@ npx supabase secrets set STRIPE_SECRET_KEY=sk_test_your_key
 npx supabase secrets set SITE_URL=http://localhost:5173
 ```
 
+`SITE_URL` is the fallback for where Stripe returns the buyer. For local development the function prefers the origin the request actually came from, so a dev server on any localhost port works without changing this. Set `SITE_URL` to your real domain when you deploy.
+
 ### 4. Deploy the functions
 
 ```sh
