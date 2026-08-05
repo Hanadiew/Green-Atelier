@@ -92,6 +92,37 @@
   padding-top: 7rem;
 }
 
+/* --- Content width ----------------------------------------------------------
+   The one horizontal measure for page content. Pages used to pick their own
+   (px-10, px-16, px-24, max-w-5xl, max-w-6xl…), which on a wide screen let
+   content run wider than the navbar itself — the navbar caps at max-w-7xl while
+   px-16 does not cap at all.
+
+   These three values mirror Navbar.vue exactly, so a page's first and last
+   pixel of content line up with the nav links above them at every width:
+
+     width          -> the nav wrapper's px-4 / sm:px-8 gutter
+     max-width      -> the nav bar's max-w-7xl
+     padding-inline -> the nav bar's own px-6 / sm:px-8
+
+   Because the gutter lives in `width` rather than in a parent, one element
+   reproduces the navbar's gutter-then-cap behaviour: below the cap both shrink
+   by the gutter, above it both stop at 80rem. If you change the navbar's
+   spacing, change it here too. */
+.page-container {
+  width: calc(100% - 2rem);
+  max-width: 80rem;
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .page-container {
+    width: calc(100% - 4rem);
+    padding-inline: 2rem;
+  }
+}
+
 /* --- Footer -----------------------------------------------------------------
    One height on every page. The footer's own content is a fixed set of rows, so
    the only thing that ever changed its height was the wordmark being sized in vw

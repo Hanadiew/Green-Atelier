@@ -1,11 +1,13 @@
 <template>
   <div class="page-shell" style="background-color: #FBF9F4;">
-    <div class="w-full px-16 py-4 flex items-center justify-between bg-white border-b border-gray-100">
+    <div class="w-full py-4 bg-white border-b border-gray-100">
+      <div class="page-container flex items-center justify-between">
       <RouterLink to="/home" class="text-xs text-gray-400 hover:text-gray-600 transition">
         ← Back to Green Atelier
       </RouterLink>
       <p class="text-xs tracking-widest uppercase" style="color: #C9A96E;">Green Atelier</p>
       <span class="w-32"></span>
+      </div>
     </div>
 
     <div class="flex justify-center px-6 py-16">

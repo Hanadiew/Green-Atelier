@@ -3,18 +3,22 @@
     <Navbar />
 
     <!-- ===== HERO / HEADER ===== -->
-    <div class="page-top pb-16 px-16 text-center" style="background-color: #1B3A2D; color: white;">
-      <p class="text-xs tracking-widest uppercase mb-3" style="color: #C9A96E;">Conscious Support</p>
-      <h1 class="text-4xl font-light leading-tight mb-4" style="font-family: 'Georgia', serif;">
-        How Can We Assist You?
-      </h1>
-      <p class="text-xs text-gray-300 max-w-md mx-auto leading-relaxed">
-        Whether you have questions about listing an item, our multi-step verification process, or need order assistance — we are here to support your circular fashion journey.
-      </p>
+    <!-- The green band stays full-bleed; only its contents take the shared
+         measure, so the band still reaches both edges of the viewport. -->
+    <div class="page-top pb-16 text-center" style="background-color: #1B3A2D; color: white;">
+      <div class="page-container">
+        <p class="text-xs tracking-widest uppercase mb-3" style="color: #C9A96E;">Conscious Support</p>
+        <h1 class="text-4xl font-light leading-tight mb-4" style="font-family: 'Georgia', serif;">
+          How Can We Assist You?
+        </h1>
+        <p class="text-xs text-gray-300 max-w-md mx-auto leading-relaxed">
+          Whether you have questions about listing an item, our multi-step verification process, or need order assistance — we are here to support your circular fashion journey.
+        </p>
+      </div>
     </div>
 
     <!-- ===== TWO COLUMN LAYOUT: FORM & DETAILS ===== -->
-    <div class="max-w-6xl mx-auto px-16 py-16 grid grid-cols-1 md:grid-cols-12 gap-12">
+    <div class="page-container py-16 grid grid-cols-1 md:grid-cols-12 gap-12">
       
       <!-- Left Column: Contact Form (7 cols) -->
       <div class="md:col-span-7 bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
@@ -163,7 +167,7 @@
 
     <!-- ===== FAQ SECTION (SCROLL TARGET) ===== -->
     <div id="faq" class="bg-white border-t border-gray-100 py-24 scroll-mt-20">
-      <div class="max-w-5xl mx-auto px-16">
+      <div class="page-container">
         
         <!-- FAQ Title -->
         <div class="text-center mb-16">

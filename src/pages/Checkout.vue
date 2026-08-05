@@ -2,7 +2,8 @@
   <div class="page-shell">
 
     <!-- ===== CHECKOUT NAVBAR ===== -->
-    <div class="w-full px-16 py-4 flex items-center justify-between bg-white border-b border-gray-100">
+    <div class="w-full py-4 bg-white border-b border-gray-100">
+      <div class="page-container flex items-center justify-between">
       <div class="flex items-center gap-2 text-xs text-gray-400">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
@@ -15,10 +16,11 @@
         </span>
       </RouterLink>
       <div style="width: 120px;"></div>
+      </div>
     </div>
 
     <!-- ===== MAIN CONTENT ===== -->
-    <div class="px-16 py-10 flex gap-10 items-start">
+    <div class="page-container py-10 flex gap-10 items-start">
 
       <!-- ===== LEFT: Steps ===== -->
       <div class="flex-1 max-w-2xl space-y-4">

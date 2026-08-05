@@ -21,7 +21,7 @@
       CIRCULAR
     </p>
 
-    <div class="relative z-10 w-full max-w-6xl mx-auto px-6 sm:px-10 lg:px-16">
+    <div class="relative z-10 w-full page-container">
       <div class="max-w-xl">
         <p class="reveal text-xs tracking-widest uppercase mb-6" style="color: #C9A96E;">
           Sustainability at Green Atelier

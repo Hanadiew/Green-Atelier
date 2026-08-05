@@ -1,15 +1,29 @@
 <template>
-  <!-- The fixed wrapper holds the gutter; the nav itself is the floating pill,
-       so it never runs edge to edge. The wrapper is click-through, otherwise
-       its transparent full-width strip would eat clicks either side of the
-       pill — over the hero, for instance. -->
-  <div class="fixed top-0 left-0 right-0 z-50 px-4 sm:px-8 pt-3 sm:pt-4 pointer-events-none">
+  <!-- Two states, driven by `scrolled`:
+         at rest  — no bar at all: the links sit directly on the page, flush to
+                    the top and to both edges, with no background, blur or
+                    shadow of their own;
+         scrolled — the floating pill, lifted away from the edges, which is where
+                    the background appears and earns its contrast.
+
+       The gutter therefore lives on the wrapper and is animated on and off. The
+       wrapper is click-through, otherwise its transparent full-width strip would
+       eat clicks either side of the pill — over the hero, for instance. -->
+  <div
+    class="fixed top-0 left-0 right-0 z-50 pointer-events-none transition-all duration-300"
+    :class="scrolled ? 'px-4 sm:px-8 pt-3 sm:pt-4' : 'px-0 pt-0'"
+  >
     <nav
-      class="relative pointer-events-auto mx-auto max-w-7xl rounded-full px-6 sm:px-8 py-3 flex items-center justify-between transition-all duration-300"
+      class="pointer-events-auto mx-auto transition-all duration-300"
       :class="scrolled
-        ? 'bg-white/85 backdrop-blur-md shadow-lg shadow-black/5'
-        : 'bg-white/60 backdrop-blur-sm shadow-sm'"
+        ? 'max-w-7xl rounded-full bg-white/85 backdrop-blur-md shadow-lg shadow-black/5'
+        : 'max-w-none rounded-none bg-transparent shadow-none'"
     >
+    <!-- The bar can go full width, but its contents stay on the same measure as
+         the rest of the page — see .page-container, which mirrors these three
+         values. `relative` sits here rather than on <nav> so the centred logo is
+         centred on the content, not on the viewport. -->
+    <div class="relative mx-auto max-w-7xl px-6 sm:px-8 py-3 flex items-center justify-between">
     <!-- Left: Nav Links -->
     <div class="flex items-center gap-8">
       <div class="relative" ref="shopContainer">
@@ -17,14 +31,9 @@
           @click="showShop = !showShop"
           :aria-expanded="showShop"
           aria-haspopup="true"
-          class="text-sm text-gray-700 hover:text-black flex items-center gap-1"
+          class="text-sm text-gray-700 hover:text-black"
         >
           Shop
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-gray-400 transition"
-            :class="showShop ? 'rotate-180' : ''"
-            fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-          </svg>
         </button>
         <!-- Click to open, click anywhere (including a link) to close. -->
         <div
@@ -228,6 +237,7 @@
 </div>
 
     </div>
+    </div>
     </nav>
   </div>
 
@@ -294,6 +304,10 @@ watch(() => route.fullPath, () => {
 })
 
 onMounted(() => {
+  // Read the position once up front: a reload part-way down a page restores the
+  // scroll offset, and without this the bar would render flat until the first
+  // scroll event.
+  handleScroll()
   window.addEventListener('scroll', handleScroll)
   window.addEventListener('click', handleClickOutside)
   window.addEventListener('keydown', handleEscape)

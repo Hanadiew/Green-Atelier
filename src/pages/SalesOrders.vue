@@ -2,7 +2,7 @@
   <div class="page-shell">
     <Navbar />
 
-    <div class="page-top px-16 pb-16">
+    <div class="page-top page-container pb-16">
 
       <div class="flex items-center justify-between mb-8">
         <div>

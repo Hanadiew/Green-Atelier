@@ -1,10 +1,10 @@
 <template>
   <section ref="root" :class="{ 'is-visible': visible }"
-    class="px-6 sm:px-10 lg:px-16 py-20 sm:py-28" style="background-color: #F7F5F0;">
+    class="py-20 sm:py-28" style="background-color: #F7F5F0;">
     <!-- `group` sits on the whole block, so the handover below is driven by
          hovering either column and by keyboard focus reaching the CTA — it is
          never hover-only, and never depends on pointing at the image itself. -->
-    <div class="max-w-5xl mx-auto grid gap-12 lg:grid-cols-2 lg:items-center group">
+    <div class="page-container grid gap-12 lg:grid-cols-2 lg:items-center group">
 
       <!-- The handover: the photograph slides off its own outlined frame, so the
            piece visibly leaves one place for another. Decorative only — the CTA

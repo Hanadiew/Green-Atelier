@@ -2,7 +2,9 @@
   <!-- Hidden entirely when there is nothing live, rather than showing an empty
        drawer that invites a pointless click. -->
   <Teleport to="body">
-    <div v-if="promos.length" class="fixed right-0 top-1/2 -translate-y-1/2 z-40 flex items-stretch no-print">
+    <!-- Sits below the midpoint rather than on it, so the handle is clear of
+         anything a page centres vertically. -->
+    <div v-if="promos.length" class="fixed right-0 top-2/3 -translate-y-1/2 z-40 flex items-stretch no-print">
 
       <!-- Handle -->
       <button

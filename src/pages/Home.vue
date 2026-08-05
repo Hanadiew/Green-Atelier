@@ -4,14 +4,18 @@
     <Navbar />
 
     <!-- ============= HERO ================================================================================================================================== -->
-    <div class="w-full relative overflow-hidden" style="height: 100vh; background-color: #f0ece6;">
-      <img src="../assets/hero.jpg" alt="Hero" class="w-full h-full object-cover object-top" />
+    <!-- No fixed height: the image sets its own, so the whole 3:2 frame is shown
+         rather than being cropped to the viewport. It used to be height:100vh
+         with object-cover, which on any viewport wider than 3:2 scaled the image
+         to fill the width and cut the bottom off. -->
+    <div class="w-full relative overflow-hidden" style="background-color: #f0ece6;">
+      <img src="../assets/hero.jpg" alt="Hero" class="block w-full h-auto" />
     </div>
 
 
 
     <!-- ========== COLLECTIONS ================================================================================================================================== -->
-    <section class="px-16 py-16">
+    <section class="page-container py-16">
     <div class="grid grid-cols-3 gap-3" style="height: 520px; grid-template-rows: 1fr 1fr;">
 
     <!-- Header -->
@@ -58,7 +62,7 @@
 
 
 <!-- ========== FEATURED BRANDS ================================================================================================================================== -->
-<section class="py-16">
+<section class="page-container py-16">
 
   <!-- Header -->
   <div class="text-center mb-10">
@@ -90,7 +94,7 @@
 
 
 <!-- ========== NEW IN ========================================================================================== -->
-<section class="px-16 py-16">
+<section class="page-container py-16">
 
   <!-- Header -->
   <div class="flex items-center justify-between mb-8">
@@ -158,7 +162,8 @@
 
 
 <!-- ========== OUR MISSION ========================================================================================== -->
-<section class="px-16 py-16 flex items-center gap-16" style="background-color: #1B3A2D;">
+<section class="py-16" style="background-color: #1B3A2D;">
+  <div class="page-container flex items-center gap-16">
 
   <!-- Left: Text -->
   <div class="flex-1">
@@ -212,11 +217,12 @@
   </div>
 
 </div>
+  </div>
 </section>
 
 
 <!-- ========== HOW IT WORKS ========================================================================================== -->
-<section class="px-16 py-16">
+<section class="page-container py-16">
 
   <!-- Header -->
   <div class="mb-12">
@@ -292,7 +298,7 @@
 
 <!-- ========== WHAT CUSTOMERS SAY ========================================================================================== -->
 <!-- ===== WHAT CUSTOMERS SAY ===== -->
-<section class="py-16">
+<section class="page-container py-16">
 
   <!-- Header -->
   <div class="text-center mb-12">

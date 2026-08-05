@@ -4,7 +4,7 @@
     <Navbar />
 
     <!-- Page content -->
-    <div class="page-top px-16 pb-16">
+    <div class="page-top page-container pb-16">
 
       <!-- Page Title -->
       <h1 class="text-5xl font-light mb-8" style="color: #C9A96E; font-family: 'Georgia', serif;">Shop</h1>

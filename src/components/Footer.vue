@@ -35,7 +35,7 @@
     </div>
 
     <!-- Copyright + Social -->
-    <div class="px-16 py-4 flex items-center justify-between">
+    <div class="page-container py-4 flex items-center justify-between">
       <p class="text-xs text-gray-400">© 2026 Green Atelier</p>
       <div class="flex items-center gap-4">
         <a href="#" class="text-gray-400 hover:text-white transition">

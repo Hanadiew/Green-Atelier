@@ -12,7 +12,7 @@
       </p>
 
       <!-- Content -->
-      <div class="text-center px-16 relative z-10">
+      <div class="text-center page-container relative z-10">
         <p class="text-xs tracking-widest uppercase mb-6" style="color: #C9A96E;">Est. 2024 · Kuala Lumpur, Malaysia</p>
         <h1 class="text-5xl font-light text-white mb-6 leading-tight" style="font-family: 'Georgia', serif;">
           Luxury Reimagined.<br />Planet Respected.
@@ -33,7 +33,7 @@
     </div>
 
     <!-- ===== OUR STORY ===== -->
-    <section id="story" class="px-16 py-24">
+    <section id="story" class="page-container py-24">
       <div class="max-w-5xl mx-auto flex items-center gap-20">
 
         <div class="flex-1">
@@ -71,8 +71,12 @@
     </section>
 
     <!-- ===== SUSTAINABILITY MISSION ===== -->
+    <!-- .page-container sets its own max-width, so the editorial measure has to
+         be a child of it rather than a class alongside it — otherwise this band
+         renders wider than the sections either side. -->
     <section class="py-24" style="background-color: #1B3A2D;">
-      <div class="px-16 max-w-5xl mx-auto">
+      <div class="page-container">
+      <div class="max-w-5xl mx-auto">
 
         <div class="text-center mb-16">
           <p class="text-xs tracking-widest uppercase mb-4" style="color: #C9A96E;">Our Mission</p>
@@ -102,10 +106,11 @@
         </div>
 
       </div>
+      </div>
     </section>
 
     <!-- ===== CIRCULAR FASHION EDUCATION ===== -->
-    <section class="px-16 py-24">
+    <section class="page-container py-24">
       <div class="max-w-5xl mx-auto">
 
         <div class="text-center mb-16">
@@ -151,7 +156,10 @@
     </section>
 
     <!-- ===== PRODUCT BANNER ===== -->
-    <section class="relative overflow-hidden mx-16 mb-24 rounded-3xl" style="height: 480px;">
+    <!-- The container is a wrapper here rather than the frame itself: its inline
+         padding would otherwise inset the image inside the rounded corners. -->
+    <section class="page-container mb-24">
+      <div class="relative overflow-hidden rounded-3xl" style="height: 480px;">
 
       <img src="../assets/hero.jpg" alt="Banner" class="w-full h-full object-cover object-top" />
 
@@ -178,10 +186,11 @@
         </div>
       </div>
 
+      </div>
     </section>
 
     <!-- ===== OUR VALUES ===== -->
-    <section class="px-16 pb-24">
+    <section class="page-container pb-24">
       <div class="max-w-5xl mx-auto">
 
         <div class="text-center mb-12">
@@ -210,7 +219,7 @@
 
     <!-- ===== TEAM / CTA ===== -->
     <section class="py-20 text-center" style="background-color: #F2F0EB;">
-      <div class="px-16">
+      <div class="page-container">
         <p class="text-xs tracking-widest uppercase mb-4" style="color: #C9A96E;">Join The Movement</p>
         <h2 class="text-3xl font-light text-gray-800 mb-4" style="font-family: 'Georgia', serif;">
           Be part of something bigger

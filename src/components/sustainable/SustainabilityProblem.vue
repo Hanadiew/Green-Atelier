@@ -1,7 +1,7 @@
 <template>
   <section ref="root" :class="{ 'is-visible': visible }"
-    class="px-6 sm:px-10 lg:px-16 py-20 sm:py-28" style="background-color: #1B3A2D;">
-    <div class="max-w-5xl mx-auto">
+    class="py-20 sm:py-28" style="background-color: #1B3A2D;">
+    <div class="page-container">
 
       <div class="max-w-xl mb-14">
         <p class="reveal text-xs tracking-widest uppercase mb-4" style="color: #C9A96E;">The Problem</p>

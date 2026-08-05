@@ -1,7 +1,7 @@
 <template>
   <section ref="root" :class="{ 'is-visible': visible }"
-    class="px-6 sm:px-10 lg:px-16 py-20 sm:py-28" style="background-color: #1B3A2D;">
-    <div class="max-w-5xl mx-auto text-center">
+    class="py-20 sm:py-28" style="background-color: #1B3A2D;">
+    <div class="page-container text-center">
 
       <p class="reveal text-xs tracking-widest uppercase mb-4" style="color: #C9A96E;">Platform Impact</p>
       <h2 class="reveal text-3xl sm:text-4xl font-light text-white leading-snug mb-4"

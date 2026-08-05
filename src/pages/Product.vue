@@ -3,7 +3,7 @@
 
     <Navbar />
 
-    <div class="page-top px-16 pb-16">
+    <div class="page-top page-container pb-16">
 
       <!-- Loading -->
       <div v-if="loading" class="flex gap-10 pt-6">

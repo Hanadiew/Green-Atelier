@@ -2,10 +2,10 @@
   <div class="page-shell">
     <Navbar />
 
-    <div class="page-top pb-16">
+    <div class="page-top page-container pb-16">
 
       <!-- Listing submitted confirmation -->
-      <div v-if="justSubmitted" class="mx-16 mb-6 rounded-lg px-5 py-4 flex items-start gap-3" style="background-color: #E8F5EE;">
+      <div v-if="justSubmitted" class="mb-6 rounded-lg px-5 py-4 flex items-start gap-3" style="background-color: #E8F5EE;">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
         </svg>
@@ -19,12 +19,12 @@
       </div>
 
       <!-- Error -->
-      <div v-if="errorMsg" class="mx-16 mb-6 rounded-lg px-5 py-4 text-xs" style="background-color: #FEF2F2; color: #B91C1C;">
+      <div v-if="errorMsg" class="mb-6 rounded-lg px-5 py-4 text-xs" style="background-color: #FEF2F2; color: #B91C1C;">
         {{ errorMsg }}
       </div>
 
       <!-- ===== PROFILE HEADER ===== -->
-      <div class="px-16 py-10 flex items-center justify-between border-b border-gray-100 flex-wrap gap-8">
+      <div class="py-10 flex items-center justify-between border-b border-gray-100 flex-wrap gap-8">
 
         <div class="flex items-center gap-8">
           <!-- Avatar -->
@@ -97,7 +97,7 @@
       </div>
 
       <!-- ===== TABS ===== -->
-      <div class="px-16 border-b border-gray-100">
+      <div class="border-b border-gray-100">
         <div class="flex items-center gap-8">
           <button v-for="tab in visibleTabs" :key="tab"
             @click="activeTab = tab"
@@ -112,7 +112,7 @@
 
       
     <!-- ===== TAB CONTENT ===== -->
-<div class="px-16 pt-10">
+<div class="pt-10">
 
   <!-- ===== LISTINGS TAB ===== -->
   <div v-if="activeTab === 'Listings'">

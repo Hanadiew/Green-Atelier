@@ -4,7 +4,7 @@
     <Navbar />
 
     <!-- ===== HERO SECTION ===== -->
-    <div class="page-top flex flex-col items-center justify-center text-center pb-16 px-16">
+    <div class="page-top page-container flex flex-col items-center justify-center text-center pb-16">
       <h1 class="text-2xl font-light tracking-widest uppercase mb-4" style="color: #C9A96E; font-family: 'Georgia', serif;">
         Give Your Wardrobe A Second Chance
       </h1>
@@ -19,7 +19,7 @@
     </div>
 
     <!-- ===== LISTING FORM ===== -->
-    <div class="flex justify-center pb-24 px-16">
+    <div class="page-container flex justify-center pb-24">
       <div class="bg-white rounded-2xl shadow-sm px-16 py-12" style="width: 600px;">
 
         <div class="grid grid-cols-2 gap-6 mb-6">
@@ -85,7 +85,8 @@
     </div>
 
     <!-- ===== SELLING MADE EASY ===== -->
-    <section class="px-16 py-16" style="background-color: #F2F0EB;">
+    <section class="py-16" style="background-color: #F2F0EB;">
+      <div class="page-container">
 
       <div class="flex items-start justify-between mb-16">
         <h2 class="text-2xl font-light tracking-widest uppercase" style="font-family: 'Georgia', serif; color: #2d2d2d;">
@@ -131,10 +132,11 @@
         </div>
       </div>
 
+      </div>
     </section>
 
     <!-- ===== SUSTAINABILITY STATS ===== -->
-    <section class="px-16 py-16">
+    <section class="page-container py-16">
 
       <!-- Row 1: Image left + Stat 01 right -->
       <div class="flex gap-6 mb-6">

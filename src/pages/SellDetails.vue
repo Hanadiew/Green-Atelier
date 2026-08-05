@@ -3,7 +3,7 @@
 
     <Navbar />
 
-    <div class="page-top px-24 pb-16 flex gap-10">
+    <div class="page-top page-container pb-16 flex gap-10">
 
       <!-- ===== LEFT: Stepper ===== -->
       <div style="width: 200px;" class="flex-shrink-0">

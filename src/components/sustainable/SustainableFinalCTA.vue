@@ -1,6 +1,6 @@
 <template>
-  <section ref="root" :class="{ 'is-visible': visible }" class="px-6 sm:px-10 lg:px-16 pb-20 sm:pb-28">
-    <div class="max-w-6xl mx-auto">
+  <section ref="root" :class="{ 'is-visible': visible }" class="pb-20 sm:pb-28">
+    <div class="page-container">
       <!-- `group` on the frame so the slow zoom answers a hover anywhere in the
            panel, including the buttons. -->
       <div class="group relative rounded-3xl overflow-hidden" style="min-height: 32rem;">

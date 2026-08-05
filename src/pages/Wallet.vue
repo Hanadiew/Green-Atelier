@@ -2,7 +2,7 @@
   <div class="page-shell">
     <Navbar />
 
-    <div class="page-top px-16 pb-16">
+    <div class="page-top page-container pb-16">
 
       <div class="mb-8">
         <h1 class="text-2xl font-light text-gray-900" style="font-family: 'Georgia', serif;">Wallet</h1>
