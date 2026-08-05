@@ -73,6 +73,8 @@ export async function fetchOrders(userId) {
     rawStatus: o.status,
     paymentStatus: o.payment_status,
     paymentMethod: o.payment_method,
+    // Raw timestamp alongside the formatted one, so callers can sort.
+    placedAt: o.placed_at,
     date: new Date(o.placed_at).toLocaleDateString('en-GB', {
       day: 'numeric',
       month: 'short',
@@ -152,7 +154,7 @@ export async function fetchSales(userId) {
     .select(
       `id, title_snapshot, brand_snapshot, image_snapshot, price_paid,
        seller_payout, platform_fee, status, created_at,
-       order:orders(order_number, placed_at, status)`,
+       order:orders(order_number, placed_at, status, payment_status)`,
     )
     .eq('seller_id', userId)
     .order('created_at', { ascending: false })
@@ -167,6 +169,10 @@ export async function fetchSales(userId) {
     payout: Number(i.seller_payout),
     platformFee: Number(i.platform_fee),
     status: statusLabel(i.status),
+    // The buyer's payment state, which is what a seller actually wants to know:
+    // fulfilment status says nothing about whether the money arrived.
+    paymentStatus: i.order?.payment_status ?? null,
+    placedAt: i.order?.placed_at ?? null,
     orderNumber: i.order?.order_number,
   }))
 }

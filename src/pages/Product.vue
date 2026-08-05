@@ -6,15 +6,7 @@
     <div class="page-top page-container pb-16">
 
       <!-- Loading -->
-      <div v-if="loading" class="flex gap-10 pt-6">
-        <div class="rounded-md bg-gray-100 animate-pulse flex-shrink-0" style="width: 340px; height: 380px;"></div>
-        <div class="flex-1 space-y-4 pt-2">
-          <div class="h-3 bg-gray-100 rounded animate-pulse w-24"></div>
-          <div class="h-6 bg-gray-100 rounded animate-pulse w-2/3"></div>
-          <div class="h-4 bg-gray-100 rounded animate-pulse w-32"></div>
-          <div class="h-12 bg-gray-100 rounded animate-pulse w-full mt-8"></div>
-        </div>
-      </div>
+      <LoadingPanel v-if="loading" :min-height="420" label="Loading item" class="mt-6" />
 
       <!-- Not found / error -->
       <div v-else-if="!product" class="flex flex-col items-center justify-center py-32 text-center">
@@ -388,6 +380,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { addToCart, cartItems } from '../cart.js'
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
+import LoadingPanel from '../components/LoadingPanel.vue'
+import { holdFor } from '../lib/loading.js'
 import TrustCheckCard from '../components/TrustCheckCard.vue'
 import ReportDialog from '../components/ReportDialog.vue'
 import { fetchAssessment } from '../lib/trustcheck/index.js'
@@ -543,6 +537,7 @@ const load = async (id) => {
   errorMsg.value = ''
   activeImage.value = 0
   trustCheck.value = null
+  const startedAt = performance.now()
   try {
     const row = await fetchListing(id)
     if (!row) {
@@ -564,6 +559,7 @@ const load = async (id) => {
     errorMsg.value = error.message
     product.value = null
   } finally {
+    await holdFor(startedAt)
     loading.value = false
   }
 }

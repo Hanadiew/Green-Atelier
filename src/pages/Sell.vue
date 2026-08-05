@@ -22,36 +22,32 @@
     <div class="page-container flex justify-center pb-24">
       <div class="bg-white rounded-2xl shadow-sm px-16 py-12" style="width: 600px;">
 
+        <!-- Item Type is gone: Category already says what the piece is, and the
+             two drifted apart the moment a seller picked "Bag" and "Tops". -->
+
+        <!-- Brand takes its own row — it is the choice that decides whether
+             TrustCheck applies, and the longest names need the width. -->
+        <div class="mb-6">
+          <label for="sell-brand" class="text-xs text-gray-400 uppercase tracking-widest mb-2 block">Brand Name</label>
+          <select id="sell-brand" v-model="form.brand"
+            class="w-full border-b border-gray-200 py-2 text-sm outline-none bg-transparent"
+            :class="form.brand ? 'text-gray-700' : 'text-gray-300'">
+            <option value="" disabled>Select a brand</option>
+            <option v-for="brand in brands" :key="brand" :value="brand">{{ brand }}</option>
+          </select>
+          <p class="text-xs text-gray-400 mt-2 leading-relaxed">
+            These are the brands Green Atelier TrustCheck holds reference details for.
+          </p>
+        </div>
+
         <div class="grid grid-cols-2 gap-6 mb-6">
-
-          <!-- Item Type -->
-          <div>
-            <label class="text-xs text-gray-400 uppercase tracking-widest mb-2 block">Item Type</label>
-            <select v-model="form.itemType" class="w-full border-b border-gray-200 py-2 text-sm text-gray-700 outline-none bg-transparent">
-              <option>Bag</option>
-              <option>Top</option>
-              <option>Bottom</option>
-              <option>Shoes</option>
-              <option>Accessory</option>
-            </select>
-          </div>
-
-          <!-- Brand Name -->
-          <div>
-            <label class="text-xs text-gray-400 uppercase tracking-widest mb-2 block">Brand Name</label>
-            <input
-              v-model="form.brand"
-              type="text"
-              placeholder="Brand Name"
-              class="w-full border-b border-gray-200 py-2 text-sm text-gray-700 outline-none bg-transparent placeholder-gray-300"
-            />
-          </div>
 
           <!-- Category -->
           <div>
-            <label class="text-xs text-gray-400 uppercase tracking-widest mb-2 block">Category</label>
-            <select v-model="form.category" class="w-full border-b border-gray-200 py-2 text-sm text-gray-700 outline-none bg-transparent">
+            <label for="sell-category" class="text-xs text-gray-400 uppercase tracking-widest mb-2 block">Category</label>
+            <select id="sell-category" v-model="form.category" class="w-full border-b border-gray-200 py-2 text-sm text-gray-700 outline-none bg-transparent">
               <option>Tops</option>
+              <option>Blouses</option>
               <option>Bottoms</option>
               <option>Bags</option>
               <option>Accessories</option>
@@ -61,8 +57,8 @@
 
           <!-- Condition -->
           <div>
-            <label class="text-xs text-gray-400 uppercase tracking-widest mb-2 block">Condition</label>
-            <select v-model="form.condition" class="w-full border-b border-gray-200 py-2 text-sm text-gray-700 outline-none bg-transparent">
+            <label for="sell-condition" class="text-xs text-gray-400 uppercase tracking-widest mb-2 block">Condition</label>
+            <select id="sell-condition" v-model="form.condition" class="w-full border-b border-gray-200 py-2 text-sm text-gray-700 outline-none bg-transparent">
               <option>New with tag</option>
               <option>Good as new</option>
               <option>Fair</option>
@@ -247,11 +243,16 @@ import { useRouter } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
 import { isAuthenticated } from '../lib/auth.js'
+// Straight from the reference module rather than trustcheck/index.js — that entry
+// point also pulls in the OCR module, and with it tesseract.js, which this page
+// has no use for.
+import { SUPPORTED_BRANDS } from '../lib/trustcheck/reference/index.js'
 
 const router = useRouter()
 
+const brands = SUPPORTED_BRANDS
+
 const form = ref({
-  itemType: 'Bag',
   brand: '',
   category: 'Tops',
   condition: 'New with tag',
@@ -263,7 +264,7 @@ const gateClose = ref(null)
 
 const handleContinue = () => {
   if (!form.value.brand) {
-    alert('Please enter a brand name.')
+    alert('Please choose a brand.')
     return
   }
 
@@ -272,7 +273,6 @@ const handleContinue = () => {
     query: {
       brand: form.value.brand,
       category: form.value.category,
-      itemType: form.value.itemType,
       condition: form.value.condition,
     },
   }).fullPath

@@ -20,15 +20,7 @@
       </div>
 
       <!-- Loading -->
-      <div v-if="loading" class="space-y-4">
-        <div v-for="n in 3" :key="n" class="bg-white rounded-xl border border-gray-100 p-5 flex items-center gap-5 shadow-sm">
-          <div class="w-20 h-20 rounded-lg bg-gray-100 animate-pulse flex-shrink-0"></div>
-          <div class="flex-1 space-y-2">
-            <div class="h-3 bg-gray-100 rounded animate-pulse w-1/3"></div>
-            <div class="h-3 bg-gray-100 rounded animate-pulse w-1/2"></div>
-          </div>
-        </div>
-      </div>
+      <LoadingPanel v-if="loading" :min-height="320" label="Loading your sales" />
 
       <!-- Empty state -->
       <div v-else-if="orders.length === 0" class="flex flex-col items-center justify-center py-24 text-center">
@@ -54,13 +46,16 @@
 
           <!-- Info -->
           <div class="flex-1 min-w-[220px]">
-            <div class="flex items-start justify-between gap-3 mb-1">
-              <div>
-                <p class="text-xs text-gray-400 uppercase tracking-widest mb-0.5">{{ sale.brand }}</p>
-                <p class="text-sm font-medium text-gray-800">{{ sale.name }}</p>
-              </div>
-              <p class="text-sm font-medium text-gray-700 flex-shrink-0">RM {{ sale.price.toLocaleString() }}.00</p>
+            <!-- Status sits with the brand, where it reads as a property of the
+                 order. On the right it looked like a property of the price. -->
+            <div class="flex items-center gap-2 mb-0.5">
+              <p class="text-xs text-gray-400 uppercase tracking-widest">{{ sale.brand }}</p>
+              <span class="px-2 py-0.5 rounded-full text-xs font-medium" :style="statusStyle(sale.status)">
+                {{ sale.statusLabel }}
+              </span>
             </div>
+
+            <p class="text-sm font-medium text-gray-800 mb-1">{{ sale.name }}</p>
             <p class="text-xs text-gray-400 mb-2">Order #{{ sale.orderId }} · {{ sale.date }}</p>
             <div class="flex items-center gap-4 text-xs text-gray-500">
               <span>Buyer: <span class="text-gray-700">{{ sale.buyerName }}</span></span>
@@ -68,34 +63,38 @@
             </div>
           </div>
 
-          <!-- Status badge -->
-          <span class="px-3 py-1 rounded-full text-xs font-medium flex-shrink-0" :style="statusStyle(sale.status)">
-            {{ sale.statusLabel }}
-          </span>
-
-          <!-- Actions -->
+          <!-- Price + controls.
+               One right-aligned column of a single width, so the price, the button
+               and the dropdown share an edge instead of each sitting in its own
+               alignment context. -->
           <div class="flex flex-col items-stretch gap-2 flex-shrink-0" style="width: 200px;">
+            <p class="text-sm font-semibold text-gray-800 text-right mb-1">
+              RM {{ sale.price.toLocaleString() }}.00
+            </p>
+
             <button @click="openDetails(sale)"
               class="w-full py-2 text-xs border rounded-md text-gray-600 hover:bg-gray-50 transition"
               style="border-color: #e5e7eb;">
               View Details
             </button>
 
-            <div v-if="!isLocked(sale.status)" class="flex gap-2">
-              <select v-model="nextStatusSelection[sale.id]"
-                class="flex-1 border border-gray-200 rounded-md px-2 py-2 text-xs text-gray-600 outline-none bg-white">
-                <option v-for="opt in nextStatusOptions(sale.status)" :key="opt" :value="opt">
-                  {{ statusLabel(opt) }}
-                </option>
-              </select>
-              <button @click="handleUpdateStatus(sale)"
-                :disabled="updatingId === sale.id || !nextStatusSelection[sale.id]"
-                class="px-3 py-2 text-xs text-white rounded-md transition hover:opacity-90 disabled:opacity-60"
-                style="background-color: #1B3A2D;">
-                {{ updatingId === sale.id ? '…' : 'Update' }}
-              </button>
-            </div>
-            <p v-else class="text-xs text-gray-300 text-center">No further changes</p>
+            <!-- The dropdown IS the control now: choosing a status applies it, so
+                 there is no separate Update button to forget to press. It shows the
+                 current status as its value rather than pre-selecting the next one,
+                 which previously made a Shipped order read as "Delivered". -->
+            <select v-if="!isLocked(sale.status)"
+              :value="sale.status"
+              :disabled="updatingId === sale.id"
+              @change="handleStatusChange(sale, $event)"
+              class="w-full border border-gray-200 rounded-md px-2 py-2 text-xs text-gray-600 outline-none bg-white disabled:opacity-60">
+              <option :value="sale.status" disabled>
+                {{ updatingId === sale.id ? 'Updating…' : sale.statusLabel + ' — change to…' }}
+              </option>
+              <option v-for="opt in nextStatusOptions(sale.status)" :key="opt" :value="opt">
+                {{ statusLabel(opt) }}
+              </option>
+            </select>
+            <p v-else class="text-xs text-gray-300 text-center py-2">No further changes</p>
           </div>
 
         </div>
@@ -191,9 +190,11 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
+import LoadingPanel from '../components/LoadingPanel.vue'
+import { holdFor } from '../lib/loading.js'
 import { userId } from '../lib/auth.js'
 import {
   fetchSellerSalesOrders,
@@ -212,7 +213,6 @@ const errorMsg = ref('')
 const flashMsg = ref('')
 const updatingId = ref(null)
 const detailSale = ref(null)
-const nextStatusSelection = reactive({})
 
 const totalPages = computed(() => Math.max(1, Math.ceil(total.value / perPage)))
 
@@ -233,19 +233,17 @@ const load = async () => {
   if (!userId.value) return
   loading.value = true
   errorMsg.value = ''
+  const startedAt = performance.now()
   try {
     const result = await fetchSellerSalesOrders(userId.value, { page: currentPage.value, perPage })
     orders.value = result.items
     total.value = result.total
-    for (const sale of orders.value) {
-      const opts = nextStatusOptions(sale.status)
-      if (opts.length) nextStatusSelection[sale.id] = opts[0]
-    }
   } catch (error) {
     errorMsg.value = error.message
     orders.value = []
     total.value = 0
   } finally {
+    await holdFor(startedAt)
     loading.value = false
   }
 }
@@ -260,9 +258,25 @@ const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.v
 const openDetails = (sale) => { detailSale.value = sale }
 const closeDetails = () => { detailSale.value = null }
 
-const handleUpdateStatus = async (sale) => {
-  const next = nextStatusSelection[sale.id]
-  if (!next) return
+// Selecting a status applies it. The <select> is bound to `sale.status` rather
+// than to a local pending value, so any path that does not go through to the
+// database — a cancelled confirmation, or a failed request — leaves the control
+// showing the status the order is actually in. Reassigning event.target.value is
+// what snaps it back, since Vue will not re-render an unchanged binding.
+const handleStatusChange = async (sale, event) => {
+  const next = event.target.value
+  const revert = () => { event.target.value = sale.status }
+
+  if (!next || next === sale.status) return
+
+  // Cancelling is terminal — isLocked() blocks every transition out of it — so it
+  // is the one choice that asks before acting.
+  if (next === 'cancelled'
+    && !window.confirm(`Cancel order #${sale.orderId}? This cannot be undone.`)) {
+    revert()
+    return
+  }
+
   errorMsg.value = ''
   updatingId.value = sale.id
   try {
@@ -270,12 +284,10 @@ const handleUpdateStatus = async (sale) => {
     sale.status = updated.status
     sale.statusLabel = statusLabel(updated.status)
     sale.updatedAt = updated.updated_at
-    const opts = nextStatusOptions(sale.status)
-    if (opts.length) nextStatusSelection[sale.id] = opts[0]
-    else delete nextStatusSelection[sale.id]
     flash(`Order #${sale.orderId} marked as ${sale.statusLabel}.`)
   } catch (error) {
     errorMsg.value = error.message
+    revert()
   } finally {
     updatingId.value = null
   }

@@ -7,6 +7,7 @@ import { supabase } from './supabase.js'
 import { isAdmin } from './lib/admin.js'
 import { initCart } from './cart.js'
 import { scrollToElement, scrollToTop } from './lib/smoothScroll.js'
+import { beginRouteLoading, endRouteLoading } from './lib/loading.js'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -121,6 +122,7 @@ const router = createRouter({
 const authInit = initAuth()
 
 router.beforeEach(async (to) => {
+  beginRouteLoading()
   await authInit
 
   if (to.meta.requiresAdmin) {
@@ -141,6 +143,9 @@ router.beforeEach(async (to) => {
   }
   return true
 })
+
+router.afterEach(endRouteLoading)
+router.onError(endRouteLoading)
 
 const app = createApp(App)
 app.use(router)

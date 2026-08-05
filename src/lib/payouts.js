@@ -152,20 +152,50 @@ export async function fetchSellerEarnings(userId) {
  * Combined purchase + sale history, newest first, for the Wallet's
  * Transaction History section.
  */
+// One feed for the Wallet, covering money in, money out and money forwarded to
+// the bank. Payouts used to be a second table of their own, which meant the same
+// sale appeared twice on the page with two unrelated status vocabularies.
+//
+// Every row reports PAYMENT state, never fulfilment state. "Shipped" next to an
+// amount reads as though it describes the money, and a buyer seeing "Processing"
+// cannot tell whether they have been charged.
+const PAYMENT_STATUS_LABELS = {
+  pending: 'Unpaid',
+  paid: 'Paid',
+  failed: 'Failed',
+  refunded: 'Refunded',
+  processing: 'Processing',
+}
+
+export function paymentStatusLabel(status) {
+  if (!status) return 'Unknown'
+  return PAYMENT_STATUS_LABELS[status] ?? status
+}
+
 export async function fetchTransactionHistory(userId) {
   if (!userId) return []
 
-  const [orders, sales] = await Promise.all([fetchOrders(userId), fetchSales(userId)])
+  const [orders, sales, payouts] = await Promise.all([
+    fetchOrders(userId),
+    fetchSales(userId),
+    fetchPayoutHistory(userId),
+  ])
 
   const purchases = orders.flatMap((o) =>
     o.items.map((item) => ({
       id: `purchase-${item.id}`,
       type: 'purchase',
+      kindLabel: 'Purchase',
       date: o.date,
+      sortAt: o.placedAt,
       name: item.name,
       brand: item.brand,
-      amount: -item.price,
-      status: item.status,
+      image: item.image,
+      amount: item.price,
+      // Money leaving the buyer.
+      direction: 'out',
+      status: o.paymentStatus,
+      statusLabel: paymentStatusLabel(o.paymentStatus),
       orderNumber: o.orderId,
     })),
   )
@@ -173,15 +203,45 @@ export async function fetchTransactionHistory(userId) {
   const salesRows = sales.map((s) => ({
     id: `sale-${s.id}`,
     type: 'sale',
-    date: null,
+    kindLabel: 'Sale',
+    date: s.placedAt
+      ? new Date(s.placedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+      : null,
+    sortAt: s.placedAt,
     name: s.name,
     brand: s.brand,
+    image: s.image,
     amount: s.price,
-    status: s.status,
+    direction: 'in',
+    status: s.paymentStatus,
+    statusLabel: paymentStatusLabel(s.paymentStatus),
     orderNumber: s.orderNumber,
   }))
 
-  return [...purchases, ...salesRows]
+  const payoutRows = payouts.map((p) => ({
+    id: `payout-${p.id}`,
+    type: 'payout',
+    kindLabel: p.bankName ? `Payout to ${p.bankName} ${p.accountMasked}` : 'Payout',
+    date: p.date,
+    sortAt: p.paidAt ?? p.createdAt,
+    name: p.name,
+    brand: p.brand,
+    image: p.image,
+    amount: p.amount,
+    // Deliberately unsigned: a payout moves money already counted by its sale.
+    // Showing it as another "+" would read as though the seller earned twice.
+    direction: 'neutral',
+    status: p.status,
+    statusLabel: p.statusLabel,
+  }))
+
+  // Newest first. Rows with no timestamp sink to the bottom rather than
+  // scattering through the list.
+  return [...purchases, ...salesRows, ...payoutRows].sort((a, b) => {
+    if (!a.sortAt) return 1
+    if (!b.sortAt) return -1
+    return new Date(b.sortAt) - new Date(a.sortAt)
+  })
 }
 
 // --- Payout history -------------------------------------------------------------
@@ -232,6 +292,7 @@ export async function fetchPayoutHistory(userId) {
       year: 'numeric',
     }),
     paidAt: p.paid_at,
+    createdAt: p.created_at,
   }))
 }
 

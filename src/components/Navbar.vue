@@ -35,32 +35,40 @@
         >
           Shop
         </button>
-        <!-- Click to open, click anywhere (including a link) to close. -->
+        <!-- Click to open, click anywhere (including a link) to close.
+
+             Two columns, not three. The third used to be an overflow column with
+             a &nbsp; heading holding it level, and because the panel was a fixed
+             w-72 its links spilled out past the white edge. Collections now holds
+             every catalogue category in one list and the panel sizes to fit.
+
+             Frosted like the navbar itself — same bg-white/85 and backdrop-blur
+             as the scrolled pill, and the same rounding and shadow, so the two
+             read as one surface. -->
         <div
           v-if="showShop"
           @click="showShop = false"
-          class="absolute top-full left-0 mt-3 bg-white shadow-lg rounded-xl p-6 flex gap-10 w-72 z-50"
+          class="absolute top-full left-0 mt-5 z-50 rounded-2xl bg-white/85 backdrop-blur-md shadow-lg shadow-black/5 p-6 flex gap-12"
         >
           <div>
-            <p class="text-xs font-semibold text-gray-400 uppercase mb-2">Shop</p>
-            <ul class="space-y-2 text-sm text-gray-700">
-              <li><RouterLink to="/shop">All</RouterLink></li>
-              <li><a href="#">New In</a></li>
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Shop</p>
+            <ul class="space-y-1 text-sm text-gray-700 whitespace-nowrap">
+              <li>
+                <RouterLink to="/shop" class="block py-1 hover:text-black transition">All</RouterLink>
+              </li>
+              <li>
+                <a href="#" class="block py-1 hover:text-black transition">New In</a>
+              </li>
             </ul>
           </div>
           <div>
-            <p class="text-xs font-semibold text-gray-400 uppercase mb-2">Collections</p>
-            <ul class="space-y-2 text-sm text-gray-700">
-              <li><a href="#">Tops</a></li>
-              <li><a href="#">Bottoms</a></li>
-              <li><a href="#">Bags</a></li>
-            </ul>
-          </div>
-          <div>
-            <p class="text-xs font-semibold text-gray-400 uppercase mb-2">&nbsp;</p>
-            <ul class="space-y-2 text-sm text-gray-700">
-              <li><a href="#">Accessories</a></li>
-              <li><a href="#">Shoes</a></li>
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Collections</p>
+            <!-- Two even columns so five categories do not make a tall ragged
+                 list, and the same row padding as the Shop column above. -->
+            <ul class="grid grid-cols-2 gap-x-10 gap-y-1 text-sm text-gray-700 whitespace-nowrap">
+              <li v-for="category in shopCategories" :key="category">
+                <a href="#" class="block py-1 hover:text-black transition">{{ category }}</a>
+              </li>
             </ul>
           </div>
         </div>
@@ -256,6 +264,10 @@ import CartDrawer from './CartDrawer.vue'
 
 const router = useRouter()
 const route = useRoute()
+
+// The catalogue's own categories, matching the filter list on Shop.vue —
+// "Blouses" was missing from this menu before.
+const shopCategories = ['Tops', 'Blouses', 'Bottoms', 'Bags', 'Accessories', 'Shoes']
 
 const showShop = ref(false)
 const scrolled = ref(false)

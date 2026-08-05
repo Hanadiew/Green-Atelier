@@ -9,20 +9,103 @@
       <!-- Page Title -->
       <h1 class="text-5xl font-light mb-8" style="color: #C9A96E; font-family: 'Georgia', serif;">Shop</h1>
 
-      <!-- Search + Sort row -->
-      <div class="flex items-center justify-between mb-8">
+      <!-- Search + Filter + Sort row -->
+      <div class="flex items-center justify-between gap-4 mb-8">
 
-        <!-- Search -->
-        <div class="flex items-center gap-2 border border-gray-200 rounded-full px-4 py-2 bg-white" style="width: 220px;">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-4.35-4.35M17 11A6 6 0 105 11a6 6 0 0012 0z"/>
-          </svg>
-          <input
-            v-model="search"
-            type="text"
-            placeholder="Search"
-            class="text-xs outline-none bg-transparent text-gray-600 placeholder-gray-400 w-full"
-          />
+        <div class="flex items-center gap-3">
+
+          <!-- Search -->
+          <div class="flex items-center gap-2 border border-gray-200 rounded-full px-4 py-2 bg-white" style="width: 220px;">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-4.35-4.35M17 11A6 6 0 105 11a6 6 0 0012 0z"/>
+            </svg>
+            <input
+              v-model="search"
+              type="text"
+              placeholder="Search"
+              class="text-xs outline-none bg-transparent text-gray-600 placeholder-gray-400 w-full"
+            />
+          </div>
+
+          <!-- Filter button + popup.
+               The sidebar accordion is gone; filters live in here now, which gives
+               the grid the full width. The badge matters: with the panel closed
+               there would otherwise be nothing on screen saying a filter is on. -->
+          <div class="relative" ref="filterContainer">
+            <button
+              @click="toggleFilterPanel"
+              :aria-expanded="filterOpen"
+              aria-haspopup="true"
+              class="flex items-center gap-2 border rounded-full px-4 py-2 text-xs transition"
+              :class="activeFilterCount || filterOpen
+                ? 'border-gray-800 text-gray-800 bg-white'
+                : 'border-gray-200 text-gray-600 bg-white hover:border-gray-300'">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 4h18M6 12h12M10 20h4"/>
+              </svg>
+              Filters
+              <span v-if="activeFilterCount"
+                class="ml-0.5 text-white rounded-full px-1.5 min-w-4 h-4 flex items-center justify-center"
+                style="background-color: #C9A96E; font-size: 9px;">
+                {{ activeFilterCount }}
+              </span>
+            </button>
+
+            <div v-if="filterOpen"
+              class="absolute top-full left-0 mt-3 z-40 rounded-2xl bg-white/95 backdrop-blur-md shadow-lg shadow-black/5 p-6"
+              style="width: 320px;">
+
+              <!-- Category -->
+              <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Category</p>
+              <div class="grid grid-cols-2 gap-x-4 gap-y-2 mb-6">
+                <label v-for="cat in categories" :key="cat" class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" v-model="draft.categories" :value="cat" class="accent-gray-700 w-3 h-3" />
+                  <span class="text-xs text-gray-600">{{ cat }}</span>
+                </label>
+              </div>
+
+              <!-- Condition -->
+              <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Condition</p>
+              <div class="flex flex-col gap-2 mb-6">
+                <label v-for="cond in conditions" :key="cond" class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" v-model="draft.conditions" :value="cond" class="accent-gray-700 w-3 h-3" />
+                  <span class="text-xs text-gray-600">{{ cond }}</span>
+                </label>
+              </div>
+
+              <!-- Price -->
+              <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Max price</p>
+              <input
+                type="range"
+                v-model="draft.priceMax"
+                min="0"
+                :max="PRICE_CEILING"
+                step="100"
+                class="w-full accent-yellow-600"
+              />
+              <div class="flex justify-between text-xs text-gray-400 mt-1 mb-6">
+                <span>RM 0</span>
+                <span>
+                  {{ Number(draft.priceMax) >= PRICE_CEILING
+                    ? 'Any' : `RM ${Number(draft.priceMax).toLocaleString()}` }}
+                </span>
+              </div>
+
+              <!-- Actions -->
+              <div class="flex items-center justify-between gap-3 pt-1 border-t border-gray-100">
+                <button @click="resetFilters"
+                  class="text-xs text-gray-400 hover:text-gray-700 transition pt-4">
+                  Reset
+                </button>
+                <button @click="applyFilters"
+                  class="px-6 py-2 text-xs text-white rounded-md transition hover:opacity-90 mt-4"
+                  style="background-color: #1B3A2D;">
+                  Apply
+                </button>
+              </div>
+
+            </div>
+          </div>
         </div>
 
         <!-- Sort -->
@@ -34,79 +117,9 @@
 
       </div>
 
-      <!-- Main layout: Sidebar + Grid -->
-      <div class="flex gap-10">
-
-        <!-- ===== SIDEBAR FILTERS ===== -->
-        <div class="flex-shrink-0" style="width: 200px;">
-          <div class="bg-white rounded-xl p-5 shadow-sm">
-            <p class="text-sm font-semibold text-gray-700 mb-5">Filters</p>
-
-            <!-- Category -->
-            <div class="mb-5">
-              <div class="flex items-center justify-between cursor-pointer mb-3" @click="showCategory = !showCategory">
-                <p class="text-xs font-medium text-gray-600">Category</p>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-gray-400 transition" :class="showCategory ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                </svg>
-              </div>
-              <div v-if="showCategory" class="grid grid-cols-2 gap-x-4 gap-y-2">
-                <label v-for="cat in categories" :key="cat" class="flex items-center gap-1.5 cursor-pointer">
-                  <input type="checkbox" v-model="selectedCategories" :value="cat" class="accent-gray-700 w-3 h-3" />
-                  <span class="text-xs text-gray-500">{{ cat }}</span>
-                </label>
-              </div>
-            </div>
-
-            <div class="border-t border-gray-100 mb-5"></div>
-
-            <!-- Condition -->
-            <div class="mb-5">
-              <div class="flex items-center justify-between cursor-pointer mb-3" @click="showCondition = !showCondition">
-                <p class="text-xs font-medium text-gray-600">Condition</p>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-gray-400 transition" :class="showCondition ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                </svg>
-              </div>
-              <div v-if="showCondition" class="flex flex-col gap-2">
-                <label v-for="cond in conditions" :key="cond" class="flex items-center gap-1.5 cursor-pointer">
-                  <input type="checkbox" v-model="selectedConditions" :value="cond" class="accent-gray-700 w-3 h-3" />
-                  <span class="text-xs text-gray-500">{{ cond }}</span>
-                </label>
-              </div>
-            </div>
-
-            <div class="border-t border-gray-100 mb-5"></div>
-
-            <!-- Price Range -->
-            <div>
-              <div class="flex items-center justify-between cursor-pointer mb-3" @click="showPrice = !showPrice">
-                <p class="text-xs font-medium text-gray-600">Price Range</p>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-gray-400 transition" :class="showPrice ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                </svg>
-              </div>
-              <div v-if="showPrice">
-                <input
-                  type="range"
-                  v-model="priceMax"
-                  min="0"
-                  max="10000"
-                  step="100"
-                  class="w-full accent-yellow-600"
-                />
-                <div class="flex justify-between text-xs text-gray-400 mt-1">
-                  <span>Min</span>
-                  <span>Max</span>
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        <!-- ===== PRODUCT GRID ===== -->
-        <div class="flex-1">
+      <!-- ===== PRODUCT GRID ===== -->
+      <!-- Full width now that the filter sidebar is gone. -->
+      <div>
 
           <!-- Error -->
           <div v-if="errorMsg" class="rounded-lg px-5 py-4 mb-6 text-xs" style="background-color: #FEF2F2; color: #B91C1C;">
@@ -114,13 +127,7 @@
           </div>
 
           <!-- Loading skeletons -->
-          <div v-if="loading" class="grid grid-cols-3 gap-6 mb-10">
-            <div v-for="n in perPage" :key="n">
-              <div class="rounded-sm bg-gray-100 animate-pulse mb-3" style="height: 240px;"></div>
-              <div class="h-3 bg-gray-100 rounded animate-pulse w-3/4 mb-1.5"></div>
-              <div class="h-2 bg-gray-100 rounded animate-pulse w-1/3"></div>
-            </div>
-          </div>
+        <LoadingPanel v-if="loading" :min-height="420" label="Loading listings" class="mb-10" />
 
           <!-- Empty state -->
           <div v-else-if="products.length === 0" class="flex flex-col items-center justify-center py-24 text-center">
@@ -132,7 +139,7 @@
           </div>
 
           <!-- Grid -->
-          <div v-else class="grid grid-cols-3 gap-6 mb-10">
+          <div v-else class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 mb-10">
             <div v-for="product in products" :key="product.id"
             class="cursor-pointer group"  @click="router.push('/product/' + product.id)">
 
@@ -180,7 +187,6 @@
             </button>
           </div>
 
-        </div>
       </div>
     </div>
 
@@ -190,10 +196,12 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
+import LoadingPanel from '../components/LoadingPanel.vue'
+import { holdFor } from '../lib/loading.js'
 import { fetchListings } from '../lib/listings.js'
 import { isAuthenticated, userId } from '../lib/auth.js'
 import { toggleWishlist, wishlistIds } from '../lib/wishlist.js'
@@ -202,14 +210,19 @@ const router = useRouter()
 
 const search = ref('')
 const sortBy = ref('latest')
-const showCategory = ref(true)
-const showCondition = ref(true)
-const showPrice = ref(true)
+
+// Applied filters — the only ones load() reads.
 const priceMax = ref(10000)
 const selectedCategories = ref([])
 const selectedConditions = ref([])
+
+// Draft filters — what the popup binds to. Seeded from the applied values each
+// time the panel opens, so closing without pressing Apply changes nothing.
+const filterOpen = ref(false)
+const filterContainer = ref(null)
+const draft = ref({ categories: [], conditions: [], priceMax: 10000 })
 const currentPage = ref(1)
-const perPage = 9
+const perPage = 12
 
 const products = ref([])
 const total = ref(0)
@@ -222,6 +235,53 @@ const conditions = ['New with tag', 'Good as new', 'Fair']
 
 const PRICE_CEILING = 10000
 
+// Shown on the Filters button so an active filter is visible with the panel shut.
+// The price counts as one filter only when it is actually narrowing anything.
+const activeFilterCount = computed(() =>
+  selectedCategories.value.length +
+  selectedConditions.value.length +
+  (Number(priceMax.value) < PRICE_CEILING ? 1 : 0),
+)
+
+const toggleFilterPanel = () => {
+  filterOpen.value = !filterOpen.value
+  // Re-seed on open so the panel always reflects what is actually applied.
+  if (filterOpen.value) {
+    draft.value = {
+      categories: [...selectedCategories.value],
+      conditions: [...selectedConditions.value],
+      priceMax: priceMax.value,
+    }
+  }
+}
+
+const applyFilters = () => {
+  selectedCategories.value = [...draft.value.categories]
+  selectedConditions.value = [...draft.value.conditions]
+  priceMax.value = draft.value.priceMax
+  filterOpen.value = false
+}
+
+// Clears the draft and the applied filters together, so the grid visibly returns
+// to everything. The panel stays open — a Reset that closed itself would leave the
+// seller unsure whether it had taken effect.
+const resetFilters = () => {
+  draft.value = { categories: [], conditions: [], priceMax: PRICE_CEILING }
+  selectedCategories.value = []
+  selectedConditions.value = []
+  priceMax.value = PRICE_CEILING
+}
+
+const handleFilterClickOutside = (event) => {
+  if (filterContainer.value && !filterContainer.value.contains(event.target)) {
+    filterOpen.value = false
+  }
+}
+
+const handleFilterEscape = (event) => {
+  if (event.key === 'Escape') filterOpen.value = false
+}
+
 const totalPages = computed(() => Math.max(1, Math.ceil(total.value / perPage)))
 
 // Filtering, sorting and paging all happen in Postgres, so only the nine rows
@@ -229,6 +289,8 @@ const totalPages = computed(() => Math.max(1, Math.ceil(total.value / perPage)))
 const load = async () => {
   loading.value = true
   errorMsg.value = ''
+  // The loader is held on screen for a minimum; see holdFor().
+  const startedAt = performance.now()
   try {
     const result = await fetchListings({
       search: search.value,
@@ -248,6 +310,7 @@ const load = async () => {
     products.value = []
     total.value = 0
   } finally {
+    await holdFor(startedAt)
     loading.value = false
   }
 }
@@ -264,7 +327,16 @@ watch([sortBy, currentPage], load)
 
 // The saved-ids set now follows the session from src/lib/wishlist.js, so this
 // page no longer loads it itself.
-onMounted(load)
+onMounted(() => {
+  load()
+  window.addEventListener('click', handleFilterClickOutside)
+  window.addEventListener('keydown', handleFilterEscape)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('click', handleFilterClickOutside)
+  window.removeEventListener('keydown', handleFilterEscape)
+})
 
 const handleWishlist = async (id) => {
   if (!isAuthenticated.value) {

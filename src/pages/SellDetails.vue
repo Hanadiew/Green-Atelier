@@ -3,7 +3,10 @@
 
     <Navbar />
 
-    <div class="page-top page-container pb-16 flex gap-10">
+    <!-- justify-center, and the form column has a width rather than flex-1:
+         together they centre the stepper-plus-form group in the page instead of
+         pinning it left with a wide empty gutter on the right. -->
+    <div class="page-top page-container pb-16 flex gap-10 justify-center">
 
       <!-- ===== LEFT: Stepper ===== -->
       <div style="width: 200px;" class="flex-shrink-0">
@@ -49,7 +52,7 @@
       <div class="border-l border-gray-200"></div>
 
       <!-- ===== RIGHT: Form ===== -->
-      <div class="flex-1 max-w-lg">
+      <div class="w-full max-w-lg">
 
         <p class="text-xs font-semibold tracking-widest uppercase text-gray-700 mb-1">
           {{ steps[currentStep].label }}
@@ -105,52 +108,8 @@
           </div>
         </div>
 
-        <!-- ===== STEP 1: AUTHENTICITY ===== -->
-        <div v-if="currentStep === 1" class="space-y-5 mt-4">
-          <p class="text-xs text-gray-400">Help us authenticate your item. This information remains private.
-            <span class="inline-flex items-center justify-center w-4 h-4 rounded-full border border-gray-300 text-gray-400 text-xs ml-1 cursor-help" title="Your documents are kept confidential and only used for verification purposes.">i</span>
-          </p>
-
-          <!-- Document upload box -->
-          <div
-            @click="triggerDocUpload"
-            class="border border-gray-200 rounded-xl px-5 py-4 flex items-center gap-3 cursor-pointer hover:border-gray-300 transition">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
-            <span class="text-sm text-gray-500">Add receipt, authenticity card or invoice</span>
-          </div>
-          <input ref="docInput" type="file" accept=".pdf,.jpg,.png" class="hidden" @change="handleDocUpload" />
-
-          <!-- Uploaded doc preview -->
-          <div v-if="details.authDoc" class="border border-gray-200 rounded-xl px-5 py-3 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-              </svg>
-              <div>
-                <p class="text-xs text-gray-600">{{ details.authDoc.name }}</p>
-                <p class="text-xs text-gray-400">{{ (details.authDoc.size / 1024).toFixed(0) }} kB</p>
-              </div>
-            </div>
-            <button @click="details.authDoc = null" class="text-gray-300 hover:text-gray-500 transition">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-              </svg>
-            </button>
-          </div>
-
-          <!-- Serial number -->
-          <div class="pt-2">
-            <p class="text-sm text-gray-700 mb-0.5">Serial Number (Optional)</p>
-            <p class="text-xs text-gray-400 mb-2">This information will remain private.</p>
-            <input v-model="details.serialNumber" type="text" placeholder="Serial Number"
-              class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white placeholder-gray-300" />
-          </div>
-        </div>
-
-        <!-- ===== STEP 2: DETAILS ===== -->
-<div v-if="currentStep === 2" class="space-y-6 mt-4">
+        <!-- ===== STEP 1: DETAILS ===== -->
+<div v-if="currentStep === 1" class="space-y-6 mt-4">
 
   <!-- Description -->
   <div>
@@ -237,8 +196,8 @@
 
 </div>
 
-        <!-- ===== STEP 3: MEDIA ===== -->
-        <div v-if="currentStep === 3" class="space-y-5 mt-4">
+        <!-- ===== STEP 2: MEDIA ===== -->
+        <div v-if="currentStep === 2" class="space-y-5 mt-4">
           <p class="text-sm text-gray-600 flex items-center gap-1">
             Upload at least 3 photos
             <span class="inline-flex items-center justify-center w-4 h-4 rounded-full border border-gray-300 text-gray-400 text-xs cursor-help" title="Include front, back, label, and any flaws.">?</span>
@@ -309,218 +268,129 @@
 
         </div>
 
-        <!-- ===== STEP 4: GREEN ATELIER TRUSTCHECK ===== -->
-        <div v-if="currentStep === 4" class="mt-4">
+        <!-- ===== STEP 3: AUTHENTICITY (evidence + TrustCheck) ===== -->
+        <div v-if="currentStep === 3" class="space-y-6 mt-4">
+
+          <p class="text-xs text-gray-400">
+            Everything here stays private between you and our review team. Buyers only
+            ever see the TrustCheck score.
+          </p>
+
+          <!-- Serial number. TrustCheck takes a photo of it; this is the typed
+               value, which is what the review team reads and what is stored on the
+               listing. -->
+          <div>
+            <label for="sell-serial" class="text-sm text-gray-700 mb-0.5 block">Serial Number (Optional)</label>
+            <p class="text-xs text-gray-400 mb-2">Printed inside the item, or on its date stamp.</p>
+            <input id="sell-serial" v-model="details.serialNumber" type="text" placeholder="Serial Number"
+              class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white placeholder-gray-300" />
+          </div>
+
           <TrustCheckPanel
             v-model="trustCheck"
             :initial-brand="form.brand"
             :listing-images="imageFiles"
           />
+
+          <!-- Fallback paperwork upload.
+               TrustCheck has its own Receipt / Invoice slot, so asking here as well
+               is what made the old two-step version collect the same document
+               twice. It only appears when TrustCheck cannot run — an unsupported
+               brand, or an edit — where those slots are hidden and this would
+               otherwise be the seller's only way to attach a receipt. -->
+          <div v-if="!trustCheckApplies" class="pt-2">
+            <p class="text-sm text-gray-700 mb-0.5">Proof of purchase (Optional)</p>
+            <p class="text-xs text-gray-400 mb-2">
+              TrustCheck does not cover this item yet, so our team reviews your paperwork
+              by hand instead.
+            </p>
+
+            <div
+              @click="triggerDocUpload"
+              class="border border-gray-200 rounded-xl px-5 py-4 flex items-center gap-3 cursor-pointer hover:border-gray-300 transition">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+              <span class="text-sm text-gray-500">Add receipt, authenticity card or invoice</span>
+            </div>
+            <input ref="docInput" type="file" accept=".pdf,.jpg,.png" class="hidden" @change="handleDocUpload" />
+
+            <div v-if="details.authDoc" class="mt-3 border border-gray-200 rounded-xl px-5 py-3 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                <div>
+                  <p class="text-xs text-gray-600">{{ details.authDoc.name }}</p>
+                  <p class="text-xs text-gray-400">{{ (details.authDoc.size / 1024).toFixed(0) }} kB</p>
+                </div>
+              </div>
+              <button @click="details.authDoc = null" class="text-gray-300 hover:text-gray-500 transition" aria-label="Remove document">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
         </div>
 
-        <!-- ===== STEP 5: LOCATION ===== -->
-<div v-if="currentStep === 5" class="space-y-5 mt-4">
+        <!-- ===== STEP 4: PAYOUT ===== -->
+        <!-- Read-only on purpose. The bank details live in Account Settings and
+             are edited there; duplicating the form here would give two places to
+             change the same record. This step exists so a seller confirms where
+             the money lands before the listing goes live. -->
+        <div v-if="currentStep === 4" class="space-y-5 mt-4">
 
-  <p class="text-sm font-semibold text-gray-800 mb-4">Addresses</p>
+          <div>
+            <p class="text-sm font-semibold text-gray-800 mb-1">Where we send your earnings</p>
+            <p class="text-xs text-gray-400 leading-relaxed">
+              When your item sells, your share is paid to this account. Green Atelier keeps
+              no part of it beyond the GAFS Fee shown at Pricing.
+            </p>
+          </div>
 
-  <!-- Saved address card -->
-  <div v-if="details.savedAddress"
-    class="border border-gray-800 rounded-lg px-5 py-4 flex items-start justify-between">
-    <div class="flex items-start gap-3">
-      <input type="radio" checked class="mt-1 accent-gray-800 w-3.5 h-3.5 flex-shrink-0" />
-      <div>
-        <p class="text-xs text-gray-400 mb-1">Shipping from</p>
-        <p class="text-sm font-semibold text-gray-800">{{ details.savedAddress.name }}</p>
-        <p class="text-xs text-gray-500 mt-0.5">{{ details.savedAddress.street }}</p>
-        <p class="text-xs text-gray-500">{{ details.savedAddress.postcode }} {{ details.savedAddress.city }}, {{ details.savedAddress.country }}</p>
-      </div>
-    </div>
-    <button @click="openEditAddress" class="text-gray-400 hover:text-gray-600 transition mt-1">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 15H9v-2z"/>
-      </svg>
-    </button>
-  </div>
+          <!-- Loading -->
+          <LoadingPanel v-if="payoutLoading" :min-height="140" label="Checking payout details" />
 
-  <!-- Empty state if no address -->
-  <div v-else class="border border-dashed border-gray-200 rounded-lg px-5 py-6 text-center">
-    <p class="text-xs text-gray-400">No address saved yet. Add one below.</p>
-  </div>
+          <!-- Saved payout account -->
+          <div v-else-if="payoutAccount"
+            class="border border-gray-800 rounded-lg px-5 py-4 flex items-start justify-between gap-4">
+            <div>
+              <p class="text-xs text-gray-400 mb-1">Paying out to</p>
+              <p class="text-sm font-semibold text-gray-800">{{ payoutAccount.bankName }}</p>
+              <p class="text-xs text-gray-500 mt-0.5">{{ payoutAccount.accountHolderName }}</p>
+              <p class="text-xs text-gray-500 font-mono mt-0.5">{{ payoutAccount.accountNumberMasked }}</p>
+            </div>
+            <RouterLink to="/account?section=payout"
+              class="text-xs whitespace-nowrap hover:underline" style="color: #1B3A2D;">
+              Change
+            </RouterLink>
+          </div>
 
-  <!-- Add new address button -->
-  <button @click="openAddAddress"
-    class="flex items-center gap-2 border border-gray-300 rounded-full px-5 py-2.5 text-xs text-gray-600 hover:border-gray-400 transition">
-    <span class="text-lg leading-none text-gray-400">+</span>
-    Add new address
-  </button>
+          <!-- Nothing on file yet -->
+          <div v-else class="border border-dashed rounded-lg px-5 py-8 text-center" style="border-color: #C9A96E;">
+            <p class="text-sm font-medium text-gray-700 mb-1">No payout account yet</p>
+            <p class="text-xs text-gray-400 leading-relaxed mb-5 max-w-xs mx-auto">
+              Add your bank details in Account Settings so we have somewhere to send your
+              earnings. You will come back to this listing afterwards.
+            </p>
+            <RouterLink to="/account?section=payout"
+              class="inline-block px-6 py-2.5 text-sm text-white rounded-md transition hover:opacity-90"
+              style="background-color: #1B3A2D;">
+              Add payout details
+            </RouterLink>
+          </div>
 
-</div>
-
-<!-- ===== ADD ADDRESS MODAL ===== -->
-<Teleport to="body">
-  <div v-if="addressModal.open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 relative">
-
-      <!-- Modal header -->
-      <div class="flex items-center justify-between px-6 pt-6 pb-4">
-        <div class="flex items-center gap-3">
-          <button v-if="addressModal.step > 1" @click="addressModal.step--" class="text-gray-400 hover:text-gray-600 transition">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-            </svg>
+          <button v-if="!payoutLoading" @click="reloadPayoutAccount"
+            class="text-xs text-gray-400 hover:text-gray-600 transition">
+            Added it in another tab? Refresh
           </button>
-          <h3 class="text-base font-semibold text-gray-800">Add an address</h3>
-        </div>
-        <button @click="closeAddressModal" class="w-7 h-7 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-600 transition">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-          </svg>
-        </button>
-      </div>
 
-      <!-- Modal Step 1: Country + Search -->
-      <div v-if="addressModal.step === 1" class="px-6 pb-6 space-y-4">
-        <div>
-          <label class="text-xs font-semibold text-gray-700 mb-2 block">Country</label>
-          <select v-model="newAddress.country" class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white">
-            <option>Malaysia</option>
-            <option>Singapore</option>
-            <option>United States</option>
-            <option>United Kingdom</option>
-            <option>Australia</option>
-            <option>Japan</option>
-          </select>
-        </div>
-        <div>
-          <label class="text-xs font-semibold text-gray-700 mb-2 block">Your address</label>
-          <div class="flex items-center gap-2 border border-gray-200 rounded-md px-4 py-2.5 bg-gray-50">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-4.35-4.35M17 11A6 6 0 105 11a6 6 0 0012 0z"/>
-            </svg>
-            <input
-              v-model="newAddress.search"
-              type="text"
-              placeholder="Find your address"
-              class="text-sm text-gray-600 outline-none bg-transparent w-full placeholder-gray-400"
-            />
-          </div>
-        </div>
-        <button @click="addressModal.step = 2"
-          class="w-full py-2.5 text-sm text-white rounded-md mt-2"
-          style="background-color: #1a1a2e;">
-          Next
-        </button>
-      </div>
-
-      <!-- Modal Step 2: Full address form -->
-      <div v-if="addressModal.step === 2" class="px-6 pb-6 space-y-4">
-        <p class="text-xs font-semibold text-gray-700 mb-2">Location</p>
-
-        <div>
-          <label class="text-xs text-gray-500 mb-1 block">Country</label>
-          <select v-model="newAddress.country" class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white">
-            <option>Malaysia</option>
-            <option>Singapore</option>
-            <option>United States</option>
-            <option>United Kingdom</option>
-          </select>
         </div>
 
-        <div>
-          <label class="text-xs text-gray-500 mb-1 block">Street address</label>
-          <input v-model="newAddress.street" type="text" placeholder="e.g. 21st Street"
-            class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white placeholder-gray-300" />
-        </div>
-
-        <div>
-          <label class="text-xs text-gray-500 mb-1 block">Apartment, suite, building (optional)</label>
-          <input v-model="newAddress.apt" type="text"
-            class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white" />
-        </div>
-
-        <div>
-          <label class="text-xs text-gray-500 mb-1 block">City</label>
-          <input v-model="newAddress.city" type="text" placeholder="e.g. Kuala Lumpur"
-            class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white placeholder-gray-300" />
-        </div>
-
-        <div>
-          <label class="text-xs text-gray-500 mb-1 block">State</label>
-          <select v-model="newAddress.state" class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white">
-            <option>Johor</option><option>Kuala Lumpur</option><option>Selangor</option>
-            <option>Penang</option><option>Sabah</option><option>Sarawak</option>
-            <option>Perak</option><option>Kedah</option><option>Melaka</option>
-            <option>Negeri Sembilan</option><option>Pahang</option><option>Terengganu</option>
-            <option>Kelantan</option><option>Perlis</option><option>Putrajaya</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="text-xs text-gray-500 mb-1 block">ZIP code</label>
-          <input v-model="newAddress.postcode" type="text" placeholder="e.g. 80000"
-            class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white placeholder-gray-300" />
-        </div>
-
-        <button @click="addressModal.step = 3"
-          class="w-full py-2.5 text-sm text-white rounded-md mt-2"
-          style="background-color: #1a1a2e;">
-          Looks good
-        </button>
-      </div>
-
-      <!-- Modal Step 3: Contact form -->
-      <div v-if="addressModal.step === 3" class="px-6 pb-6 space-y-4">
-        <p class="text-xs font-semibold text-gray-700 mb-2">Contact</p>
-
-        <div>
-          <label class="text-xs text-gray-500 mb-1 block">First name</label>
-          <input v-model="newAddress.firstName" type="text" placeholder="First name"
-            class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white placeholder-gray-300" />
-        </div>
-
-        <div>
-          <label class="text-xs text-gray-500 mb-1 block">Surname</label>
-          <input v-model="newAddress.surname" type="text" placeholder="Surname"
-            class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white placeholder-gray-300" />
-        </div>
-
-        <div class="flex gap-3">
-          <div style="width: 140px;">
-            <label class="text-xs text-gray-500 mb-1 block">Phone code</label>
-            <select v-model="newAddress.phoneCode" class="w-full border border-gray-200 rounded-md px-3 py-2.5 text-sm text-gray-700 outline-none bg-white">
-              <option>+60 (Malaysia)</option>
-              <option>+65 (Singapore)</option>
-              <option>+1 (US)</option>
-              <option>+44 (UK)</option>
-              <option>+61 (Australia)</option>
-            </select>
-          </div>
-          <div class="flex-1">
-            <label class="text-xs text-gray-500 mb-1 block">Mobile number</label>
-            <input v-model="newAddress.phone" type="tel" placeholder="e.g. 1163477080"
-              class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white placeholder-gray-300" />
-          </div>
-        </div>
-
-        <div>
-          <label class="text-xs text-gray-500 mb-1 block">Company (optional)</label>
-          <input v-model="newAddress.company" type="text"
-            class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white" />
-        </div>
-
-        <button @click="confirmAddress"
-          class="w-full py-2.5 text-sm text-white rounded-md mt-2"
-          style="background-color: #1a1a2e;">
-          Confirm
-        </button>
-      </div>
-
-    </div>
-  </div>
-</Teleport>
-
-        <!-- ===== STEP 6: PRICING ===== -->
-<div v-if="currentStep === 6" class="space-y-5 mt-4">
+        <!-- ===== STEP 5: PRICING ===== -->
+<div v-if="currentStep === 5" class="space-y-5 mt-4">
 
   <p class="text-sm font-semibold text-gray-800 mb-4">Price</p>
 
@@ -711,7 +581,13 @@
         </div>
 
         <!-- Buttons -->
-        <div class="flex items-center justify-end gap-4 mt-10">
+        <!-- Cancel leaves the wizard, Reset only empties the form — different
+             things, so they sit apart with Cancel furthest from Continue. -->
+        <div class="flex items-center justify-between gap-4 mt-10">
+          <button @click="handleCancel" :disabled="submitting"
+            class="text-sm text-gray-400 hover:text-red-500 transition disabled:opacity-50">Cancel</button>
+
+          <div class="flex items-center gap-4">
           <button @click="handleReset" :disabled="submitting"
             class="text-sm text-gray-400 hover:text-gray-600 transition disabled:opacity-50">Reset</button>
           <button @click="handleContinue"
@@ -722,6 +598,7 @@
             ? (isEditMode ? 'Saving…' : 'Submitting…')
             : isEditMode ? 'Save Changes' : currentStep === steps.length - 1 ? 'Submit Listing' : 'Continue' }}
           </button>
+          </div>
         </div>
 
       </div>
@@ -737,10 +614,13 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
+import LoadingPanel from '../components/LoadingPanel.vue'
+import { holdFor } from '../lib/loading.js'
 import TrustCheckPanel from '../components/TrustCheckPanel.vue'
+import { fetchPayoutAccount } from '../lib/payouts.js'
 import ToggleSwitch from '../components/ToggleSwitch.vue'
 import { userId } from '../lib/auth.js'
-import { createAddress, fetchDefaultAddress, toDisplay } from '../lib/addresses.js'
+import { fetchDefaultAddress } from '../lib/addresses.js'
 import { matchBrand, saveAssessment } from '../lib/trustcheck/index.js'
 import {
   createListing,
@@ -771,13 +651,21 @@ const isEditMode = computed(() => Boolean(editId))
 const existingImages = ref([])
 const removeExistingImage = (i) => existingImages.value.splice(i, 1)
 
+// Authenticity and TrustCheck used to be two separate sections that asked for the
+// same receipt twice, and they sat either side of Details and Media. They are one
+// section now, and it comes after Media on purpose: TrustCheck scores the listing
+// photos, so it cannot run before they exist.
+//
+// Location is gone. It collected a ship-from address that nothing used; the
+// seller's default address is still attached to the listing silently. What a
+// seller actually needs to confirm before publishing is where the money goes,
+// which is what Payout shows.
 const steps = [
   { key: 'overview', label: 'Overview' },
-  { key: 'authenticity', label: 'Authenticity' },
   { key: 'details', label: 'Details' },
   { key: 'media', label: 'Media' },
-  { key: 'trustcheck', label: 'TrustCheck' },
-  { key: 'location', label: 'Location' },
+  { key: 'authenticity', label: 'Authenticity' },
+  { key: 'payout', label: 'Payout' },
   { key: 'pricing', label: 'Pricing' },
 ]
 
@@ -812,7 +700,6 @@ const defaultDetails = {
   listingPrice: '',
   originalPrice: '',
   acceptOffers: 'Yes',
-  savedAddress: null,
 }
 
 const details = ref({ ...defaultDetails })
@@ -821,6 +708,31 @@ const details = ref({ ...defaultDetails })
 // objects are kept alongside so they can be uploaded to Storage on submit.
 const imageFiles = ref([])
 const addressId = ref(null)
+
+// The seller's payout account, shown read-only at the Payout step. Edited in
+// Account Settings, so this is only ever read here.
+const payoutAccount = ref(null)
+const payoutLoading = ref(true)
+
+const reloadPayoutAccount = async () => {
+  if (!userId.value) {
+    payoutLoading.value = false
+    return
+  }
+  payoutLoading.value = true
+  const startedAt = performance.now()
+  try {
+    payoutAccount.value = await fetchPayoutAccount(userId.value)
+  } catch (error) {
+    // Not fatal to the wizard: the step shows the "add one" prompt, and submit
+    // still blocks until an account exists.
+    console.error('Could not load payout account:', error.message)
+    payoutAccount.value = null
+  } finally {
+    await holdFor(startedAt)
+    payoutLoading.value = false
+  }
+}
 
 // The TrustCheck result, held in memory until the listing row exists. Assessment
 // runs on the local File objects, so nothing is uploaded for an abandoned draft.
@@ -862,88 +774,18 @@ onMounted(async () => {
 
   if (!userId.value) return
   try {
+    // Still attached to the listing as the ship-from address; there is simply
+    // no longer a step asking the seller to pick one.
     const row = await fetchDefaultAddress(userId.value)
-    if (row) {
-      addressId.value = row.id
-      details.value.savedAddress = toDisplay(row)
-    }
+    if (row) addressId.value = row.id
   } catch (error) {
     console.error('Could not load saved address:', error.message)
   }
-})
 
-// Address modal state
-const addressModal = ref({ open: false, step: 1, editMode: false })
+  await reloadPayoutAccount()
+})
 
 const serviceFeeModal = ref(false)
-
-const newAddress = ref({
-  country: 'Malaysia',
-  search: '',
-  street: '',
-  apt: '',
-  city: '',
-  state: 'Johor',
-  postcode: '',
-  firstName: '',
-  surname: '',
-  phoneCode: '+60 (Malaysia)',
-  phone: '',
-  company: '',
-})
-
-const openAddAddress = () => {
-  addressModal.value = { open: true, step: 1, editMode: false }
-  newAddress.value = {
-    country: 'Malaysia', search: '', street: '', apt: '',
-    city: '', state: 'Johor', postcode: '',
-    firstName: '', surname: '', phoneCode: '+60 (Malaysia)',
-    phone: '', company: '',
-  }
-}
-
-const openEditAddress = () => {
-  if (details.value.savedAddress) {
-    newAddress.value = { ...details.value.savedAddress, search: '' }
-  }
-  addressModal.value = { open: true, step: 2, editMode: true }
-}
-
-const closeAddressModal = () => {
-  addressModal.value.open = false
-}
-
-const confirmAddress = async () => {
-  errorMsg.value = ''
-  const a = newAddress.value
-  if (!a.firstName?.trim() || !a.street?.trim() || !a.city?.trim() || !a.postcode?.trim()) {
-    errorMsg.value = 'First name, street address, city and ZIP code are required.'
-    return
-  }
-
-  try {
-    const row = await createAddress(userId.value, {
-      firstName: a.firstName,
-      surname: a.surname,
-      company: a.company,
-      phoneCode: a.phoneCode?.split(' ')[0],
-      phone: a.phone,
-      street: a.street,
-      apartment: a.apt,
-      city: a.city,
-      state: a.state,
-      postcode: a.postcode,
-      country: a.country,
-      // First address on the account becomes the default.
-      isDefault: !addressId.value,
-    })
-    addressId.value = row.id
-    details.value.savedAddress = toDisplay(row)
-    closeAddressModal()
-  } catch (error) {
-    errorMsg.value = error.message
-  }
-}
 
 // Any section, in any order. Sellers fill these out of sequence — pricing
 // before media, say — and used to have to press Continue through every step in
@@ -1018,18 +860,21 @@ const validateStep = (step) => {
     if (!d.title.trim()) return 'Give your item a title so buyers can find it.'
     if (d.title.trim().length < 2) return 'That title is too short.'
   }
-  if (step === 3 && existingImages.value.length + imageFiles.value.length < 3) {
-  return 'Please have at least 3 photos total.'
+  if (step === 2 && existingImages.value.length + imageFiles.value.length < 3) {
+    return 'Please have at least 3 photos total.'
   }
   // TrustCheck is mandatory for the models it supports, so a listing that could
   // carry an assessment never reaches buyers without one.
-  if (step === 4 && trustCheckApplies.value && !trustCheck.value) {
+  if (step === 3 && trustCheckApplies.value && !trustCheck.value) {
     return 'Run Green Atelier TrustCheck before continuing. Pick your model, then Analyze Authenticity.'
   }
-  if (step === 5 && !addressId.value) {
-    return 'Add the address you will ship from.'
+  // No payout account means a sale would have nowhere to pay out to, so this is a
+  // publish-gate rather than a nudge. Skipped while the lookup is still running so
+  // the stepper does not flash an error on load.
+  if (step === 4 && !payoutLoading.value && !payoutAccount.value) {
+    return 'Add your payout bank details in Account Settings before publishing.'
   }
-  if (step === 6) {
+  if (step === 5) {
     const price = Number(d.listingPrice)
     if (!price || price <= 0) return 'Enter a listing price.'
     if (d.originalPrice && Number(d.originalPrice) <= 0) {
@@ -1158,5 +1003,18 @@ const handleReset = () => {
   imageFiles.value = []
   trustCheck.value = null
   details.value = { ...defaultDetails, packaging: [], images: [] }
+}
+
+// Leaves the wizard without saving. Confirmed first, because everything typed so
+// far — including uploads, which only exist in memory until submit — is discarded.
+// Editing an existing listing goes back to Listings; a new draft returns to the
+// Sell start page in case they only wanted to change brand or category.
+const handleCancel = () => {
+  const message = isEditMode.value
+    ? 'Discard your changes to this listing?'
+    : 'Discard this listing? Anything you have filled in will be lost.'
+  if (!window.confirm(message)) return
+
+  router.push(isEditMode.value ? { path: '/profile', query: { tab: 'Listings' } } : '/sell')
 }
 </script>
