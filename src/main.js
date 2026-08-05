@@ -50,6 +50,7 @@ const router = createRouter({
     { path: '/sales-orders', component: () => import('./pages/SalesOrders.vue'), meta: { requiresAuth: true } },
     { path: '/wallet', component: () => import('./pages/Wallet.vue'), meta: { requiresAuth: true } },
     { path: '/about', component: () => import('./pages/About.vue') },
+    { path: '/sustainable', component: () => import('./pages/Sustainable.vue') },
     { path: '/contact', component: () => import('./pages/Contact.vue') },
 
     // Navbar dropdown destinations, mapped onto the pages that own them.

@@ -57,7 +57,7 @@
         </div>
       </div>
       <RouterLink to="/sell" class="text-sm text-gray-700 hover:text-black">Sell</RouterLink>
-      <a href="#" class="text-sm text-gray-700 hover:text-black">Sustain</a>
+      <RouterLink to="/sustainable" class="text-sm text-gray-700 hover:text-black">Sustainable</RouterLink>
     </div>
 
     <!-- Center: Logo -->

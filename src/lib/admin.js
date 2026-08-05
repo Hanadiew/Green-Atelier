@@ -984,15 +984,6 @@ export async function updateBrand(brandId, updates) {
   if (error) throw error
 }
 
-// =============================================================================
-// FEATURED LISTINGS MANAGEMENT
-// =============================================================================
-
-const FEATURED_FIELDS = `
-  id, listing_id, position, created_at,
-  listing:listings(id, title, brand, images, listing_price, seller_id)
-`
-
 // Featured-listing curation was removed: the homepage and product pages both
 // show "New In" (newest active listings) instead, so an approved listing reaches
 // buyers without an admin curating it.

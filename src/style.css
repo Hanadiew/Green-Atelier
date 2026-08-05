@@ -110,6 +110,53 @@
   justify-content: flex-end;
 }
 
+/* --- Scroll reveal ----------------------------------------------------------
+   Paired with useReveal() in lib/motion.js. The section carries `is-visible`
+   once it has been scrolled to; children marked `.reveal` animate in, staggered
+   by an inline `--reveal-delay`. One observer per section, many children.
+
+   An animation rather than a transition, on purpose. A `transition` here would
+   have to be declared on the child, and because this rule is unlayered it would
+   beat Tailwind's `transition-all` utility on the same element — so a card's
+   hover lift would snap instead of easing, and an inline `transition-delay` used
+   for stagger would leak into that hover. `animation` is a separate mechanism
+   and cannot collide with either.
+
+   `transform` is also chosen deliberately: Tailwind v4 compiles translate-* and
+   scale-* to the standalone `translate` / `scale` properties, so the filled
+   final frame below cannot override a hover transform. */
+.reveal {
+  opacity: 0;
+}
+
+.is-visible .reveal {
+  animation: reveal-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms) both;
+}
+
+@keyframes reveal-in {
+  from {
+    opacity: 0;
+    transform: translateY(1.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Reduced motion: land on the finished state, never the starting one, so the
+   content is always readable even if nothing ever animates. useReveal() also
+   short-circuits in JS — this covers the CSS half. */
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+  }
+
+  .is-visible .reveal {
+    animation: none;
+  }
+}
+
 /* Scrolls, but without the visible track — for panels like the admin sidebar
    where the bar itself is the only thing that looks out of place. */
 .no-scrollbar {

@@ -157,6 +157,39 @@ export async function incrementViews(id) {
   if (error) console.warn('View count not recorded:', error.message)
 }
 
+/**
+ * Platform-wide sustainability totals for the Sustainable page.
+ *
+ * Deliberately reads nothing but `listings`, and only the two statuses the
+ * catalogue already shows the world (`listings_select_active` permits `active`
+ * and `sold` to everyone). No order, buyer or payout data is touched, so this
+ * works signed out and leaks nothing RLS was protecting.
+ *
+ * `co2_saved_kg` is the generated per-category figure on the listing itself, so
+ * this is a sum of the platform's own numbers rather than a new calculation.
+ * The sum is done here rather than in SQL because PostgREST aggregates are not
+ * enabled on this project, and the row count is small.
+ */
+export async function fetchPlatformImpact() {
+  const [{ count: activeCount, error: activeError }, { data: soldRows, error: soldError }] =
+    await Promise.all([
+      supabase
+        .from('listings')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'active'),
+      supabase.from('listings').select('co2_saved_kg').eq('status', 'sold'),
+    ])
+
+  if (activeError) throw activeError
+  if (soldError) throw soldError
+
+  return {
+    activeListings: activeCount ?? 0,
+    itemsRehomed: soldRows?.length ?? 0,
+    co2SavedKg: (soldRows ?? []).reduce((total, row) => total + Number(row.co2_saved_kg || 0), 0),
+  }
+}
+
 // --- Uploads ----------------------------------------------------------------
 // Every object is keyed under the uploader's user id because the Storage
 // policies check that the first path segment equals auth.uid().
