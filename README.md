@@ -67,8 +67,6 @@ GAFS/
 │   │   ├── trustcheck/       # Evidence scoring, OCR, reference models
 │   │   ├── brands.js         # Brand reference data
 │   │   └── contact.js        # Contact form submissions
-│   ├── router/
-│   │   └── index.js          # Unused — routes are defined in main.js
 │   ├── cart.js               # Cart state: DB-backed when signed in, localStorage as guest
 │   ├── supabase.js           # Supabase client, configured from .env
 │   └── main.js               # Routes, auth guards, app bootstrap
@@ -509,13 +507,32 @@ This does **not** replace a browser test of the full flow — see the "Seller fl
 2. **Analyze** with just the 3 required photos → expect **45/100, Insufficient Evidence**.
 3. Add a receipt photo, re-analyze → expect **65/100, Needs Review**.
 4. Add a serial number photo and a receipt whose text reads "Made in Italy", re-analyze → expect **90/100, Likely Consistent**.
-5. Publish, approve the listing (Table Editor → `listings` → `status` → `active`), then confirm the score renders correctly on the product page.
+5. Publish, then approve it in the admin portal (**/admin → Listings → filter *In Review* → Review → Approve**) and confirm the score renders correctly on the product page. Approving is now the only supported route — editing `listings.status` by hand in the Table Editor works only because dashboard SQL runs with `auth.uid()` null, which bypasses the seller status guard.
 
 Watch the browser console on the very first "Analyze Authenticity" click of a session — that's where a Tesseract.js CDN failure would surface, since it hasn't been exercised in a real browser yet.
+
+---
+
+## 📚 Further documentation
+
+The admin portal has its own reference material in [`docs/`](docs/):
+
+| Document | Covers |
+|---|---|
+| [ADMIN_IMPLEMENTATION.md](docs/ADMIN_IMPLEMENTATION.md) | Architecture overview — start here |
+| [ADMIN_DEPLOYMENT.md](docs/ADMIN_DEPLOYMENT.md) | Step-by-step deployment |
+| [ADMIN_API_REFERENCE.md](docs/ADMIN_API_REFERENCE.md) | Every function in `src/lib/admin.js` |
+| [ADMIN_PORTAL_SUMMARY.md](docs/ADMIN_PORTAL_SUMMARY.md) | Feature checklist and file inventory |
+
+These predate the Stripe, payout, offer and promo work described above, so where they
+disagree with this README, **this README is current**. Notably: Featured Products and
+Staff & Access were removed, Reports moved to the Support group, and the seller-side
+commission is now labelled *GAFS Fee*.
 
 ---
 
 ## 🎨 UI/UX Features
 * **Authentication Stepper:** Interactive verification code interface with auto-focus shifting and cooldown resend timers.
 * **Smart Navigation Dropdown:** Profile quick links toggleable via on-click activation and close-on-click-outside blurs.
-* **Detailed Seller Stepper:** Step-by-step form layout detailing brand parameters, digital certificate file uploads, packaging checklists, and a dynamic RM platform commission breakdown.
+* **Detailed Seller Stepper:** Freely navigable step-by-step form — click any section in the stepper, in any order — covering brand parameters, authenticity document uploads, packaging checklists, and a live GAFS Fee / payout breakdown. Gaps are caught on submit, which jumps back to the first section that fails.
+* **One toggle component:** `ToggleSwitch.vue` is the only switch in the app. Four hand-rolled copies previously shared a bug where the knob sat outside its track — a `<button>`'s default padding shifted the absolutely-positioned knob's origin, so `translateX` carried it past the edge. The component positions with `left` derived from the track width instead.
