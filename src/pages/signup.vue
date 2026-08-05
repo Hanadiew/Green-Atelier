@@ -131,10 +131,11 @@
 
 <script setup>
 import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { signUpWithPassword } from '../lib/auth.js'
 
 const router = useRouter()
+const route = useRoute()
 
 const step = ref(1)
 const email = ref('')
@@ -180,7 +181,9 @@ const handleCreateAccount = async () => {
     const { signedIn } = await signUpWithPassword(email.value, password.value)
     if (signedIn) {
       // "Confirm email" is off, so the account is usable immediately.
-      router.push('/home')
+      // ?redirect returns them to whatever sent them here — the Sell gate uses it
+      // to hand back the part-finished listing. Matches login.vue.
+      router.push(route.query.redirect || '/home')
     } else {
       // Confirmation is required — send them to check their inbox.
       step.value = 3

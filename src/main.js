@@ -6,6 +6,7 @@ import { initAuth, isAuthenticated } from './lib/auth.js'
 import { supabase } from './supabase.js'
 import { isAdmin } from './lib/admin.js'
 import { initCart } from './cart.js'
+import { scrollToElement, scrollToTop } from './lib/smoothScroll.js'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -16,7 +17,11 @@ const router = createRouter({
     { path: '/login', component: () => import('./pages/login.vue'), meta: { guestOnly: true } },
     { path: '/shop', component: () => import('./pages/Shop.vue') },
     { path: '/product/:id', component: () => import('./pages/Product.vue') },
-    { path: '/sell', component: () => import('./pages/Sell.vue'), meta: { requiresAuth: true } },
+    // Open to visitors on purpose: /sell is the pitch, and a signed-out browser
+    // should be able to read it and start the form. The gate is on the step that
+    // actually creates a listing, and Sell.vue asks them to sign up before
+    // sending them there.
+    { path: '/sell', component: () => import('./pages/Sell.vue') },
     {
       path: '/sell/details',
       component: () => import('./pages/SellDetails.vue'),
@@ -90,9 +95,24 @@ const router = createRouter({
 
     { path: '/:pathMatch(.*)*', redirect: '/home' },
   ],
-  scrollBehavior(to) {
-    if (to.hash) return { el: to.hash, behavior: 'smooth' }
-    return { top: 0 }
+  // Lenis owns the scroll position while it is running, so these hand off to it
+  // and return false rather than returning a position for the router to apply —
+  // the router's own scroll and Lenis' animation loop would otherwise fight over
+  // the same value. Both helpers fall back to native scrolling when Lenis is off
+  // (reduced motion, or inside /admin).
+  scrollBehavior(to, from) {
+    if (to.hash) {
+      // The target is often not mounted until the frame after navigation.
+      requestAnimationFrame(() => scrollToElement(to.hash))
+      return false
+    }
+
+    // Same page, different query — a Profile tab switch, say. Leave the reader
+    // where they are instead of yanking them to the top.
+    if (to.path === from.path) return false
+
+    scrollToTop()
+    return false
   },
 })
 

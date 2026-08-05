@@ -68,11 +68,12 @@
 
 <script setup>
 import { useParallax, useReveal } from '../../lib/motion.js'
+import { scrollToElement } from '../../lib/smoothScroll.js'
 
 const { root, visible } = useReveal({ threshold: 0 })
 const parallax = useParallax(0.08)
 
-const scrollOn = () => {
-  document.getElementById('impact-stats')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-}
+// Through Lenis rather than scrollIntoView: a native smooth scroll would run
+// against Lenis' own animation and stutter.
+const scrollOn = () => scrollToElement('#impact-stats')
 </script>

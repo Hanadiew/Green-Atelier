@@ -141,6 +141,32 @@
   justify-content: flex-end;
 }
 
+/* --- Lenis smooth scroll ----------------------------------------------------
+   Required by Lenis; see lib/smoothScroll.js. The classes are added to <html> by
+   Lenis itself, so all of this is inert until it is running — which means the
+   admin portal and anyone on reduced motion are untouched.
+
+   `scroll-behavior: auto` is the important one: a CSS smooth scroll anywhere
+   would animate against Lenis' animation and stutter. */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* Keeps a wheel inside a marked panel (the cart list, the offers drawer, the
+   order modal) from chaining out to the page once the panel hits its end. */
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
 /* --- Scroll reveal ----------------------------------------------------------
    Paired with useReveal() in lib/motion.js. The section carries `is-visible`
    once it has been scrolled to; children marked `.reveal` animate in, staggered

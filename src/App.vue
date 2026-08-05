@@ -12,13 +12,25 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import Toast from './components/Toast.vue'
 import PromoTab from './components/PromoTab.vue'
 import WelcomePromoDialog from './components/WelcomePromoDialog.vue'
+import { startSmoothScroll, stopSmoothScroll } from './lib/smoothScroll.js'
 
 const route = useRoute()
 
 const isAdminRoute = computed(() => route.path.startsWith('/admin'))
+
+// Smooth scrolling belongs to the storefront only. The admin portal scrolls
+// inside its own container rather than the window, so Lenis would intercept the
+// wheel without having anything to move. Torn down and rebuilt as the moderator
+// crosses in and out of /admin.
+watch(isAdminRoute, (isAdmin) => {
+  if (isAdmin) stopSmoothScroll()
+  else startSmoothScroll()
+}, { immediate: true })
+
+onUnmounted(stopSmoothScroll)
 </script>

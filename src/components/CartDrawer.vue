@@ -25,7 +25,7 @@
     </div>
 
     <!-- Items -->
-    <div class="flex-1 overflow-y-auto px-8 py-6">
+    <div class="flex-1 overflow-y-auto px-8 py-6" data-lenis-prevent>
 
       <!-- Empty state -->
       <div v-if="cartItems.length === 0" class="flex flex-col items-center justify-center h-full text-center">

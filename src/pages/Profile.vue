@@ -437,6 +437,7 @@
 <Teleport to="body">
   <div v-if="orderDetailOpen"
     @click.self="closeOrderDetail"
+    data-lenis-prevent
     class="order-modal-root fixed inset-0 z-50 flex items-start justify-center overflow-y-auto py-10 px-4
            bg-black/50 backdrop-blur-sm">
     <div class="order-modal-card bg-white rounded-2xl shadow-xl w-full max-w-md relative">

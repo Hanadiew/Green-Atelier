@@ -192,14 +192,61 @@
 
     <Footer />
 
+    <!-- ===== SIGN-UP GATE ===== -->
+    <!-- Shown instead of navigating when a visitor finishes this first step.
+         `intendedPath` carries what they already filled in, so signing up returns
+         them to the details form with the answers intact rather than to /home. -->
+    <Teleport to="body">
+      <div v-if="showSignupGate"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4"
+        role="dialog" aria-modal="true" aria-labelledby="sell-gate-title"
+        @click.self="showSignupGate = false">
+        <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full relative px-8 py-9 text-center">
+
+          <button ref="gateClose" @click="showSignupGate = false"
+            class="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition"
+            aria-label="Close">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          <p class="text-xs tracking-widest uppercase mb-3" style="color: #C9A96E;">One more step</p>
+          <h3 id="sell-gate-title" class="text-xl mb-3" style="font-family: 'Georgia', serif; color: #1B3A2D;">
+            Sign up to list your item
+          </h3>
+          <p class="text-xs text-gray-400 leading-relaxed mb-7">
+            Listings are tied to a seller account so buyers know who they are dealing
+            with — and so your sales and payouts reach you. We have kept your answers;
+            you will pick up right where you left off.
+          </p>
+
+          <RouterLink :to="{ path: '/signup', query: { redirect: intendedPath } }"
+            class="block w-full py-3 text-sm text-white rounded-md transition hover:opacity-90 mb-3"
+            style="background-color: #1B3A2D;">
+            Sign Up
+          </RouterLink>
+
+          <p class="text-xs text-gray-400">
+            Already selling with us?
+            <RouterLink :to="{ path: '/login', query: { redirect: intendedPath } }"
+              class="font-medium hover:underline" style="color: #1B3A2D;">
+              Log in
+            </RouterLink>
+          </p>
+        </div>
+      </div>
+    </Teleport>
+
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
+import { isAuthenticated } from '../lib/auth.js'
 
 const router = useRouter()
 
@@ -210,19 +257,49 @@ const form = ref({
   condition: 'New with tag',
 })
 
+const showSignupGate = ref(false)
+const intendedPath = ref('/sell/details')
+const gateClose = ref(null)
+
 const handleContinue = () => {
   if (!form.value.brand) {
     alert('Please enter a brand name.')
     return
   }
-  router.push({
+
+  const destination = router.resolve({
     path: '/sell/details',
     query: {
       brand: form.value.brand,
       category: form.value.category,
       itemType: form.value.itemType,
       condition: form.value.condition,
-    }
-  })
+    },
+  }).fullPath
+
+  // A visitor gets the invitation rather than a redirect to /login, which is
+  // what used to happen and read like a wall.
+  if (!isAuthenticated.value) {
+    intendedPath.value = destination
+    showSignupGate.value = true
+    return
+  }
+
+  router.push(destination)
 }
+
+const handleEscape = (event) => {
+  if (event.key === 'Escape') showSignupGate.value = false
+}
+
+// Focus moves into the dialog when it opens, so a keyboard user is not left
+// tabbing through the page behind it.
+watch(showSignupGate, async (open) => {
+  if (!open) return
+  await Promise.resolve()
+  gateClose.value?.focus()
+})
+
+onMounted(() => window.addEventListener('keydown', handleEscape))
+onUnmounted(() => window.removeEventListener('keydown', handleEscape))
 </script>

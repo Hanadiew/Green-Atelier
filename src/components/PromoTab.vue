@@ -30,7 +30,7 @@
             type anything.
           </p>
 
-          <div class="space-y-3 max-h-80 overflow-y-auto">
+          <div class="space-y-3 max-h-80 overflow-y-auto" data-lenis-prevent>
             <div v-for="promo in promos" :key="promo.code"
               class="rounded-lg px-4 py-3" style="background-color: #F7F5F0;">
               <div class="flex items-baseline justify-between gap-2 mb-1">

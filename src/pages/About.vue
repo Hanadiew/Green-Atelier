@@ -251,10 +251,11 @@
 <script setup>
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
+import { scrollToElement } from '../lib/smoothScroll.js'
 
-const scrollTo = (id) => {
-  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
-}
+// Through Lenis rather than scrollIntoView, which would run against Lenis' own
+// animation and stutter.
+const scrollTo = (id) => scrollToElement(`#${id}`)
 
 const stats = [
   { value: '200+', label: 'Luxury items rehomed and authenticated' },
