@@ -3,60 +3,26 @@
 
     <Navbar />
 
-    <!-- justify-center, and the form column has a width rather than flex-1:
-         together they centre the stepper-plus-form group in the page instead of
-         pinning it left with a wide empty gutter on the right. -->
-    <div class="page-top page-container pb-16 flex gap-10 justify-center">
+    <!-- One centred column. The vertical stepper sidebar is gone, replaced by the
+         segmented progress bar below, so there is no second column to balance
+         against and the form simply centres. -->
+    <div class="page-top page-container pb-16">
+      <div class="mx-auto w-full max-w-lg">
 
-      <!-- ===== LEFT: Stepper ===== -->
-      <div style="width: 200px;" class="flex-shrink-0">
-        <p class="text-sm font-semibold text-gray-800 mb-0.5">{{ form.brand || 'Coach' }}</p>
-        <p class="text-xs text-gray-400 mb-8">Women's {{ form.category || 'Tops' }}</p>
-
-        <div class="relative flex flex-col gap-0">
-          <div v-for="(step, i) in steps" :key="step.key" class="flex items-start gap-3">
-            <div class="flex flex-col items-center">
-
-              <!-- Clickable circle -->
-              <button
-                @click="goToStep(i)"
-                class="w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition hover:border-yellow-600"
-                :class="currentStep === i
-                  ? 'border-yellow-600 bg-white'
-                  : stepComplete(i)
-                  ? 'border-yellow-600 bg-yellow-600'
-                  : 'border-gray-200 bg-white'">
-                <div v-if="currentStep === i" class="w-2 h-2 rounded-full" style="background-color: #C9A96E;"></div>
-                <svg v-else-if="stepComplete(i)" xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
-                </svg>
-              </button>
-
-              <div v-if="i < steps.length - 1" class="w-px my-1" style="height: 32px; background-color: #e5e7eb;"></div>
-            </div>
-
-            <!-- Clickable label -->
-            <button
-              @click="goToStep(i)"
-              class="text-xs pt-1 font-medium transition text-left hover:text-yellow-700"
-              :class="currentStep === i ? 'text-yellow-700' : stepComplete(i) ? 'text-gray-500' : 'text-gray-400'"
-              style="letter-spacing: 0.08em;">
-              {{ step.label.toUpperCase() }}
-            </button>
-
-          </div>
+        <!-- Item being listed. This used to head the sidebar. -->
+        <div class="mb-6">
+          <p class="text-sm font-semibold text-gray-800">{{ form.brand || 'Your item' }}</p>
+          <p class="text-xs text-gray-400 mt-0.5">{{ form.category || 'Uncategorised' }}</p>
         </div>
-      </div>
 
-      <!-- Divider -->
-      <div class="border-l border-gray-200"></div>
-
-      <!-- ===== RIGHT: Form ===== -->
-      <div class="w-full max-w-lg">
-
-        <p class="text-xs font-semibold tracking-widest uppercase text-gray-700 mb-1">
-          {{ steps[currentStep].label }}
-        </p>
+        <StepperProgress
+          :steps="steps"
+          :current="currentStep"
+          :completed="stepsComplete"
+          aria-label="Listing sections"
+          class="mb-8"
+          @update:current="goToStep"
+        />
 
         <!-- ===== STEP 0: OVERVIEW ===== -->
         <div v-if="currentStep === 0" class="space-y-5 mt-6">
@@ -615,6 +581,7 @@ import { useRouter, useRoute } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
 import LoadingPanel from '../components/LoadingPanel.vue'
+import StepperProgress from '../components/StepperProgress.vue'
 import { holdFor } from '../lib/loading.js'
 import TrustCheckPanel from '../components/TrustCheckPanel.vue'
 import { fetchPayoutAccount } from '../lib/payouts.js'
@@ -792,9 +759,14 @@ const serviceFeeModal = ref(false)
 // between. Gaps are still caught on submit, which re-validates all of them and
 // jumps back to the first one that fails.
 const goToStep = (i) => {
-  if (i === currentStep.value) return
+  // Clamped because the index now arrives from StepperProgress rather than from a
+  // click here. Its arrows are disabled at the ends, but an out-of-range value
+  // would put the wizard on a step that does not exist, and a one-line guard is
+  // cheaper than trusting the child.
+  const next = Math.min(Math.max(i, 0), steps.length - 1)
+  if (next === currentStep.value) return
   errorMsg.value = ''
-  currentStep.value = i
+  currentStep.value = next
 }
 
 const MAX_DOC_BYTES = 10 * 1024 * 1024 // matches the authenticity-docs bucket limit
@@ -884,9 +856,13 @@ const validateStep = (step) => {
   return null
 }
 
-// Drives the stepper ticks. Since sellers can jump around freely, "done" has to
+// Drives the progress bar. Since sellers can jump around freely, "done" has to
 // mean "this section validates", not "I have walked past it".
 const stepComplete = (step) => step !== currentStep.value && validateStep(step) === null
+
+// The same thing as an array, which is what StepperProgress takes. A computed so
+// a segment fills the moment the field that was missing gets filled in.
+const stepsComplete = computed(() => steps.map((_, i) => stepComplete(i)))
 
 const handleContinue = async () => {
   errorMsg.value = ''
