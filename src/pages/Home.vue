@@ -250,78 +250,11 @@
 
 
 <!-- ========== HOW IT WORKS ========================================================================================== -->
-<section class="page-container py-16">
-
-  <!-- Header -->
-  <div class="mb-12">
-    <h2 class="text-sm tracking-widest uppercase font-light text-gray-800" style="font-family: 'Georgia', serif;">How It Works</h2>
-    <p class="text-xs text-gray-400 mt-1">Houses We Cherish</p>
-  </div>
-
-  <!-- Steps -->
-  <div class="relative flex items-start justify-between mb-0">
-
-    <!-- Step titles & descriptions ON TOP -->
-    <div class="flex justify-between w-full mb-8">
-
-      <!-- Step 1 -->
-      <div class="flex-1 text-center px-4">
-        <h3 class="text-sm font-semibold text-gray-800 mb-1">Discover</h3>
-        <p class="text-xs text-gray-400 leading-relaxed">
-          Browse curated, authenticated luxury<br />from verified sellers.
-        </p>
-      </div>
-
-      <!-- Step 2 -->
-      <div class="flex-1 text-center px-4">
-        <h3 class="text-sm font-semibold text-gray-800 mb-1">Buy or Rent</h3>
-        <p class="text-xs text-gray-400 leading-relaxed">
-          Own a forever piece — or rent for a<br />moment of magic.
-        </p>
-      </div>
-
-      <!-- Step 3 -->
-      <div class="flex-1 text-center px-4">
-        <h3 class="text-sm font-semibold text-gray-800 mb-1">Resell</h3>
-        <p class="text-xs text-gray-400 leading-relaxed">
-          When ready, list it again and keep the<br />cycle alive.
-        </p>
-      </div>
-
-    </div>
-
-  </div>
-
-  <!-- Line + Numbered circles BELOW -->
-  <div class="relative flex items-center justify-between">
-
-    <!-- Full connecting line -->
-    <div class="absolute left-0 right-0 h-px bg-gray-300 z-0"></div>
-
-    <!-- Circle 1 -->
-    <div class="relative z-10 flex-1 flex justify-center">
-      <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-medium" style="background-color: #1a1a2e;">
-        1
-      </div>
-    </div>
-
-    <!-- Circle 2 -->
-    <div class="relative z-10 flex-1 flex justify-center">
-      <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-medium" style="background-color: #1a1a2e;">
-        2
-      </div>
-    </div>
-
-    <!-- Circle 3 -->
-    <div class="relative z-10 flex-1 flex justify-center">
-      <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-medium" style="background-color: #1a1a2e;">
-        3
-      </div>
-    </div>
-
-  </div>
-
-</section>
+<!-- The three steps used to be a row of text over a connector line with numbered
+     circles beneath it. They are cards now, each scrubbed into place by its own
+     scroll position — see HowItWorksCards.vue. The connector line went with the
+     circles: the cards carry the sequence themselves. -->
+<HowItWorksCards />
 
 
 <!-- ========== WHAT CUSTOMERS SAY ========================================================================================== -->
@@ -442,6 +375,7 @@ import Footer from '../components/Footer.vue'
 import WastePreloader from '../components/WastePreloader.vue'
 import Wordmark from '../components/Wordmark.vue'
 import SustainableSpotlight from '../components/SustainableSpotlight.vue'
+import HowItWorksCards from '../components/HowItWorksCards.vue'
 import { fetchNewestListings } from '../lib/listings.js'
 
 // Module scope, deliberately: the flag outlives the component so routing back to
