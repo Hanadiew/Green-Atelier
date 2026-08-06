@@ -1,15 +1,38 @@
 <template>
   <div class="page-shell">
 
-    <Navbar />
+    <!-- First landing only: a reel of the world's fashion waste with the wordmark
+         over it. The navbar stays out until it lifts, so the intro is the whole
+         screen. Once per session — coming back to / from another route shouldn't
+         make the shopper sit through it again. -->
+    <WastePreloader v-if="showPreloader" @done="showPreloader = false" />
+
+    <!-- The title the preloader leaves behind: same lockup, same place, so the
+         curtain lifting reads as the reel falling away from behind it rather than
+         a new element appearing. It holds the screen alone — no navbar — until
+         the first scroll. -->
+    <Transition name="hero-title">
+      <div v-if="heroTitle && !showPreloader" class="hero-title">
+        <Wordmark tone="ink" />
+        <span class="hero-title__hint">scroll</span>
+      </div>
+    </Transition>
+
+    <Transition name="nav-in">
+      <Navbar v-if="!showPreloader && !heroTitle" />
+    </Transition>
 
     <!-- ============= HERO ================================================================================================================================== -->
-    <!-- No fixed height: the image sets its own, so the whole 3:2 frame is shown
-         rather than being cropped to the viewport. It used to be height:100vh
-         with object-cover, which on any viewport wider than 3:2 scaled the image
-         to fill the width and cut the bottom off. -->
-    <div class="w-full relative overflow-hidden" style="background-color: #f0ece6;">
-      <img src="../assets/hero.jpg" alt="Hero" class="block w-full h-auto" />
+    <!-- Cropped rather than shown whole. The source is 3:2 with a wide margin of
+         empty studio floor above the model, so a full 3:2 frame put nothing but
+         grey in the first screenful. The frame below trims ~20% off the top and
+         ~11% off the bottom, which is the framing that lands the figure in view
+         the moment the page opens.
+
+         Both the frame's ratio and the crop are expressed in the same units, so
+         the composition holds identically at every width instead of drifting. -->
+    <div class="hero-frame">
+      <img src="../assets/hero.jpg" alt="Hero" class="hero-img" />
     </div>
 
 
@@ -399,13 +422,61 @@
 
 
 
+<script>
+// Outside setup on purpose — see the note by `showPreloader`. Reset by the page
+// load itself, which is what makes a refresh play the intro again.
+let introPlayed = false
+</script>
+
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 const router = useRouter()
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
+import WastePreloader from '../components/WastePreloader.vue'
+import Wordmark from '../components/Wordmark.vue'
 import { fetchNewestListings } from '../lib/listings.js'
+
+// Module scope, deliberately: the flag outlives the component so routing back to
+// / from the shop doesn't replay the intro, but it dies with the page, so every
+// reload — refresh, hard reload, a fresh tab — opens on the reel again.
+// sessionStorage would survive the refresh and swallow it.
+const showPreloader = ref(!introPlayed)
+introPlayed = true
+
+// The resting title only belongs to the arrival. A shopper coming back to / from
+// the shop gets the navbar straight away instead of having to scroll for it.
+const heroTitle = ref(showPreloader.value)
+
+// Any hint of downward intent counts, not just a completed scroll: Lenis eases
+// the window position, so waiting on `scroll` alone would leave the title sitting
+// there for a beat after the wheel has already turned.
+function dismissTitle() {
+  if (!heroTitle.value) return
+  heroTitle.value = false
+  removeScrollWatch()
+}
+
+const SCROLL_EVENTS = ['wheel', 'touchmove', 'scroll', 'keydown']
+
+function removeScrollWatch() {
+  SCROLL_EVENTS.forEach((e) => window.removeEventListener(e, dismissTitle))
+}
+
+// Armed only once the curtain is gone. Wheel events still fire while the page is
+// scroll-locked, so listening any earlier would let someone spin the title away
+// before they had even seen it.
+watch(
+  showPreloader,
+  (running) => {
+    if (running || !heroTitle.value) return
+    SCROLL_EVENTS.forEach((e) => window.addEventListener(e, dismissTitle, { passive: true }))
+  },
+  { immediate: true },
+)
+
+onUnmounted(removeScrollWatch)
 
 const carousel = ref(null)
 
@@ -437,3 +508,81 @@ const scrollRight = () => {
   carousel.value?.scrollBy({ left: 900, behavior: 'smooth' })
 }
 </script>
+<style scoped>
+.hero-frame {
+  position: relative;
+  width: 100%;
+  /* 54:25 is the 3:2 source with the empty top and the floor at the bottom cut
+     away — near enough a screenful on a laptop without being tied to 100vh. */
+  aspect-ratio: 54 / 25;
+  max-height: 100vh;
+  overflow: hidden;
+  background-color: #f0ece6;
+}
+
+.hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* 65% of the overflow taken off the top: what pushes past the empty studio
+     ceiling and brings the hat and shoulders into the opening view. */
+  object-position: center 65%;
+}
+
+/* Fixed rather than absolute: the lockup must land on the exact centre the
+   preloader left it on, which is the viewport's, not the hero's. Click-through so
+   it never blocks whatever it is sitting over. */
+.hero-title {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2.5rem;
+  padding: 0 2vw;
+  pointer-events: none;
+}
+
+.hero-title__hint {
+  color: rgba(20, 20, 20, 0.55);
+  font-size: 0.6rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  animation: hint-breathe 2.4s ease-in-out infinite;
+}
+
+@keyframes hint-breathe {
+  0%, 100% { opacity: 0.35; transform: translateY(0); }
+  50%      { opacity: 1;    transform: translateY(4px); }
+}
+
+/* Leaves upward on the same ease as the curtain, so the whole arrival — reel,
+   wipe, title — is one gesture. */
+.hero-title-leave-active {
+  transition:
+    opacity 0.6s ease,
+    transform 0.7s cubic-bezier(0.785, 0.135, 0.15, 0.86);
+}
+
+.hero-title-leave-to {
+  opacity: 0;
+  transform: translateY(-8vh) scale(0.96);
+}
+
+.nav-in-enter-active {
+  transition: opacity 0.5s ease 0.25s, transform 0.5s ease 0.25s;
+}
+
+.nav-in-enter-from {
+  opacity: 0;
+  transform: translateY(-12px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-title__hint { animation: none; opacity: 0.6; }
+  .hero-title-leave-active,
+  .nav-in-enter-active { transition-duration: 0.25s; }
+}
+</style>

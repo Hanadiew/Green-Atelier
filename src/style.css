@@ -224,3 +224,10 @@ html.lenis body {
 .no-scrollbar::-webkit-scrollbar {
   display: none;                  /* Chromium, Safari */
 }
+/* While the landing preloader owns the screen, nothing behind it should scroll —
+   Lenis drives the window, so the lock has to sit on <html>. */
+html.preloader-open,
+html.preloader-open body {
+  overflow: hidden;
+  height: 100%;
+}
