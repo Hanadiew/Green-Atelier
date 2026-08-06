@@ -116,6 +116,11 @@
 
 
 
+<!-- ========== SUSTAINABILITY ================================================================================== -->
+<SustainableSpotlight />
+
+
+
 <!-- ========== NEW IN ========================================================================================== -->
 <section class="page-container py-16">
 
@@ -436,6 +441,7 @@ import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
 import WastePreloader from '../components/WastePreloader.vue'
 import Wordmark from '../components/Wordmark.vue'
+import SustainableSpotlight from '../components/SustainableSpotlight.vue'
 import { fetchNewestListings } from '../lib/listings.js'
 
 // Module scope, deliberately: the flag outlives the component so routing back to
