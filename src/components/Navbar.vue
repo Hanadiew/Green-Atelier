@@ -11,13 +11,21 @@
        eat clicks either side of the pill — over the hero, for instance. -->
   <div
     class="fixed top-0 left-0 right-0 z-50 pointer-events-none transition-all duration-300"
-    :class="scrolled ? 'px-4 sm:px-8 pt-3 sm:pt-4' : 'px-0 pt-2 sm:pt-3'"
+    :class="surfaced ? 'px-4 sm:px-8 pt-3 sm:pt-4' : 'px-0 pt-2 sm:pt-3'"
   >
+    <!-- `surfaced`, not `scrolled`: an open mobile sheet needs the same opaque
+         panel the scrolled pill has. Inheriting bg-transparent at the top of a
+         page laid the menu's links straight over the content beneath them.
+         Rounding relaxes from a pill to a card while the sheet is out, since a
+         full pill radius cannot hold a square-cornered list. -->
     <nav
       class="pointer-events-auto mx-auto transition-all duration-300"
-      :class="scrolled
-        ? 'max-w-7xl rounded-full bg-white/85 backdrop-blur-md shadow-lg shadow-black/5'
-        : 'max-w-none rounded-none bg-transparent shadow-none'"
+      :class="[
+        surfaced
+          ? 'max-w-7xl bg-white shadow-lg shadow-black/5'
+          : 'max-w-none rounded-none bg-transparent shadow-none',
+        surfaced && mobileOpen ? 'rounded-3xl' : surfaced ? 'rounded-full' : '',
+      ]"
     >
     <!-- The bar can go full width, but its contents stay on the same measure as
          the rest of the page — see .page-container, which mirrors these three
@@ -63,16 +71,16 @@
         <div
           v-if="showShop"
           @click="showShop = false"
-          class="absolute top-full left-0 mt-5 z-50 rounded-2xl bg-white/85 backdrop-blur-md shadow-lg shadow-black/5 p-6 flex gap-12"
+          class="absolute top-full left-0 mt-4 z-50 rounded-2xl bg-white border border-gray-100 shadow-lg shadow-black/5 px-7 py-6 flex gap-14"
         >
           <div>
             <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Shop</p>
-            <ul class="space-y-1 text-sm text-gray-700 whitespace-nowrap">
+            <ul class="text-sm text-gray-700 whitespace-nowrap">
               <li>
-                <RouterLink to="/shop" class="block py-1 hover:text-black transition">All</RouterLink>
+                <RouterLink to="/shop" class="block py-1.5 hover:text-black transition">All</RouterLink>
               </li>
               <li>
-                <a href="#" class="block py-1 hover:text-black transition">New In</a>
+                <a href="#" class="block py-1.5 hover:text-black transition">New In</a>
               </li>
             </ul>
           </div>
@@ -80,9 +88,9 @@
             <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Collections</p>
             <!-- Two even columns so five categories do not make a tall ragged
                  list, and the same row padding as the Shop column above. -->
-            <ul class="grid grid-cols-2 gap-x-10 gap-y-1 text-sm text-gray-700 whitespace-nowrap">
+            <ul class="grid grid-cols-2 gap-x-10 text-sm text-gray-700 whitespace-nowrap">
               <li v-for="category in shopCategories" :key="category">
-                <a href="#" class="block py-1 hover:text-black transition">{{ category }}</a>
+                <a href="#" class="block py-1.5 hover:text-black transition">{{ category }}</a>
               </li>
             </ul>
           </div>
@@ -147,20 +155,19 @@
   <!-- Dropdown -->
   <div v-if="showProfile"
     @click="showProfile = false"
-    class="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-lg py-2 z-50"
-    style="width: 200px;">
+    class="absolute right-0 top-full mt-3 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50 w-60 max-w-[calc(100vw-2rem)]">
 
     <!-- Signed out -->
     <template v-if="!isAuthenticated">
       <RouterLink to="/login"
-        class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 transition">
+        class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
         </svg>
         Log In
       </RouterLink>
       <RouterLink to="/signup"
-        class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 transition">
+        class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
         </svg>
@@ -171,12 +178,12 @@
     <!-- Signed in -->
     <template v-else>
 
-    <div class="px-4 pb-2 mb-1 border-b border-gray-100">
-      <p class="text-xs font-medium text-gray-800 truncate">{{ displayName || 'Your account' }}</p>
+    <div class="px-4 pb-3 mb-1 border-b border-gray-100">
+      <p class="text-sm font-medium text-gray-800 truncate">{{ displayName || 'Your account' }}</p>
     </div>
 
     <RouterLink to="/profile"
-      class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 transition">
+      class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5.121 17.804A8.966 8.966 0 0112 15c2.21 0 4.232.797 5.879 2.11M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
       </svg>
@@ -184,7 +191,7 @@
     </RouterLink>
 
     <RouterLink to="/account"
-      class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 transition">
+      class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
       </svg>
@@ -192,7 +199,7 @@
     </RouterLink>
 
     <RouterLink to="/orders"
-      class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 transition">
+      class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
       </svg>
@@ -200,7 +207,7 @@
     </RouterLink>
 
     <RouterLink to="/listings"
-      class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 transition">
+      class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
       </svg>
@@ -213,7 +220,7 @@
     </RouterLink>
 
     <RouterLink to="/sales-orders"
-  class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 transition">
+  class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition">
   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 012-2h2a2 2 0 012 2v6m-6 0h6m-6 0H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2"/>
   </svg>
@@ -221,7 +228,7 @@
 </RouterLink>
 
     <RouterLink to="/wallet"
-      class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 transition">
+      class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 12V7H5a2 2 0 010-4h14v4M3 5v14a2 2 0 002 2h16v-5M18 12a2 2 0 000 4h4v-4h-4z"/>
       </svg>
@@ -229,7 +236,7 @@
     </RouterLink>
 
     <RouterLink to="/reports"
-      class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 transition">
+      class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
       </svg>
@@ -239,7 +246,7 @@
     <div class="border-t border-gray-100 my-1"></div>
 
     <RouterLink to="/support"
-      class="flex items-center gap-3 px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 transition">
+      class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
       </svg>
@@ -249,7 +256,7 @@
     <div class="border-t border-gray-100 my-1"></div>
 
     <button @click="handleLogout"
-      class="w-full flex items-center gap-3 px-4 py-2.5 text-xs text-red-400 hover:bg-red-50 transition">
+      class="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-500 hover:bg-red-50 transition">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
       </svg>
@@ -269,15 +276,36 @@
          pill. Categories are listed flat here rather than in the two-column
          mega menu, which has nowhere to go on a 360px screen. -->
     <div v-if="mobileOpen" id="mobile-nav"
-      class="md:hidden border-t border-black/5 px-4 pb-5 pt-3 max-h-[70vh] overflow-y-auto">
-      <RouterLink to="/shop" class="block py-2.5 text-sm text-gray-800">Shop All</RouterLink>
-      <RouterLink to="/sell" class="block py-2.5 text-sm text-gray-800">Sell</RouterLink>
-      <RouterLink to="/sustainable" class="block py-2.5 text-sm text-gray-800">Sustainable</RouterLink>
+      class="md:hidden mt-1 border-t border-gray-100 px-5 pb-6 pt-2 max-h-[72vh] overflow-y-auto">
 
-      <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mt-4 mb-1">Collections</p>
-      <div class="grid grid-cols-2 gap-x-4">
+      <!-- Rows are py-3.5 + text-[15px], which puts each one over the 44px touch
+           target a thumb needs; the old py-2.5 on text-sm came to 34px and the
+           three primary links ran together as one block of text. -->
+      <nav class="divide-y divide-gray-100">
+        <RouterLink to="/shop" class="flex items-center justify-between py-3.5 text-[15px] text-gray-900">
+          Shop All
+          <svg class="h-4 w-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </RouterLink>
+        <RouterLink to="/sell" class="flex items-center justify-between py-3.5 text-[15px] text-gray-900">
+          Sell
+          <svg class="h-4 w-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </RouterLink>
+        <RouterLink to="/sustainable" class="flex items-center justify-between py-3.5 text-[15px] text-gray-900">
+          Sustainable
+          <svg class="h-4 w-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </RouterLink>
+      </nav>
+
+      <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.2em] mt-6 mb-2">Collections</p>
+      <div class="grid grid-cols-2 gap-x-3 gap-y-1">
         <RouterLink v-for="category in shopCategories" :key="category" to="/shop"
-          class="block py-2 text-sm text-gray-600">{{ category }}</RouterLink>
+          class="block py-2.5 text-sm text-gray-600">{{ category }}</RouterLink>
       </div>
     </div>
 
@@ -289,7 +317,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { cartCount } from '../cart.js'
 import { displayName, isAuthenticated, signOut } from '../lib/auth.js'
@@ -306,6 +334,10 @@ const shopCategories = ['Tops', 'Blouses', 'Bottoms', 'Bags', 'Accessories', 'Sh
 
 const showShop = ref(false)
 const mobileOpen = ref(false)
+
+// The bar earns its opaque panel from either state: scrolled past the top, or
+// holding an open mobile sheet that would otherwise sit on bare page content.
+const surfaced = computed(() => scrolled.value || mobileOpen.value)
 const scrolled = ref(false)
 const cartOpen = ref(false)
 const showProfile = ref(false)
