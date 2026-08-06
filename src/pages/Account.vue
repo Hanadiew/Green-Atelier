@@ -2,10 +2,10 @@
   <div class="page-shell">
     <Navbar />
 
-    <div class="page-top page-container pb-16 flex gap-16">
+    <div class="page-top page-container pb-16 flex flex-col lg:flex-row gap-10 lg:gap-16">
 
       <!-- ===== LEFT SIDEBAR ===== -->
-      <div class="flex-shrink-0" style="width: 200px;">
+      <div class="w-full lg:w-[200px] lg:flex-shrink-0">
         <nav class="flex flex-col">
           <button v-for="item in sidebarItems" :key="item.key"
             @click="activeSection = item.key"

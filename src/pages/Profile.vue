@@ -62,7 +62,7 @@
         <!-- ===== SELLER OVERVIEW ===== -->
         <!-- Owner-only, and only once the seller has at least one listing or
              sale — a brand-new buyer-only account never sees this. -->
-        <div v-if="isOwnProfile && isSeller" class="flex-shrink-0" style="width: 260px;">
+        <div v-if="isOwnProfile && isSeller" class="w-full lg:w-[260px] lg:flex-shrink-0">
           <p class="text-xs tracking-widest uppercase text-gray-400 mb-3">Seller Overview</p>
 
           <!-- Items Sold and Active Listings were removed: both are already stated
@@ -98,7 +98,9 @@
 
       <!-- ===== TABS ===== -->
       <div class="border-b border-gray-100">
-        <div class="flex items-center gap-8">
+        <!-- Scrolls rather than wraps: a wrapped tab row moves the underline to a
+             second line and stops reading as tabs at all. -->
+        <div class="flex items-center gap-8 overflow-x-auto no-scrollbar whitespace-nowrap">
           <button v-for="tab in visibleTabs" :key="tab"
             @click="activeTab = tab"
             class="py-4 text-sm transition border-b-2"
@@ -170,7 +172,7 @@
     </div>
 
     <!-- Listing cards -->
-    <div v-else class="grid grid-cols-4 gap-5">
+    <div v-else class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
   <div v-for="item in filteredListings" :key="item.id" class="group">
     <div class="relative rounded-sm overflow-hidden bg-gray-100 mb-3 cursor-pointer" style="height: 220px;"
       @click="router.push('/product/' + item.id)">
@@ -245,7 +247,7 @@
     </div>
 
     <!-- Wishlist grid -->
-    <div v-else class="grid grid-cols-4 gap-5">
+    <div v-else class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
       <div v-for="item in wishlist" :key="item.id"
         @click="router.push('/product/' + item.id)"
         class="cursor-pointer group">

@@ -20,7 +20,7 @@
     </div>
 
     <!-- ===== MAIN CONTENT ===== -->
-    <div class="page-container py-10 flex gap-10 items-start">
+    <div class="page-container py-10 flex flex-col lg:flex-row gap-10 items-start">
 
       <!-- ===== LEFT: Steps ===== -->
       <div class="flex-1 max-w-2xl space-y-4">
@@ -173,7 +173,7 @@
             <!-- Add address form inline -->
             <div v-if="showAddressForm" class="border border-gray-200 rounded-lg px-5 py-5 space-y-4">
               <p class="text-xs font-semibold text-gray-700">Add shipping address</p>
-              <div class="grid grid-cols-2 gap-4">
+              <div class="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label class="text-xs text-gray-400 mb-1 block">First name</label>
                   <input v-model="newShipping.firstName" type="text" class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm outline-none bg-white" />
@@ -187,7 +187,7 @@
                 <label class="text-xs text-gray-400 mb-1 block">Street address</label>
                 <input v-model="newShipping.street" type="text" class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm outline-none bg-white" />
               </div>
-              <div class="grid grid-cols-2 gap-4">
+              <div class="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label class="text-xs text-gray-400 mb-1 block">City</label>
                   <input v-model="newShipping.city" type="text" class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm outline-none bg-white" />
@@ -277,7 +277,7 @@
       </div>
 
       <!-- ===== RIGHT: Order Summary ===== -->
-      <div class="flex-shrink-0 sticky top-10" style="width: 320px;">
+      <div class="w-full lg:w-[320px] lg:flex-shrink-0 lg:sticky lg:top-10">
         <div class="bg-white rounded-xl shadow-sm p-6">
 
           <h3 class="text-sm font-semibold text-gray-800 mb-5">Order Summary</h3>

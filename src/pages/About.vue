@@ -59,7 +59,7 @@
         </div>
 
         <!-- Stats column -->
-        <div class="flex-shrink-0 space-y-6" style="width: 220px;">
+        <div class="w-full lg:w-[220px] lg:flex-shrink-0 space-y-6">
           <div v-for="stat in stats" :key="stat.label"
             class="rounded-2xl p-6" style="background-color: #1B3A2D;">
             <p class="text-3xl font-light mb-1" style="color: #C9A96E; font-family: 'Georgia', serif;">{{ stat.value }}</p>
@@ -85,7 +85,7 @@
           </h2>
         </div>
 
-        <div class="grid grid-cols-3 gap-6">
+        <div class="grid gap-6 sm:grid-cols-3">
           <div v-for="pillar in pillars" :key="pillar.title"
             class="rounded-2xl p-8 transition hover:scale-105 duration-300"
             style="background-color: #24503C;">
@@ -98,7 +98,7 @@
         </div>
 
         <!-- Impact numbers -->
-        <div class="grid grid-cols-4 gap-6 mt-12 pt-12 border-t border-green-900">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mt-12 pt-12 border-t border-green-900">
           <div v-for="impact in impacts" :key="impact.label" class="text-center">
             <p class="text-3xl font-light mb-1" style="color: #C9A96E; font-family: 'Georgia', serif;">{{ impact.value }}</p>
             <p class="text-xs text-gray-400">{{ impact.label }}</p>
@@ -144,7 +144,7 @@
         </div>
 
         <!-- Did you know cards -->
-        <div class="grid grid-cols-3 gap-5">
+        <div class="grid gap-5 sm:grid-cols-3">
           <div v-for="fact in facts" :key="fact.stat"
             class="rounded-2xl p-6 border border-gray-100 hover:border-gray-200 hover:shadow-sm transition duration-300">
             <p class="text-3xl font-light mb-3" style="color: #C9A96E; font-family: 'Georgia', serif;">{{ fact.stat }}</p>
@@ -159,7 +159,7 @@
     <!-- The container is a wrapper here rather than the frame itself: its inline
          padding would otherwise inset the image inside the rounded corners. -->
     <section class="page-container mb-24">
-      <div class="relative overflow-hidden rounded-3xl" style="height: 480px;">
+      <div class="relative overflow-hidden rounded-3xl h-[300px] sm:h-[480px]">
 
       <img src="../assets/hero.jpg" alt="Banner" class="w-full h-full object-cover object-top" />
 
@@ -200,7 +200,7 @@
           </h2>
         </div>
 
-        <div class="grid grid-cols-2 gap-5">
+        <div class="grid gap-5 sm:grid-cols-2">
           <div v-for="value in values" :key="value.title"
             class="flex items-start gap-5 p-6 rounded-2xl border border-gray-100 hover:shadow-sm transition duration-300">
             <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"

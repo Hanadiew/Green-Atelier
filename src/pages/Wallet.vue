@@ -19,7 +19,7 @@
       <!-- ===== EARNINGS OVERVIEW ===== -->
       <div class="mb-10">
         <p class="text-xs tracking-widest uppercase text-gray-400 mb-3">Earnings Overview</p>
-        <div class="grid grid-cols-3 gap-5">
+        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           <div class="bg-white rounded-xl shadow-sm p-5">
             <p class="text-xs text-gray-400 mb-1">Total Earnings</p>
             <p class="text-xl font-semibold text-gray-800">

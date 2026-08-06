@@ -39,7 +39,7 @@
 
     <!-- ========== COLLECTIONS ================================================================================================================================== -->
     <section class="page-container py-16">
-    <div class="grid grid-cols-3 gap-3" style="height: 520px; grid-template-rows: 1fr 1fr;">
+    <div class="collections-grid grid grid-cols-2 sm:grid-cols-3 gap-3">
 
     <!-- Header -->
     <div class="flex flex-col justify-start pt-2">
@@ -152,9 +152,9 @@
     </button>
 
     <!-- Cards -->
-    <div ref="carousel" class="flex gap-5 overflow-x-hidden scroll-smooth">
+    <div ref="carousel" class="flex gap-4 sm:gap-5 overflow-x-auto lg:overflow-x-hidden scroll-smooth no-scrollbar snap-x snap-mandatory">
       <div v-for="product in products" :key="product.id"
-        class="min-w-[calc(25%-15px)] flex-shrink-0 cursor-pointer group"
+        class="w-[70%] sm:w-[45%] lg:w-[calc(25%-15px)] flex-shrink-0 cursor-pointer group"
         @click="router.push('/product/' + product.id)">
         <div class="relative overflow-hidden rounded-sm bg-gray-100 mb-3" style="height: 220px;">
           <img :src="product.image" :alt="product.name" class="w-full h-full object-cover transition duration-300 group-hover:scale-105" />
@@ -192,7 +192,7 @@
 
 <!-- ========== OUR MISSION ========================================================================================== -->
 <section class="py-16" style="background-color: #1B3A2D;">
-  <div class="page-container flex items-center gap-16">
+  <div class="page-container flex flex-col lg:flex-row lg:items-center gap-10 lg:gap-16">
 
   <!-- Left: Text -->
   <div class="flex-1">
@@ -282,7 +282,7 @@
       <template v-for="n in 3" :key="n">
 
         <!-- Review 1 -->
-        <div class="bg-white rounded-2xl p-6 shadow-sm flex-shrink-0" style="width: 300px;">
+        <div class="bg-white rounded-2xl p-6 shadow-sm flex-shrink-0 review-card">
           <div class="flex items-center gap-3 mb-4">
             <img src="../assets/avatar/avatar1.png" alt="Diana Ali" class="w-10 h-10 rounded-full object-cover" />
             <div>
@@ -298,7 +298,7 @@
         </div>
 
         <!-- Review 2 -->
-        <div class="bg-white rounded-2xl p-6 shadow-sm flex-shrink-0" style="width: 300px;">
+        <div class="bg-white rounded-2xl p-6 shadow-sm flex-shrink-0 review-card">
           <div class="flex items-center gap-3 mb-4">
             <img src="../assets/avatar/avatar2.png" alt="Elizabeth Vair" class="w-10 h-10 rounded-full object-cover" />
             <div>
@@ -314,7 +314,7 @@
         </div>
 
         <!-- Review 3 -->
-        <div class="bg-white rounded-2xl p-6 shadow-sm flex-shrink-0" style="width: 300px;">
+        <div class="bg-white rounded-2xl p-6 shadow-sm flex-shrink-0 review-card">
           <div class="flex items-center gap-3 mb-4">
             <img src="../assets/avatar/avatar3.png" alt="Sofia Hamsworth" class="w-10 h-10 rounded-full object-cover" />
             <div>
@@ -330,7 +330,7 @@
         </div>
 
         <!-- Review 4 (extra card so scroll feels full) -->
-        <div class="bg-white rounded-2xl p-6 shadow-sm flex-shrink-0" style="width: 300px;">
+        <div class="bg-white rounded-2xl p-6 shadow-sm flex-shrink-0 review-card">
           <div class="flex items-center gap-3 mb-4">
             <img src="../assets/avatar/avatar1.png" alt="Laila Hamsworth" class="w-10 h-10 rounded-full object-cover" />
             <div>
@@ -450,6 +450,48 @@ const scrollRight = () => {
 }
 </script>
 <style scoped>
+/* Collections. The fixed 520px two-row grid only works once three columns fit;
+   below that the tiles keep a ratio of their own so they never squash. */
+.collections-grid > * {
+  aspect-ratio: 3 / 2;
+}
+
+@media (min-width: 640px) {
+  .collections-grid {
+    height: 520px;
+    grid-template-rows: 1fr 1fr;
+  }
+  .collections-grid > * {
+    aspect-ratio: auto;
+  }
+}
+
+/* Below sm the header carries no image, so it should not hold a tile-shaped box
+   — it is two lines of type across the top. Scoped to the small breakpoint: left
+   unscoped it would span all three columns on desktop and push the grid apart. */
+@media (max-width: 639px) {
+  .collections-grid > :first-child {
+    aspect-ratio: auto;
+    grid-column: 1 / -1;
+  }
+}
+
+.review-card {
+  width: 82vw;
+  max-width: 300px;
+}
+
+@media (min-width: 640px) {
+  .review-card {
+    width: 300px;
+  }
+}
+
+/* Snap points make a swipeable carousel land on a card rather than mid-tile. */
+.snap-x > * {
+  scroll-snap-align: start;
+}
+
 .hero-frame {
   position: relative;
   width: 100%;

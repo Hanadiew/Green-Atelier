@@ -23,9 +23,24 @@
          the rest of the page — see .page-container, which mirrors these three
          values. `relative` sits here rather than on <nav> so the centred logo is
          centred on the content, not on the viewport. -->
-    <div class="relative mx-auto max-w-7xl px-6 sm:px-8 py-5 flex items-center justify-between">
+    <div class="relative mx-auto max-w-7xl px-4 sm:px-8 py-4 sm:py-5 flex items-center justify-between">
+
+    <!-- Burger. Below md the three links do not fit beside a centred wordmark
+         and a row of icons, so they move into the sheet under the bar. -->
+    <button
+      @click.stop="mobileOpen = !mobileOpen"
+      class="md:hidden text-gray-700 -ml-1 p-1"
+      :aria-expanded="mobileOpen"
+      aria-label="Menu"
+      aria-controls="mobile-nav">
+      <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path v-if="!mobileOpen" stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16" />
+        <path v-else stroke-linecap="round" d="M6 6l12 12M18 6L6 18" />
+      </svg>
+    </button>
+
     <!-- Left: Nav Links -->
-    <div class="flex items-center gap-8">
+    <div class="hidden md:flex items-center gap-8">
       <div class="relative" ref="shopContainer">
         <button
           @click="showShop = !showShop"
@@ -77,17 +92,19 @@
       <RouterLink to="/sustainable" class="text-sm text-gray-700 hover:text-black">Sustainable</RouterLink>
     </div>
 
-    <!-- Center: Logo -->
+    <!-- Center: Logo. Tighter letter-spacing on a phone, where 0.2em on twelve
+         characters runs into the icons either side. -->
     <div class="absolute left-1/2 -translate-x-1/2">
       <RouterLink to="/home">
-        <span class="tracking-widest text-sm font-light" style="color: #C9A96E; font-family: 'Georgia', serif; letter-spacing: 0.2em;">
+        <span class="tracking-widest text-xs sm:text-sm font-light whitespace-nowrap logo-mark"
+          style="color: #C9A96E; font-family: 'Georgia', serif;">
           GREEN ATELIER
         </span>
       </RouterLink>
     </div>
 
     <!-- Right: Icons -->
-    <div class="flex items-center gap-5">
+    <div class="flex items-center gap-4 sm:gap-5">
 
       <!-- Wishlist with count badge -->
       <RouterLink to="/wishlist" class="relative text-gray-600 hover:text-black">
@@ -246,6 +263,24 @@
 
     </div>
     </div>
+
+    <!-- Mobile sheet. Inside <nav> so it inherits the bar's own surface and the
+         two read as one panel whether the bar is at rest or in its scrolled
+         pill. Categories are listed flat here rather than in the two-column
+         mega menu, which has nowhere to go on a 360px screen. -->
+    <div v-if="mobileOpen" id="mobile-nav"
+      class="md:hidden border-t border-black/5 px-4 pb-5 pt-3 max-h-[70vh] overflow-y-auto">
+      <RouterLink to="/shop" class="block py-2.5 text-sm text-gray-800">Shop All</RouterLink>
+      <RouterLink to="/sell" class="block py-2.5 text-sm text-gray-800">Sell</RouterLink>
+      <RouterLink to="/sustainable" class="block py-2.5 text-sm text-gray-800">Sustainable</RouterLink>
+
+      <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mt-4 mb-1">Collections</p>
+      <div class="grid grid-cols-2 gap-x-4">
+        <RouterLink v-for="category in shopCategories" :key="category" to="/shop"
+          class="block py-2 text-sm text-gray-600">{{ category }}</RouterLink>
+      </div>
+    </div>
+
     </nav>
   </div>
 
@@ -270,6 +305,7 @@ const route = useRoute()
 const shopCategories = ['Tops', 'Blouses', 'Bottoms', 'Bags', 'Accessories', 'Shoes']
 
 const showShop = ref(false)
+const mobileOpen = ref(false)
 const scrolled = ref(false)
 const cartOpen = ref(false)
 const showProfile = ref(false)
@@ -293,12 +329,16 @@ const handleClickOutside = (e) => {
   if (shopContainer.value && !shopContainer.value.contains(e.target)) {
     showShop.value = false
   }
+  if (mobileOpen.value && !e.target.closest('#mobile-nav')) {
+    mobileOpen.value = false
+  }
 }
 
 const handleEscape = (e) => {
   if (e.key !== 'Escape') return
   showShop.value = false
   showProfile.value = false
+  mobileOpen.value = false
 }
 
 const handleScroll = () => { scrolled.value = window.scrollY > 10 }
@@ -312,6 +352,9 @@ watch(isAuthenticated, (signedIn) => {
 }, { immediate: true })
 
 watch(() => route.fullPath, () => {
+  // Navigating is the shopper's way of dismissing the sheet — it stays mounted
+  // across route changes otherwise, since the bar itself never unmounts.
+  mobileOpen.value = false
   if (isAuthenticated.value) refreshPendingOffers()
 })
 
@@ -330,3 +373,17 @@ onUnmounted(() => {
   window.removeEventListener('keydown', handleEscape)
 })
 </script>
+<style scoped>
+/* The wordmark's tracking is the one thing that has to shrink on a phone: at
+   0.2em, twelve characters plus the burger and three icons overflow a 360px
+   bar. Inline styles cannot carry a media query, so it lives here. */
+.logo-mark {
+  letter-spacing: 0.14em;
+}
+
+@media (min-width: 640px) {
+  .logo-mark {
+    letter-spacing: 0.2em;
+  }
+}
+</style>

@@ -20,7 +20,7 @@
 
     <!-- ===== LISTING FORM ===== -->
     <div class="page-container flex justify-center pb-24">
-      <div class="bg-white rounded-2xl shadow-sm px-16 py-12" style="width: 600px;">
+      <div class="bg-white rounded-2xl shadow-sm px-6 sm:px-16 py-10 sm:py-12 w-full max-w-[600px]">
 
         <!-- Item Type is gone: Category already says what the piece is, and the
              two drifted apart the moment a seller picked "Bag" and "Tops". -->
@@ -40,7 +40,7 @@
           </p>
         </div>
 
-        <div class="grid grid-cols-2 gap-6 mb-6">
+        <div class="grid gap-6 sm:grid-cols-2 mb-6">
 
           <!-- Category -->
           <div>
@@ -135,10 +135,10 @@
     <section class="page-container py-16">
 
       <!-- Row 1: Image left + Stat 01 right -->
-      <div class="flex gap-6 mb-6">
+      <div class="flex flex-col lg:flex-row gap-6 mb-6">
 
         <!-- Image -->
-        <div class="rounded-2xl overflow-hidden flex-shrink-0" style="width: 480px; height: 280px;">
+        <div class="rounded-2xl overflow-hidden w-full lg:w-[480px] lg:flex-shrink-0 aspect-[12/7]">
           <img src="../assets/sell.jpg" alt="Sustainability" class="w-full h-full object-cover" />
         </div>
 
@@ -156,10 +156,10 @@
       </div>
 
       <!-- Row 2: Stat 02 left + Green card right -->
-      <div class="flex gap-6">
+      <div class="flex flex-col lg:flex-row gap-6">
 
         <!-- Stat 02 -->
-        <div class="rounded-2xl flex flex-col justify-end pb-6 px-6 pt-4 relative" style="width: 220px; background-color: #F2F0EB;">
+        <div class="rounded-2xl flex flex-col justify-end pb-6 px-6 pt-4 relative w-full lg:w-[220px]" style="background-color: #F2F0EB;">
           <p class="absolute top-2 right-4 font-light text-gray-200 select-none" style="font-size: 7rem; line-height: 1; font-family: 'Georgia', serif;">02</p>
           <h3 class="text-xl font-light text-gray-800 mb-2 relative z-10" style="font-family: 'Georgia', serif;">
             1500 Million<br />Tonnes

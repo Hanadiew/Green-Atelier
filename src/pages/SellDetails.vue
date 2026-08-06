@@ -191,7 +191,7 @@
           <!-- Existing photos (edit mode) -->
 <div v-if="existingImages.length" class="pt-1">
   <p class="text-xs text-gray-400 mb-2">Current photos</p>
-  <div class="grid grid-cols-5 gap-3">
+  <div class="grid grid-cols-3 sm:grid-cols-5 gap-3">
     <div v-for="(img, i) in existingImages" :key="'existing-' + i"
       class="relative rounded-lg overflow-hidden bg-gray-100 group" style="height: 72px;">
       <img :src="img" class="w-full h-full object-cover" />
@@ -215,7 +215,7 @@
             <p class="text-xs text-gray-400 mb-2">
               {{ details.images.length }} of {{ MAX_IMAGES }} photos · the first is the main image
             </p>
-            <div class="grid grid-cols-5 gap-3">
+            <div class="grid grid-cols-3 sm:grid-cols-5 gap-3">
               <div v-for="(img, i) in details.images" :key="i"
                 class="relative rounded-lg overflow-hidden bg-gray-100 group" style="height: 72px;">
                 <img :src="img" class="w-full h-full object-cover" />

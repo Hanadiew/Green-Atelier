@@ -70,7 +70,7 @@
           <p class="text-lg text-gray-700 mb-6">RM {{ product.price.toLocaleString() }}.00</p>
 
           <!-- Add to Bag + Wishlist -->
-          <div class="flex gap-3 mb-3">
+          <div class="flex flex-wrap sm:flex-nowrap gap-3 mb-3">
             <button
             @click="handleAddToCart"
             :disabled="isOwnListing || product.status !== 'active' || inCart"
@@ -252,10 +252,10 @@
       </div>
 
       <!-- ===== SELLER + MORE ABOUT PRODUCT ==================================================================================================== -->
-      <div class="flex gap-10 mt-16">
+      <div class="flex flex-col lg:flex-row gap-10 mt-16">
 
         <!-- Seller -->
-        <div style="width: 200px;">
+        <div class="w-full lg:w-[200px] lg:flex-shrink-0">
           <h2 class="text-2xl font-light text-gray-800 mb-4" style="font-family: 'Georgia', serif;">Seller</h2>
           <div class="bg-white rounded-xl p-5">
             <div class="flex items-center gap-3 mb-3">
@@ -296,7 +296,7 @@
             <TrustCheckCard :assessment="trustCheck" />
           </div>
 
-          <div class="grid grid-cols-3 gap-4">
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 
             <!-- Condition -->
             <div class="bg-white rounded-xl p-5">
@@ -355,9 +355,9 @@
             </svg>
           </button>
 
-          <div ref="relatedCarousel" class="flex gap-5 overflow-x-hidden scroll-smooth">
+          <div ref="relatedCarousel" class="flex gap-4 sm:gap-5 overflow-x-auto lg:overflow-x-hidden scroll-smooth no-scrollbar">
             <div v-for="p in relatedProducts" :key="p.id"
-              class="min-w-[calc(25%-15px)] flex-shrink-0 cursor-pointer group"
+              class="w-[70%] sm:w-[45%] lg:w-[calc(25%-15px)] flex-shrink-0 cursor-pointer group"
               @click="router.push('/product/' + p.id)">
               <div class="relative overflow-hidden rounded-sm bg-gray-100 mb-3" style="height: 220px;">
                 <img :src="p.image" :alt="p.name" class="w-full h-full object-cover transition duration-300 group-hover:scale-105" />

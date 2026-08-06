@@ -67,7 +67,7 @@
                One right-aligned column of a single width, so the price, the button
                and the dropdown share an edge instead of each sitting in its own
                alignment context. -->
-          <div class="flex flex-col items-stretch gap-2 flex-shrink-0" style="width: 200px;">
+          <div class="flex flex-col items-stretch gap-2 w-full sm:w-[200px] sm:flex-shrink-0">
             <p class="text-sm font-semibold text-gray-800 text-right mb-1">
               RM {{ sale.price.toLocaleString() }}.00
             </p>
