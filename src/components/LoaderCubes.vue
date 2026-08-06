@@ -53,7 +53,11 @@ defineProps({
   justify-content: space-between;
   width: var(--uib-size);
   height: calc(var(--uib-size) * 0.6);
-  padding-bottom: 20%;
+  /* Was `20%`, which is 20% of the CONTAINING BLOCK's width, not of the loader —
+     percentage padding always resolves against the parent's inline size. Inside
+     the full-width overlay that came to ~380px of padding, which is what pushed
+     the "Loading" label most of a screen below the cubes. */
+  padding-bottom: calc(var(--uib-size) * 0.2);
 }
 
 .uib-cube {

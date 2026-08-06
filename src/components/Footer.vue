@@ -1,10 +1,14 @@
 <template>
   <!-- mt-auto takes up the slack in the .page-shell column, so a short page
-       still puts the footer at the bottom of the viewport. -->
+       still puts the footer at the bottom of the viewport.
+
+       The green runs the full width of the page; only the contents are held to
+       .page-container, so they line up with every other element on the site. -->
   <footer class="site-footer mt-auto" style="background-color: #1B3A2D;">
+    <div class="page-container">
 
     <!-- Stay Connected -->
-    <div class="flex flex-col items-center pt-12 pb-8">
+    <div class="flex flex-col items-center pt-16 pb-10">
       <p class="text-xs tracking-widest uppercase mb-4" style="color: #C9A96E;">Stay Connected</p>
       <div class="flex items-center rounded-full overflow-hidden border border-green-700" style="background-color: #24503C;">
         <input
@@ -24,7 +28,7 @@
     </div>
 
     <!-- Nav links -->
-    <div class="flex items-center justify-center gap-10 py-6">
+    <div class="flex items-center justify-center gap-10 py-8">
       <RouterLink to="/home" class="text-xs hover:text-white transition" style="color: #C9A96E;">Home</RouterLink>
       <RouterLink to="/shop" class="text-xs hover:text-white transition" style="color: #C9A96E;">Shop</RouterLink>
       <RouterLink to="/sell" class="text-xs hover:text-white transition" style="color: #C9A96E;">Sell</RouterLink>
@@ -34,8 +38,10 @@
       <RouterLink to="/contact#faq" class="text-xs hover:text-white transition" style="color: #C9A96E;">FAQs</RouterLink>
     </div>
 
-    <!-- Copyright + Social -->
-    <div class="page-container py-4 flex items-center justify-between">
+    <!-- Copyright + Social, separated from the links above by a hairline that
+         runs the width of the container rather than the width of the page. -->
+    <div class="border-t pt-6 pb-12 flex items-center justify-between"
+      style="border-color: rgba(201, 169, 110, 0.18);">
       <p class="text-xs text-gray-400">© 2026 Green Atelier</p>
       <div class="flex items-center gap-4">
         <a href="#" class="text-gray-400 hover:text-white transition">
@@ -56,18 +62,7 @@
       </div>
     </div>
 
-    <!-- GREEN ATELIER static text.
-         Fixed font-size on purpose. This used to be clamp(3rem, 8vw, 6rem), and
-         because vw counts the scrollbar, a page that scrolled rendered this a few
-         pixels smaller than one that did not — so the footer changed height as you
-         navigated. A fixed size cannot drift. -->
-    <div class="w-full overflow-hidden py-4">
-      <p class="font-light opacity-20 text-white whitespace-nowrap w-full text-center"
-        style="font-family: 'Georgia', serif; font-size: 4.5rem; line-height: 1.15; letter-spacing: 0.1em;">
-        GREEN ATELIER — GREEN ATELIER
-      </p>
     </div>
-
   </footer>
 </template>
 

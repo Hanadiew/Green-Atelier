@@ -192,7 +192,7 @@
         style="background-color: #C9A96E;"
         :title="`${pendingOffersFor(item.id)} offer${pendingOffersFor(item.id) > 1 ? 's' : ''} — tap to review`">
         <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
-        <span class="text-white" style="font-size: 10px;">
+        <span class="text-white" style="font-size: 11.5px;">
           {{ pendingOffersFor(item.id) }} offer{{ pendingOffersFor(item.id) > 1 ? 's' : '' }}
         </span>
       </RouterLink>
@@ -214,7 +214,7 @@
       </div>
     </div>
     <p class="text-xs font-medium text-gray-800">{{ item.name }}</p>
-    <p class="text-xs text-gray-400 uppercase mt-0.5" style="font-size: 10px;">{{ item.brand }}</p>
+    <p class="text-xs text-gray-400 uppercase mt-0.5" style="font-size: 11.5px;">{{ item.brand }}</p>
 
     <!-- Why it was rejected, for the seller only. -->
     <p v-if="isOwnProfile && item.status === 'rejected' && item.rejectionReason"
@@ -260,7 +260,7 @@
           </button>
         </div>
         <p class="text-xs font-medium text-gray-800">{{ item.name }}</p>
-        <p class="text-xs text-gray-400 uppercase mt-0.5" style="font-size: 10px;">{{ item.brand }}</p>
+        <p class="text-xs text-gray-400 uppercase mt-0.5" style="font-size: 11.5px;">{{ item.brand }}</p>
         <p class="text-xs text-gray-600 mt-0.5">RM {{ item.price.toLocaleString() }}.00</p>
       </div>
     </div>
@@ -395,7 +395,7 @@
             <img :src="report.subjectImage" :alt="report.subject" class="w-full h-full object-cover" />
           </div>
           <div class="min-w-0">
-            <p v-if="report.subjectBrand" class="text-xs text-gray-400 uppercase tracking-widest" style="font-size: 10px;">
+            <p v-if="report.subjectBrand" class="text-xs text-gray-400 uppercase tracking-widest" style="font-size: 11.5px;">
               {{ report.subjectBrand }}
             </p>
             <RouterLink v-if="report.subjectListingId" :to="`/product/${report.subjectListingId}`"
@@ -412,7 +412,7 @@
 
         <!-- The moderator's reply, once there is one. -->
         <div v-if="report.hasReply" class="rounded-lg px-4 py-3" style="background-color: #F7F5F0;">
-          <p class="text-xs tracking-widest uppercase mb-1" style="color: #C9A96E; font-size: 10px;">
+          <p class="text-xs tracking-widest uppercase mb-1" style="color: #C9A96E; font-size: 11.5px;">
             Green Atelier response
           </p>
           <p class="text-xs text-gray-600 leading-relaxed whitespace-pre-wrap">{{ report.adminNotes }}</p>
@@ -496,7 +496,7 @@
                 <img :src="item.image" :alt="item.name" class="w-full h-full object-cover" />
               </div>
               <div class="flex-1 min-w-0">
-                <p class="text-xs text-gray-400 uppercase tracking-widest" style="font-size: 10px;">{{ item.brand }}</p>
+                <p class="text-xs text-gray-400 uppercase tracking-widest" style="font-size: 11.5px;">{{ item.brand }}</p>
                 <p class="text-xs text-gray-800 truncate">{{ item.name }}</p>
               </div>
               <p class="text-xs text-gray-700 flex-shrink-0">RM {{ item.price.toLocaleString() }}.00</p>

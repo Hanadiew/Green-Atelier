@@ -218,7 +218,9 @@ onBeforeUnmount(() => {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: clamp(1.5rem, 5vh, 3rem);
+  /* Lifted clear of the bottom edge — at 5vh the line sat almost on it, and on a
+     short viewport it read as falling off the screen. */
+  bottom: clamp(3rem, 11vh, 6.5rem);
   display: flex;
   justify-content: center;
   padding: 0 1.5rem;

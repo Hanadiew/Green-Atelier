@@ -221,7 +221,7 @@
                 <img :src="img" class="w-full h-full object-cover" />
                 <span v-if="i === 0"
                   class="absolute bottom-0 left-0 right-0 text-white text-center py-0.5"
-                  style="font-size: 9px; background-color: rgba(0,0,0,0.45);">Main</span>
+                  style="font-size: 10px; background-color: rgba(0,0,0,0.45);">Main</span>
                 <button @click="removeImage(i)"
                   class="absolute top-1 right-1 w-5 h-5 rounded-full bg-white/90 flex items-center justify-center text-gray-500 hover:text-red-500 shadow transition">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">

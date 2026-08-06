@@ -46,7 +46,7 @@
               Filters
               <span v-if="activeFilterCount"
                 class="ml-0.5 text-white rounded-full px-1.5 min-w-4 h-4 flex items-center justify-center"
-                style="background-color: #C9A96E; font-size: 9px;">
+                style="background-color: #C9A96E; font-size: 10px;">
                 {{ activeFilterCount }}
               </span>
             </button>
@@ -127,7 +127,7 @@
           </div>
 
           <!-- Loading skeletons -->
-        <LoadingPanel v-if="loading" :min-height="420" label="Loading listings" class="mb-10" />
+        <LoadingPanel v-if="loading" :min-height="420" full label="Loading listings" class="mb-10" />
 
           <!-- Empty state -->
           <div v-else-if="products.length === 0" class="flex flex-col items-center justify-center py-24 text-center">
@@ -162,7 +162,7 @@
               <div class="flex items-start justify-between">
                 <div>
                   <p class="text-xs font-medium text-gray-800">{{ product.name }}</p>
-                  <p class="text-xs text-gray-400 uppercase mt-0.5" style="font-size: 10px;">{{ product.brand }}</p>
+                  <p class="text-xs text-gray-400 uppercase mt-0.5" style="font-size: 11.5px;">{{ product.brand }}</p>
                 </div>
                 <p class="text-xs text-gray-600 flex-shrink-0 ml-2">RM {{ product.price.toLocaleString() }}.00</p>
               </div>

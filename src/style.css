@@ -15,7 +15,35 @@
    This is safe because `emerald` is used nowhere on the storefront except
    ReportDialog, which should match the brand anyway. Reach for `--color-brand-*`
    below in new code; the emerald aliases exist for the pages already written. */
+/* --- Type scale --------------------------------------------------------------
+   Every size bumped roughly one notch above Tailwind's stock scale, because the
+   storefront leans almost entirely on text-xs and text-sm and read as fine print
+   throughout.
+
+   Overriding the scale rather than the root font-size on purpose: `rem` also
+   drives Tailwind's spacing, so raising the root would inflate every padding,
+   gap and width at the same time — and this codebase mixes those with fixed-px
+   heights (520px grids, 280px cards, 200px panels), which would then no longer
+   line up. Retuning --text-* moves the type and leaves the layout alone.
+
+   Line heights are carried up with the sizes; leaving them at the defaults would
+   tighten every paragraph as the text grew. */
 @theme {
+  --text-xs: 0.8125rem;      /* 13px, was 12 */
+  --text-xs--line-height: 1.125rem;
+  --text-sm: 0.9375rem;      /* 15px, was 14 */
+  --text-sm--line-height: 1.375rem;
+  --text-base: 1.0625rem;    /* 17px, was 16 */
+  --text-base--line-height: 1.625rem;
+  --text-lg: 1.1875rem;      /* 19px, was 18 */
+  --text-lg--line-height: 1.8rem;
+  --text-xl: 1.375rem;       /* 22px, was 20 */
+  --text-xl--line-height: 1.9rem;
+  --text-2xl: 1.625rem;      /* 26px, was 24 */
+  --text-2xl--line-height: 2.1rem;
+  --text-3xl: 2rem;          /* 32px, was 30 */
+  --text-3xl--line-height: 2.4rem;
+
   --color-brand-green: #1B3A2D;
   --color-brand-sage: #7A9E8E;
   --color-brand-gold: #C9A96E;
@@ -61,9 +89,11 @@
 }
 
 /* Kept in one place so .page-shell and .site-footer cannot disagree about how
-   tall the footer is — the shell's height is derived from it. */
+   tall the footer is — the shell's height is derived from it. Dropped from 26rem
+   when the oversized GREEN ATELIER wordmark came out of the footer; left at the
+   old value it would have reserved 7rem of blank page above the panel. */
 :root {
-  --footer-height: 26rem;
+  --footer-height: 23rem;
 }
 
 /* --- Page shell -------------------------------------------------------------
@@ -89,7 +119,7 @@
    with a full-height hero (Home, About) sit under the nav on purpose and do
    not use this. */
 .page-top {
-  padding-top: 7rem;
+  padding-top: 8rem;
 }
 
 /* --- Content width ----------------------------------------------------------
@@ -125,10 +155,8 @@
 
 /* --- Footer -----------------------------------------------------------------
    One height on every page. The footer's own content is a fixed set of rows, so
-   the only thing that ever changed its height was the wordmark being sized in vw
-   (see Footer.vue) — that is fixed at source. This floor keeps it identical even
-   if a row's content differs, and mt-auto in .page-shell still pins it to the
-   bottom of short pages.
+   this floor keeps it identical even if a row's content differs, and mt-auto in
+   .page-shell still pins it to the bottom of short pages.
 
    min-height rather than height: below ~900px wide the nav row wraps, and a hard
    height would clip it. If it does wrap, the footer grows past --footer-height

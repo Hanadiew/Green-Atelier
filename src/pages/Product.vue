@@ -6,7 +6,7 @@
     <div class="page-top page-container pb-16">
 
       <!-- Loading -->
-      <LoadingPanel v-if="loading" :min-height="420" label="Loading item" class="mt-6" />
+      <LoadingPanel v-if="loading" :min-height="420" full label="Loading item" class="mt-6" />
 
       <!-- Not found / error -->
       <div v-else-if="!product" class="flex flex-col items-center justify-center py-32 text-center">
@@ -30,29 +30,43 @@
       </p>
 
       <!-- ===== TOP SECTION ========================================================================================================= -->
-      <div class="flex gap-10">
+      <!-- The image is the fluid column now and the copy is the capped one. It
+           used to be the other way round — a fixed 340×380 photograph against a
+           flex-1 info panel — so on a wide screen the buttons and spec rows
+           stretched past 900px while the product itself sat small in the corner. -->
+      <div class="flex flex-col lg:flex-row gap-8 lg:gap-14 items-start lg:max-w-[68rem]">
 
-        <!-- Thumbnails -->
-        <div class="flex flex-col gap-3">
-          <div
-            v-for="(img, i) in product.images" :key="i"
-            @click="activeImage = i"
-            class="w-16 h-16 rounded-md overflow-hidden cursor-pointer border-2 transition"
-            :class="activeImage === i ? 'border-gray-400' : 'border-transparent'"
-          >
-            <img :src="img" class="w-full h-full object-cover" />
+        <!-- Media -->
+        <div class="flex gap-4 w-full lg:w-[520px] lg:flex-shrink-0">
+
+          <!-- Thumbnails -->
+          <div class="flex flex-col gap-3 flex-shrink-0">
+            <button
+              v-for="(img, i) in product.images" :key="i"
+              type="button"
+              @click="activeImage = i"
+              class="w-20 h-20 rounded-lg overflow-hidden cursor-pointer border transition"
+              :class="activeImage === i
+                ? 'border-[#C9A96E]'
+                : 'border-transparent hover:border-gray-200'"
+            >
+              <img :src="img" class="w-full h-full object-cover" />
+            </button>
+          </div>
+
+          <!-- Main Image -->
+          <!-- Square, not 4:5: the taller frame ran the photograph past the fold
+               on a laptop. The media column is fixed and the copy takes what is
+               left, so the two sit in proportion at any width. -->
+          <div class="flex-1 min-w-0 rounded-lg overflow-hidden bg-gray-100 aspect-square">
+            <img :src="product.images[activeImage]" :alt="product.name" class="w-full h-full object-cover" />
           </div>
         </div>
 
-        <!-- Main Image -->
-        <div class="rounded-md overflow-hidden bg-gray-100 flex-shrink-0" style="width: 340px; height: 380px;">
-          <img :src="product.images[activeImage]" :alt="product.name" class="w-full h-full object-cover" />
-        </div>
-
         <!-- Product Info -->
-        <div class="flex-1">
+        <div class="w-full lg:flex-1 lg:min-w-0">
           <p class="text-xs tracking-widest uppercase text-gray-400 mb-1">{{ product.brand }}</p>
-          <h1 class="text-2xl font-light text-gray-900 mb-1" style="font-family: 'Georgia', serif;">{{ product.name }}</h1>
+          <h1 class="text-3xl font-light text-gray-900 mb-1" style="font-family: 'Georgia', serif;">{{ product.name }}</h1>
           <p class="text-lg text-gray-700 mb-6">RM {{ product.price.toLocaleString() }}.00</p>
 
           <!-- Add to Bag + Wishlist -->
@@ -60,8 +74,8 @@
             <button
             @click="handleAddToCart"
             :disabled="isOwnListing || product.status !== 'active' || inCart"
-            class="flex-1 py-3 text-sm border rounded-md transition hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            style="border-color: #C9A96E; color: #C9A96E;">
+            class="flex-1 py-3.5 text-xs tracking-widest uppercase text-white rounded-lg transition hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
+            style="background-color: #1B3A2D;">
             {{ product.status !== 'active' ? unavailableLabel
                : isOwnListing ? 'This is your listing'
                : inCart ? 'In your Bag'
@@ -69,11 +83,31 @@
             </button>
 
             <button @click="handleWishlist"
-              class="w-12 h-12 flex items-center justify-center border rounded-md hover:bg-gray-50 transition"
+              class="w-12 self-stretch flex items-center justify-center border rounded-lg hover:bg-gray-50 transition"
               style="border-color: #C9A96E;">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" style="color: #C9A96E;"
                 :fill="isSaved ? 'currentColor' : 'none'" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 010-6.364z"/>
+              </svg>
+            </button>
+
+            <!-- Offers sit up here beside the wishlist now rather than as a
+                 full-width button under Add to Bag, and open a dialog instead of
+                 unfolding the form inline. Same conditions as the offers block
+                 below, which still owns everything that happens after sending. -->
+            <button
+              v-if="product.acceptOffers && product.status === 'active' && !isOwnListing"
+              @click="openOfferForm"
+              type="button"
+              title="Make an Offer"
+              aria-label="Make an Offer"
+              class="w-12 self-stretch flex items-center justify-center border rounded-lg hover:bg-gray-50 transition"
+              style="border-color: #C9A96E;">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" style="color: #C9A96E;"
+                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 6h.008v.008H6V6z" />
               </svg>
             </button>
           </div>
@@ -110,43 +144,14 @@
                 </div>
               </div>
 
-              <button v-else-if="!showOfferForm" @click="openOfferForm"
-                class="w-full py-2.5 text-xs rounded-md border transition hover:bg-gray-50"
-                style="border-color: #C9A96E; color: #C9A96E;">
-                Make an Offer
-              </button>
-
-              <!-- Simple inline form rather than a modal: it is two fields. -->
-              <div v-if="showOfferForm" class="rounded-lg px-4 py-4 mt-2" style="background-color: #F7F5F0;">
-                <label class="text-xs text-gray-500 mb-1 block">Your offer (RM)</label>
-                <input v-model="offerForm.amount" type="number" min="1" step="1"
-                  :placeholder="String(product.price)"
-                  class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm outline-none bg-white mb-3" />
-
-                <label class="text-xs text-gray-500 mb-1 block">Message (optional)</label>
-                <textarea v-model="offerForm.message" rows="2"
-                  placeholder="Anything the seller should know"
-                  class="w-full border border-gray-200 rounded-md px-3 py-2 text-xs outline-none bg-white resize-y mb-3"></textarea>
-
-                <p v-if="offerError" class="text-xs text-red-500 mb-2">{{ offerError }}</p>
-
-                <div class="flex gap-2">
-                  <button @click="submitOffer" :disabled="offerSubmitting"
-                    class="flex-1 py-2 text-xs text-white rounded-md disabled:opacity-60"
-                    style="background-color: #1B3A2D;">
-                    {{ offerSubmitting ? 'Sending…' : 'Send Offer' }}
-                  </button>
-                  <button @click="showOfferForm = false"
-                    class="px-4 py-2 text-xs text-gray-500 border border-gray-200 rounded-md hover:bg-white transition">
-                    Cancel
-                  </button>
-                </div>
-              </div>
+              <!-- The form itself has moved to the dialog at the foot of this
+                   file. Nothing renders here until an offer exists, at which
+                   point the status container above takes over. -->
             </template>
 
             <!-- Seller side: the offers received on your own listing. -->
             <template v-else>
-              <p class="text-xs tracking-widest uppercase text-gray-400 mb-2" style="font-size: 10px;">
+              <p class="text-xs tracking-widest uppercase text-gray-400 mb-2" style="font-size: 11.5px;">
                 Offers received
               </p>
               <p v-if="!receivedOffers.length" class="text-xs text-gray-400">
@@ -215,18 +220,30 @@
           <!-- Accordions -->
           <div class="border-t border-gray-100">
 
-            <div v-for="accordion in accordions" :key="accordion.title">
-              <div class="flex justify-between items-center py-3 cursor-pointer border-b border-gray-100"
+            <!-- One rule per row, on the wrapper. The header and the panel used
+                 to carry a border each, which drew a line between a title and
+                 its own open content. -->
+            <div v-for="accordion in accordions" :key="accordion.title" class="border-b border-gray-100">
+              <button type="button"
+                class="w-full flex justify-between items-center py-3 text-left cursor-pointer"
+                :aria-expanded="accordion.open"
                 @click="accordion.open = !accordion.open">
                 <span class="text-xs text-gray-700">{{ accordion.title }}</span>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-gray-400 transition"
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-gray-400 transition-transform duration-300 ease-out"
                   :class="accordion.open ? 'rotate-180' : ''"
                   fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                 </svg>
-              </div>
-              <div v-if="accordion.open" class="py-3 text-xs text-gray-500 leading-relaxed border-b border-gray-100">
-                {{ accordion.content }}
+              </button>
+
+              <!-- grid-rows rather than max-height: it animates to the copy's own
+                   height, so the panel neither clips on a long description nor
+                   pauses on a short one the way a guessed max-height does. -->
+              <div class="grid transition-all duration-300 ease-out"
+                :class="accordion.open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'">
+                <div class="overflow-hidden">
+                  <p class="pb-4 text-xs text-gray-500 leading-relaxed">{{ accordion.content }}</p>
+                </div>
               </div>
             </div>
 
@@ -239,8 +256,8 @@
 
         <!-- Seller -->
         <div style="width: 200px;">
-          <p class="text-xs tracking-widest uppercase text-gray-400 mb-4">Seller</p>
-          <div class="bg-white rounded-xl p-5 shadow-sm">
+          <h2 class="text-2xl font-light text-gray-800 mb-4" style="font-family: 'Georgia', serif;">Seller</h2>
+          <div class="bg-white rounded-xl p-5">
             <div class="flex items-center gap-3 mb-3">
               <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center flex-shrink-0">
                 <img v-if="product.seller?.avatar_url" :src="product.seller.avatar_url" alt="Seller" class="w-full h-full object-cover" />
@@ -273,7 +290,7 @@
 
         <!-- More About Product -->
         <div class="flex-1">
-          <p class="text-xs tracking-widest uppercase text-gray-400 mb-4">More About The Product</p>
+          <h2 class="text-2xl font-light text-gray-800 mb-4" style="font-family: 'Georgia', serif;">More About The Product</h2>
           <!-- Green Atelier TrustCheck -->
           <div v-if="trustCheck" class="mb-4">
             <TrustCheckCard :assessment="trustCheck" />
@@ -282,20 +299,20 @@
           <div class="grid grid-cols-3 gap-4">
 
             <!-- Condition -->
-            <div class="bg-white rounded-xl p-5 shadow-sm">
+            <div class="bg-white rounded-xl p-5">
               <p class="text-xs font-medium text-gray-700 mb-2">Condition</p>
               <p class="text-xs font-semibold text-gray-800 mb-2">{{ product.condition }}</p>
               <p class="text-xs text-gray-400 leading-relaxed">{{ conditionBlurb }}</p>
             </div>
 
             <!-- Returns -->
-            <div class="bg-white rounded-xl p-5 shadow-sm">
+            <div class="bg-white rounded-xl p-5">
               <p class="text-xs font-medium text-gray-700 mb-2">Returns</p>
               <p class="text-xs text-gray-400 leading-relaxed">This item can be returned for credit card refund. Return requests must be made within 14 days of shipment and the item must be returned within 21 days of original shipment.</p>
             </div>
 
             <!-- Sustainability -->
-            <div class="bg-white rounded-xl p-5 shadow-sm">
+            <div class="bg-white rounded-xl p-5">
               <div class="flex items-center gap-1 mb-2">
                 <span class="text-green-600 text-xs">🌿</span>
                 <p class="text-xs font-medium text-gray-700">Sustainability Calculator</p>
@@ -313,17 +330,28 @@
       <!-- ===== NEW IN ====================================================================================================================================================================================================================================== -->
       <div v-if="relatedProducts.length" class="mt-16">
         <div class="flex items-center justify-between mb-6">
-          <h2 class="text-lg font-light text-gray-800" style="font-family: 'Georgia', serif;">New In</h2>
-          <RouterLink to="/shop" class="text-xs text-gray-400 hover:text-gray-600">View All →</RouterLink>
+          <h2 class="text-2xl font-light text-gray-800" style="font-family: 'Georgia', serif;">New In</h2>
+          <RouterLink to="/shop"
+            class="inline-flex items-center gap-2 px-5 py-2.5 text-xs tracking-widest uppercase rounded-lg border transition hover:bg-[#1B3A2D] hover:text-white hover:border-[#1B3A2D]"
+            style="border-color: #1B3A2D; color: #1B3A2D;">
+            View Listings
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 12h14M13 6l6 6-6 6"/>
+            </svg>
+          </RouterLink>
         </div>
 
-        <!-- Related products carousel -->
+        <!-- Related products carousel.
+             The arrows are bare glyphs sitting in the page gutter — they used to
+             be white discs with a shadow, parked at -left-5, which put the disc
+             on top of the first card. Hidden below xl, where there is no gutter
+             left to put them in and they would land back on the grid. -->
         <div class="relative">
           <!-- Left arrow -->
-          <button @click="relatedLeft"
-            class="absolute -left-5 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full shadow p-2 hover:shadow-md transition">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7"/>
+          <button @click="relatedLeft" type="button" aria-label="Previous items"
+            class="hidden xl:block absolute -left-10 top-1/2 -translate-y-1/2 z-10 text-gray-400 hover:text-[#1B3A2D] transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.25" d="M15 19l-7-7 7-7"/>
             </svg>
           </button>
 
@@ -346,7 +374,7 @@
               <div class="flex justify-between items-start">
                 <div>
                   <p class="text-xs font-medium text-gray-800">{{ p.name }}</p>
-                  <p class="text-xs text-gray-400 uppercase mt-0.5" style="font-size: 10px;">{{ p.brand }}</p>
+                  <p class="text-xs text-gray-400 uppercase mt-0.5" style="font-size: 11.5px;">{{ p.brand }}</p>
                 </div>
                 <p class="text-xs text-gray-600 ml-2 flex-shrink-0">RM {{ p.price.toLocaleString() }}.00</p>
               </div>
@@ -354,10 +382,10 @@
           </div>
 
           <!-- Right arrow -->
-          <button @click="relatedRight"
-            class="absolute -right-5 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full shadow p-2 hover:shadow-md transition">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7"/>
+          <button @click="relatedRight" type="button" aria-label="Next items"
+            class="hidden xl:block absolute -right-10 top-1/2 -translate-y-1/2 z-10 text-gray-400 hover:text-[#1B3A2D] transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.25" d="M9 5l7 7-7 7"/>
             </svg>
           </button>
         </div>
@@ -371,11 +399,58 @@
 
     <ReportDialog v-if="product" v-model="showReport" :listing-id="product.id" />
 
+    <!-- Offer dialog. Same two fields and the same submitOffer/offerError state
+         the inline panel used — only where it is drawn has changed, so what
+         happens after an offer is sent is untouched. Backdrop and Escape both
+         dismiss; the card stops the click so it does not close through itself. -->
+    <teleport to="body">
+      <div v-if="showOfferForm && product"
+        class="fixed inset-0 bg-black/50 z-[120] flex items-center justify-center p-4"
+        @click="showOfferForm = false">
+        <div class="bg-white rounded-xl w-full max-w-sm" @click.stop>
+
+          <div class="px-6 py-4 border-b border-gray-100">
+            <h3 class="text-base text-gray-900" style="font-family: 'Georgia', serif;">Make an Offer</h3>
+            <p class="text-xs text-gray-400 mt-1">
+              {{ product.name }} · listed at RM {{ product.price.toLocaleString() }}.00
+            </p>
+          </div>
+
+          <div class="px-6 py-5">
+            <label class="text-xs text-gray-500 mb-1 block">Your offer (RM)</label>
+            <input v-model="offerForm.amount" type="number" min="1" step="1"
+              :placeholder="String(product.price)"
+              class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm outline-none focus:border-[#C9A96E] transition mb-4" />
+
+            <label class="text-xs text-gray-500 mb-1 block">Message (optional)</label>
+            <textarea v-model="offerForm.message" rows="3"
+              placeholder="Anything the seller should know"
+              class="w-full border border-gray-200 rounded-md px-3 py-2 text-xs outline-none focus:border-[#C9A96E] transition resize-y"></textarea>
+
+            <p v-if="offerError" class="text-xs text-red-500 mt-2">{{ offerError }}</p>
+          </div>
+
+          <div class="px-6 py-4 border-t border-gray-100 flex gap-2">
+            <button @click="submitOffer" :disabled="offerSubmitting"
+              class="flex-1 py-2.5 text-xs tracking-widest uppercase text-white rounded-lg disabled:opacity-60"
+              style="background-color: #1B3A2D;">
+              {{ offerSubmitting ? 'Sending…' : 'Send Offer' }}
+            </button>
+            <button @click="showOfferForm = false"
+              class="px-5 py-2.5 text-xs text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
+              Cancel
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </teleport>
+
   </div>
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { addToCart, cartItems } from '../cart.js'
 import Navbar from '../components/Navbar.vue'
@@ -473,6 +548,16 @@ const openOfferForm = () => {
   }
   showOfferForm.value = true
 }
+
+// Escape closes the offer dialog. Bound once for the page rather than while the
+// dialog is open — one listener that checks a boolean is cheaper than adding and
+// removing one on every toggle.
+const onKeydown = (e) => {
+  if (e.key === 'Escape') showOfferForm.value = false
+}
+
+onMounted(() => window.addEventListener('keydown', onKeydown))
+onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 
 const submitOffer = async () => {
   offerError.value = ''

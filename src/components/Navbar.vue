@@ -11,7 +11,7 @@
        eat clicks either side of the pill — over the hero, for instance. -->
   <div
     class="fixed top-0 left-0 right-0 z-50 pointer-events-none transition-all duration-300"
-    :class="scrolled ? 'px-4 sm:px-8 pt-3 sm:pt-4' : 'px-0 pt-0'"
+    :class="scrolled ? 'px-4 sm:px-8 pt-3 sm:pt-4' : 'px-0 pt-2 sm:pt-3'"
   >
     <nav
       class="pointer-events-auto mx-auto transition-all duration-300"
@@ -23,7 +23,7 @@
          the rest of the page — see .page-container, which mirrors these three
          values. `relative` sits here rather than on <nav> so the centred logo is
          centred on the content, not on the viewport. -->
-    <div class="relative mx-auto max-w-7xl px-6 sm:px-8 py-3 flex items-center justify-between">
+    <div class="relative mx-auto max-w-7xl px-6 sm:px-8 py-5 flex items-center justify-between">
     <!-- Left: Nav Links -->
     <div class="flex items-center gap-8">
       <div class="relative" ref="shopContainer">
@@ -96,7 +96,7 @@
         </svg>
         <span v-if="wishlistCount > 0"
           class="absolute -top-2 -right-2 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center"
-          style="background-color: #C9A96E; font-size: 9px;">
+          style="background-color: #C9A96E; font-size: 10px;">
           {{ wishlistCount }}
         </span>
       </RouterLink>
@@ -108,7 +108,7 @@
         </svg>
         <span v-if="cartCount > 0"
           class="absolute -top-2 -right-2 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center"
-          style="background-color: #C9A96E; font-size: 9px;">
+          style="background-color: #C9A96E; font-size: 10px;">
           {{ cartCount }}
         </span>
       </button>
@@ -190,7 +190,7 @@
       Listings
       <span v-if="pendingOfferCount > 0"
         class="ml-auto text-white rounded-full px-1.5 min-w-4 h-4 flex items-center justify-center"
-        style="background-color: #C9A96E; font-size: 9px;">
+        style="background-color: #C9A96E; font-size: 10px;">
         {{ pendingOfferCount }}
       </span>
     </RouterLink>

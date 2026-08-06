@@ -49,32 +49,32 @@
 
     <!-- Tops -->
     <div class="relative overflow-hidden rounded-sm cursor-pointer group">
-      <img src="../assets/collection/collection1.jpg" alt="Tops" class="w-full h-full object-cover transition duration-300 group-hover:blur-sm group-hover:scale-105" />
-      <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300">
+      <img src="../assets/collection/collection1.jpg" alt="Tops" class="w-full h-full object-cover transition duration-300 group-hover:scale-105" />
+      <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300 bg-black/55 backdrop-blur-sm">
         <span class="text-white text-xs tracking-widest uppercase">Tops & Bottoms</span>
       </div>
     </div>
 
     <!-- Accessories -->
     <div class="relative overflow-hidden rounded-sm cursor-pointer group">
-      <img src="../assets/collection/collection2.jpeg" alt="Accessories" class="w-full h-full object-cover transition duration-300 group-hover:blur-sm group-hover:scale-105" />
-      <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300 bg-black/20">
+      <img src="../assets/collection/collection2.jpeg" alt="Accessories" class="w-full h-full object-cover transition duration-300 group-hover:scale-105" />
+      <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300 bg-black/55 backdrop-blur-sm">
         <span class="text-white text-xs tracking-widest uppercase">Accessories</span>
       </div>
     </div>
 
     <!-- Bags -->
     <div class="relative overflow-hidden rounded-sm cursor-pointer group">
-      <img src="../assets/collection/collection3.jpg" alt="Outerwear" class="w-full h-full object-cover transition duration-300 group-hover:blur-sm group-hover:scale-105" />
-      <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300">
+      <img src="../assets/collection/collection3.jpg" alt="Outerwear" class="w-full h-full object-cover transition duration-300 group-hover:scale-105" />
+      <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300 bg-black/55 backdrop-blur-sm">
         <span class="text-white text-xs tracking-widest uppercase">Outerwear</span>
       </div>
     </div>
 
     <!-- Shoes -->
     <div class="relative overflow-hidden rounded-sm cursor-pointer group col-span-2">
-      <img src="../assets/collection/collection4.jpeg" alt="Shoes" class="w-full h-full object-cover transition duration-300 group-hover:blur-sm group-hover:scale-105" />
-      <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300">
+      <img src="../assets/collection/collection4.jpeg" alt="Shoes" class="w-full h-full object-cover transition duration-300 group-hover:scale-105" />
+      <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300 bg-black/55 backdrop-blur-sm">
         <span class="text-white text-xs tracking-widest uppercase">Shoes</span>
       </div>
     </div>
@@ -124,64 +124,65 @@
 <!-- ========== NEW IN ========================================================================================== -->
 <section class="page-container py-16">
 
-  <!-- Header -->
-  <div class="flex items-center justify-between mb-8">
-    <div>
-      <h2 class="text-sm tracking-widest uppercase font-light text-gray-800" style="font-family: 'Georgia', serif;">New In</h2>
-      <p class="text-xs text-gray-400 mt-1">Curated Edits</p>
-    </div>
-    <a href="#" class="text-xs text-gray-400 hover:text-gray-700 transition">view all →</a>
+  <!-- Header, card and arrows all mirror the New In block on the product page.
+       This one had drifted: a small uppercase heading against that page's serif
+       h2, a text link against its button, 280px tiles against 220px, an extra
+       bag icon, and white shadowed discs for arrows. -->
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-2xl font-light text-gray-800" style="font-family: 'Georgia', serif;">New In</h2>
+    <RouterLink to="/shop"
+      class="inline-flex items-center gap-2 px-5 py-2.5 text-xs tracking-widest uppercase rounded-lg border transition hover:bg-[#1B3A2D] hover:text-white hover:border-[#1B3A2D]"
+      style="border-color: #1B3A2D; color: #1B3A2D;">
+      View Listings
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 12h14M13 6l6 6-6 6"/>
+      </svg>
+    </RouterLink>
   </div>
 
   <!-- Carousel -->
   <div class="relative">
 
     <!-- Left Arrow -->
-    <button @click="scrollLeft"
-      class="absolute -left-5 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full shadow p-2 hover:shadow-md transition">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7"/>
+    <button @click="scrollLeft" type="button" aria-label="Previous items"
+      class="hidden xl:block absolute -left-10 top-1/2 -translate-y-1/2 z-10 text-gray-400 hover:text-[#1B3A2D] transition">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.25" d="M15 19l-7-7 7-7"/>
       </svg>
     </button>
 
     <!-- Cards -->
     <div ref="carousel" class="flex gap-5 overflow-x-hidden scroll-smooth">
-      <div v-for="product in products" :key="product.id" class="min-w-[calc(25%-15px)] cursor-pointer group flex-shrink-0" @click="router.push('/product/' + product.id)">>
-        <div class="relative overflow-hidden rounded-sm bg-gray-50" style="height: 280px;">
+      <div v-for="product in products" :key="product.id"
+        class="min-w-[calc(25%-15px)] flex-shrink-0 cursor-pointer group"
+        @click="router.push('/product/' + product.id)">
+        <div class="relative overflow-hidden rounded-sm bg-gray-100 mb-3" style="height: 220px;">
           <img :src="product.image" :alt="product.name" class="w-full h-full object-cover transition duration-300 group-hover:scale-105" />
-
-          <!-- Top right icons: Bag + Wishlist -->
-          <div class="absolute top-3 right-3 flex items-center gap-2">
-
-      <!-- Bag icon -->
-      <button class="text-gray-400 hover:text-gray-700 transition">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
-        </svg>
-      </button>
-
-      <!-- Wishlist heart icon -->
-      <button class="text-gray-400 hover:text-red-400 transition">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 010-6.364z"/>
-        </svg>
-      </button>
-
-    </div>
-  </div>
-
-  <div class="mt-3">
-    <p class="text-xs text-gray-700">{{ product.name }}</p>
-    <p class="text-xs text-gray-400 mt-1">{{ product.price }}</p>
-  </div>
-</div>
+          <button @click.stop="toggleWishlist(product.id)"
+            class="absolute top-3 right-3 transition"
+            :class="wishlistIds.has(product.id) ? 'text-red-400' : 'text-gray-400 hover:text-red-400'">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
+              :fill="wishlistIds.has(product.id) ? 'currentColor' : 'none'"
+              viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 010-6.364z"/>
+            </svg>
+          </button>
+        </div>
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-xs font-medium text-gray-800">{{ product.name }}</p>
+            <p class="text-xs text-gray-400 uppercase mt-0.5" style="font-size: 11.5px;">{{ product.brand }}</p>
+          </div>
+          <p class="text-xs text-gray-600 ml-2 flex-shrink-0">RM {{ product.price.toLocaleString() }}.00</p>
+        </div>
+      </div>
     </div>
 
     <!-- Right Arrow -->
-    <button @click="scrollRight"
-      class="absolute -right-5 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full shadow p-2 hover:shadow-md transition">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7"/>
+    <button @click="scrollRight" type="button" aria-label="Next items"
+      class="hidden xl:block absolute -right-10 top-1/2 -translate-y-1/2 z-10 text-gray-400 hover:text-[#1B3A2D] transition">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.25" d="M9 5l7 7-7 7"/>
       </svg>
     </button>
 
@@ -362,8 +363,10 @@
 
 <script>
 // Outside setup on purpose — see the note by `showPreloader`. Reset by the page
-// load itself, which is what makes a refresh play the intro again.
-let introPlayed = false
+// load itself, which is what makes a refresh play the intro again. An object
+// rather than a bare `let`: a plain reassignment from inside setup reads as a
+// dead store to the linter, since nothing in that scope looks at it again.
+const intro = { played: false }
 </script>
 
 <script setup>
@@ -377,13 +380,14 @@ import Wordmark from '../components/Wordmark.vue'
 import SustainableSpotlight from '../components/SustainableSpotlight.vue'
 import HowItWorksCards from '../components/HowItWorksCards.vue'
 import { fetchNewestListings } from '../lib/listings.js'
+import { toggleWishlist, wishlistIds } from '../lib/wishlist.js'
 
 // Module scope, deliberately: the flag outlives the component so routing back to
 // / from the shop doesn't replay the intro, but it dies with the page, so every
 // reload — refresh, hard reload, a fresh tab — opens on the reel again.
 // sessionStorage would survive the refresh and swallow it.
-const showPreloader = ref(!introPlayed)
-introPlayed = true
+const showPreloader = ref(!intro.played)
+intro.played = true
 
 // The resting title only belongs to the arrival. A shopper coming back to / from
 // the shop gets the navbar straight away instead of having to scroll for it.
@@ -427,13 +431,10 @@ const products = ref([])
 // as it is approved.
 onMounted(async () => {
   try {
-    const rows = await fetchNewestListings(8)
-    products.value = rows.map((r) => ({
-      id: r.id,
-      name: r.name,
-      price: `RM ${r.price.toLocaleString()}.00`,
-      image: r.image,
-    }))
+    // The rows go through as they come back, the way the product page uses them.
+    // They used to be remapped to four fields with the price pre-formatted into a
+    // string, which dropped `brand` and left the card unable to show it.
+    products.value = await fetchNewestListings(8)
   } catch (error) {
     // The landing page still renders without the carousel.
     console.error('Could not load the New In carousel:', error.message)

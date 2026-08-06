@@ -200,7 +200,7 @@
                 <div class="flex items-center gap-2 mb-1">
                   <p class="text-sm font-semibold text-gray-800">{{ addr.name }}</p>
                   <span v-if="addr.isDefault" class="px-2 py-0.5 rounded-full text-xs"
-                    style="background-color: #F7F5F0; color: #C9A96E; font-size: 10px;">Default</span>
+                    style="background-color: #F7F5F0; color: #C9A96E; font-size: 11.5px;">Default</span>
                 </div>
                 <p class="text-xs text-gray-500">{{ addr.street }}</p>
                 <p class="text-xs text-gray-500">{{ addr.postcode }} {{ addr.city }}, {{ addr.country }}</p>
