@@ -15,7 +15,7 @@
         </svg>
         <p class="text-sm font-medium text-gray-500 mb-1">{{ errorMsg || 'Listing not found' }}</p>
         <p class="text-xs text-gray-400 mb-6">It may have sold or been withdrawn.</p>
-        <RouterLink to="/shop" class="px-6 py-2.5 text-xs text-white rounded-md" style="background-color: #1B3A2D;">
+        <RouterLink to="/shop" class="px-6 py-2.5 text-xs  rounded-md btn-solid">
           Back to Shop
         </RouterLink>
       </div>
@@ -74,8 +74,7 @@
             <button
             @click="handleAddToCart"
             :disabled="isOwnListing || product.status !== 'active' || inCart"
-            class="flex-1 py-3.5 text-xs tracking-widest uppercase text-white rounded-lg transition hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
-            style="background-color: #1B3A2D;">
+            class="flex-1 py-3.5 text-xs tracking-widest uppercase  rounded-lg transition disabled:opacity-40 disabled:cursor-not-allowed btn-solid">
             {{ product.status !== 'active' ? unavailableLabel
                : isOwnListing ? 'This is your listing'
                : inCart ? 'In your Bag'
@@ -174,8 +173,7 @@
                   </p>
                   <div v-if="offer.status === 'pending'" class="flex gap-2">
                     <button @click="respond(offer, 'accepted')" :disabled="respondingId === offer.id"
-                      class="px-3 py-1.5 text-xs text-white rounded-md disabled:opacity-60"
-                      style="background-color: #1B3A2D;">
+                      class="px-3 py-1.5 text-xs  rounded-md disabled:opacity-60 btn-solid">
                       Accept
                     </button>
                     <button @click="respond(offer, 'declined')" :disabled="respondingId === offer.id"
@@ -277,8 +275,7 @@
               </div>
             </div>
             <RouterLink v-if="product.seller?.username" :to="`/profile/${product.seller.username}`"
-              class="block w-full py-2 text-xs text-white rounded-md transition hover:opacity-90 text-center"
-              style="background-color: #1B3A2D;">
+              class="block w-full py-2 text-xs  rounded-md transition text-center btn-solid">
               View Profile
             </RouterLink>
             <button v-if="!isOwnListing" @click="handleReport"
@@ -432,8 +429,7 @@
 
           <div class="px-6 py-4 border-t border-gray-100 flex gap-2">
             <button @click="submitOffer" :disabled="offerSubmitting"
-              class="flex-1 py-2.5 text-xs tracking-widest uppercase text-white rounded-lg disabled:opacity-60"
-              style="background-color: #1B3A2D;">
+              class="flex-1 py-2.5 text-xs tracking-widest uppercase  rounded-lg disabled:opacity-60 btn-solid">
               {{ offerSubmitting ? 'Sending…' : 'Send Offer' }}
             </button>
             <button @click="showOfferForm = false"

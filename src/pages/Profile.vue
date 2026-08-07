@@ -5,6 +5,7 @@
     <div class="page-top page-container pb-16">
 
       <!-- Listing submitted confirmation -->
+      <Transition name="banner">
       <div v-if="justSubmitted" class="mb-6 rounded-lg px-5 py-4 flex items-start gap-3" style="background-color: #E8F5EE;">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
@@ -17,6 +18,7 @@
           </p>
         </div>
       </div>
+      </Transition>
 
       <!-- Error -->
       <div v-if="errorMsg" class="mb-6 rounded-lg px-5 py-4 text-xs" style="background-color: #FEF2F2; color: #B91C1C;">
@@ -123,34 +125,39 @@
          carries its own Add Item button, and two of them read as a mistake. -->
     <div v-if="listings.length > 0" class="flex items-center justify-between gap-4 mb-6 flex-wrap">
   <RouterLink v-if="isOwnProfile" to="/sell"
-    class="px-5 py-2 text-xs text-white rounded-md transition hover:opacity-90 flex items-center gap-1.5 flex-shrink-0"
-    style="background-color: #1B3A2D;">
+    class="px-5 py-2 text-xs  rounded-md transition flex items-center gap-1.5 flex-shrink-0 btn-solid">
     <span class="text-sm leading-none">+</span> Add Item
   </RouterLink>
 
-  <div v-if="listings.length > 0" class="flex items-center gap-4 ml-auto flex-wrap">
-    <div class="flex items-center gap-2">
-      <span class="text-xs text-gray-400">Filter by</span>
-      <select v-model="listingFilter" class="border border-gray-200 rounded-md px-3 py-1.5 text-xs text-gray-600 outline-none bg-white">
+  <!-- Each control is one pill carrying its own label, the way the Shop page's
+       Filters button does. The label used to float outside the box, so the row
+       read as six loose elements rather than three controls. -->
+  <div v-if="listings.length > 0" class="flex items-center gap-3 ml-auto flex-wrap">
+    <label class="control-pill">
+      <span class="control-pill__label">Filter</span>
+      <select v-model="listingFilter" class="control-pill__value">
         <option value="all">All</option>
         <option value="tops">Tops</option>
+        <option value="bottoms">Bottoms</option>
         <option value="bags">Bags</option>
         <option value="shoes">Shoes</option>
         <option value="accessories">Accessories</option>
       </select>
-    </div>
-    <div class="flex items-center gap-2">
-      <span class="text-xs text-gray-400">Sort by</span>
-      <select v-model="listingSort" class="border border-gray-200 rounded-md px-3 py-1.5 text-xs text-gray-600 outline-none bg-white">
+    </label>
+
+    <label class="control-pill">
+      <span class="control-pill__label">Sort</span>
+      <select v-model="listingSort" class="control-pill__value">
         <option value="latest">Latest</option>
         <option value="price_asc">Price: Low to High</option>
         <option value="price_desc">Price: High to Low</option>
       </select>
-    </div>
-    <div class="flex items-center gap-2">
-      <span class="text-xs text-gray-400">Sold items</span>
+    </label>
+
+    <span class="control-pill">
+      <span class="control-pill__label">Sold items</span>
       <ToggleSwitch v-model="showSold" size="sm" />
-    </div>
+    </span>
   </div>
 </div>
 
@@ -165,8 +172,7 @@
       </p>
       <!-- The only Add Item button in the empty state, and only on your own page. -->
       <RouterLink v-if="isOwnProfile" to="/sell"
-  class="px-6 py-2.5 text-xs text-white rounded-md"
-  style="background-color: #1B3A2D;">
+  class="px-6 py-2.5 text-xs  rounded-md btn-solid">
   + Add Item
 </RouterLink>
     </div>
@@ -240,8 +246,7 @@
       <p class="text-sm font-medium text-gray-500 mb-1">No saved items yet</p>
       <p class="text-xs text-gray-400 mb-6">Heart items you love to save them here</p>
       <RouterLink to="/shop"
-        class="px-6 py-2.5 text-xs text-white rounded-md"
-        style="background-color: #1B3A2D;">
+        class="px-6 py-2.5 text-xs  rounded-md btn-solid">
         Browse Shop
       </RouterLink>
     </div>
@@ -292,8 +297,7 @@
       <p class="text-sm font-medium text-gray-500 mb-1">No {{ activeOrderStatus.toLowerCase() }} orders</p>
       <p class="text-xs text-gray-400 mb-6">Your purchase history will appear here</p>
       <RouterLink to="/shop"
-        class="px-6 py-2.5 text-xs text-white rounded-md"
-        style="background-color: #1B3A2D;">
+        class="px-6 py-2.5 text-xs  rounded-md btn-solid">
         Start Shopping
       </RouterLink>
     </div>
@@ -541,8 +545,7 @@
           </div>
 
           <button @click="handleSaveOrderPdf"
-            class="no-print w-full py-2.5 text-xs text-white rounded-md text-center transition hover:opacity-90"
-            style="background-color: #1B3A2D;">
+            class="no-print w-full py-2.5 text-xs  rounded-md text-center transition btn-solid">
             Save as PDF
           </button>
           <p class="no-print text-xs text-gray-400 text-center mt-2 leading-relaxed">
@@ -757,7 +760,18 @@ const confirmDelete = async () => {
 
 // /profile shows your own page; /profile/:username shows someone else's.
 const isOwnProfile = computed(() => !route.params.username || profileRow.value?.id === userId.value)
-const justSubmitted = computed(() => route.query.submitted === '1')
+// Read once into state rather than straight off the query, so it can be dismissed
+// without a navigation. The ?submitted=1 flag is stripped from the URL at the same
+// time — left in place, a refresh or a shared link would replay the banner.
+const justSubmitted = ref(route.query.submitted === '1')
+let bannerTimer = null
+
+if (justSubmitted.value) {
+  router.replace({ query: { ...route.query, submitted: undefined } })
+  bannerTimer = setTimeout(() => (justSubmitted.value = false), 6000)
+}
+
+onUnmounted(() => clearTimeout(bannerTimer))
 
 // A user counts as a "seller" once they have ever listed something — active
 // listings or a completed sale — so a buyer-only account never sees the
@@ -925,5 +939,60 @@ const filteredOrders = computed(() => {
   .no-print {
     display: none !important;
   }
+}
+</style>
+<style scoped>
+/* One bordered control holding both its label and its value, matching the
+   Filters button on Shop. The native select keeps its own arrow but loses its
+   box, so the pill is the only visible frame. */
+.control-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 999px;
+  background: #fff;
+  padding: 0.375rem 0.5rem 0.375rem 0.875rem;
+  transition: border-color 0.2s ease;
+}
+
+.control-pill:hover,
+.control-pill:focus-within {
+  border-color: #d1d5db;
+}
+
+.control-pill__label {
+  color: #9ca3af;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+
+.control-pill__value {
+  border: 0;
+  background: transparent;
+  outline: none;
+  color: #374151;
+  font-size: 0.8125rem;
+  padding-right: 0.25rem;
+  cursor: pointer;
+}
+
+/* The submitted banner leaves on its own after six seconds; easing it out and
+   collapsing its height keeps the page from snapping upward as it goes. */
+.banner-leave-active {
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s ease,
+    margin 0.35s ease,
+    max-height 0.35s ease;
+  overflow: hidden;
+  max-height: 12rem;
+}
+
+.banner-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+  max-height: 0;
+  margin-bottom: 0;
 }
 </style>

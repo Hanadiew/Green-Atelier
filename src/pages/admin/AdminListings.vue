@@ -34,7 +34,6 @@
             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
           >
             <option value="">All Categories</option>
-            <option value="Blouses">Blouses</option>
             <option value="Tops">Tops</option>
             <option value="Bottoms">Bottoms</option>
             <option value="Bags">Bags</option>

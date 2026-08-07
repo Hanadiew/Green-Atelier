@@ -114,13 +114,19 @@
     <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-4">
       <p class="text-red-800 text-sm">{{ error }}</p>
     </div>
+    <!-- Performance over time. Last on the page: the tiles say where the
+         platform stands and Quick Actions is what a moderator came to do — the
+         trend is the thing you read once both are dealt with. -->
+    <AdminPerformanceChart :data="monthly" :loading="loadingChart" />
+
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import AdminStatCard from '../../components/admin/AdminStatCard.vue'
-import { getDashboardStats } from '../../lib/admin.js'
+import { getDashboardStats, getMonthlyPerformance } from '../../lib/admin.js'
+import AdminPerformanceChart from '../../components/admin/AdminPerformanceChart.vue'
 
 const stats = ref({
   totalUsers: 0,
@@ -135,6 +141,11 @@ const stats = ref({
 const loading = ref(true)
 const error = ref(null)
 
+// Loaded alongside the tiles but tracked separately: a failed chart query should
+// leave the numbers standing rather than blank the page.
+const monthly = ref([])
+const loadingChart = ref(true)
+
 onMounted(async () => {
   try {
     const data = await getDashboardStats()
@@ -144,6 +155,14 @@ onMounted(async () => {
     console.error(err)
   } finally {
     loading.value = false
+  }
+
+  try {
+    monthly.value = await getMonthlyPerformance(6)
+  } catch (err) {
+    console.error('Could not load the performance chart:', err.message)
+  } finally {
+    loadingChart.value = false
   }
 })
 </script>

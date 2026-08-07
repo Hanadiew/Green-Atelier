@@ -1,6 +1,7 @@
 <template>
   <div class="page-shell">
-    <Navbar />
+    <!-- dark: deep-green page header, so the bar inverts to light text until it is scrolled. -->
+    <Navbar dark />
 
     <!-- ===== HERO / HEADER ===== -->
     <!-- The green band stays full-bleed; only its contents take the shared
@@ -76,8 +77,7 @@
           <button
             type="submit"
             :disabled="submitting"
-            class="w-full py-3 text-xs text-white rounded-md tracking-wider font-medium uppercase shadow transition hover:opacity-90 active:scale-95 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-            style="background-color: #1B3A2D;"
+            class="w-full py-3 text-xs  rounded-md tracking-wider font-medium uppercase shadow transition active:scale-95 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed btn-solid"
           >
             {{ submitting ? 'Sending…' : 'Send Message' }}
           </button>
@@ -397,8 +397,7 @@
             Thank you for contacting Green Atelier. Our curators will review your inquiry and reply via email within 24 hours.
           </p>
           <button @click="showSuccess = false" 
-            class="w-full py-2.5 text-xs text-white rounded-md transition hover:opacity-90 font-medium uppercase tracking-wider cursor-pointer"
-            style="background-color: #1B3A2D;"
+            class="w-full py-2.5 text-xs  rounded-md transition font-medium uppercase tracking-wider cursor-pointer btn-solid"
           >
             Dismiss
           </button>

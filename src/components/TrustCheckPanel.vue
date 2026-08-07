@@ -129,9 +129,8 @@
       <!-- Analyze -->
       <div class="pt-1">
         <button @click="analyze" :disabled="analyzing || !canAnalyze"
-          class="w-full py-3 text-sm text-white rounded-md transition hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
-          style="background-color: #1B3A2D;">
-          {{ analyzing ? progressText || 'Analysing…' : result ? 'Re-run Analysis' : 'Analyze Authenticity' }}
+          class="w-full py-3 text-sm  rounded-md transition disabled:opacity-50 disabled:cursor-not-allowed btn-solid">
+          {{ analyzing ? 'Analysing…' : result ? 'Re-run Analysis' : 'Analyze Authenticity' }}
         </button>
         <p v-if="!canAnalyze" class="text-xs text-center mt-2" style="color: #C9A96E;">
           Upload front, back and interior photos in the Media step first.
@@ -243,12 +242,19 @@ const props = defineProps({
   listingImages: { type: Array, default: () => [] },
   /** An assessment restored when the seller navigates back to this step. */
   modelValue: { type: Object, default: null },
+  /**
+   * The serial the seller typed in the field above this panel. It replaces the
+   * old "Serial Number Image" upload slot, which asked for the same fact twice —
+   * but the 15 evidence points still have to be reachable, so the flag is
+   * derived from this instead of from a file.
+   */
+  serialNumber: { type: String, default: '' },
 })
 
 // `update:files` is emitted whenever a slot changes, independently of the
 // assessment: the parent has to be able to store evidence the seller attached
 // but never scored.
-const emit = defineEmits(['update:modelValue', 'update:files'])
+const emit = defineEmits(['update:modelValue', 'update:files', 'update:covered'])
 
 const selectedBrand = ref(matchBrand(props.initialBrand) ?? '')
 const selectedModel = ref('')
@@ -270,12 +276,16 @@ if (props.modelValue?.reference) {
 
 const documentSlots = [
   { key: 'receipt', label: 'Receipt / Invoice', hint: 'Proof of purchase', points: EVIDENCE_WEIGHTS.has_receipt },
-  { key: 'serialImage', label: 'Serial Number Image', hint: 'Photo of the code or date stamp', points: EVIDENCE_WEIGHTS.has_serial },
   { key: 'certificate', label: 'Authentication Certificate', hint: 'From a third-party authenticator', points: EVIDENCE_WEIGHTS.has_certificate },
 ]
 
 const availableModels = computed(() => modelsForBrand(selectedBrand.value))
 const reference = computed(() => findReference(selectedBrand.value, selectedModel.value))
+
+// The parent gates on this rather than on the listing's brand alone: a Gucci bag
+// that is not the Marmont Small has a matching brand but no reference, and the
+// seller was being told to run a check the panel cannot offer.
+watch(reference, (ref_) => emit('update:covered', Boolean(ref_)), { immediate: true })
 
 const requiredRows = computed(() => [
   { key: 'has_front', label: 'Front Image', points: EVIDENCE_WEIGHTS.has_front, present: Boolean(props.listingImages[0]) },
@@ -357,8 +367,8 @@ const analyze = async () => {
       reference: reference.value,
       listingImages: props.listingImages,
       receipt: files.value.receipt,
-      serialImage: files.value.serialImage,
       certificate: files.value.certificate,
+      serialNumber: props.serialNumber,
       onProgress: (text) => (progressText.value = text),
     })
     result.value = assessment

@@ -47,7 +47,6 @@
             <label for="sell-category" class="text-xs text-gray-400 uppercase tracking-widest mb-2 block">Category</label>
             <select id="sell-category" v-model="form.category" class="w-full border-b border-gray-200 py-2 text-sm text-gray-700 outline-none bg-transparent">
               <option>Tops</option>
-              <option>Blouses</option>
               <option>Bottoms</option>
               <option>Bags</option>
               <option>Accessories</option>
@@ -170,7 +169,7 @@
         </div>
 
         <!-- Green CTA card -->
-        <div class="flex-1 rounded-2xl flex flex-col justify-center px-10 py-10" style="background-color: #1B3A2D;">
+        <div class="flex-1 rounded-2xl flex flex-col justify-center px-10 py-10 surface-brand">
           <h3 class="text-2xl font-light text-white mb-3" style="font-family: 'Georgia', serif;">
             Redefining The Luxury Standards
           </h3>
@@ -218,8 +217,7 @@
           </p>
 
           <RouterLink :to="{ path: '/signup', query: { redirect: intendedPath } }"
-            class="block w-full py-3 text-sm text-white rounded-md transition hover:opacity-90 mb-3"
-            style="background-color: #1B3A2D;">
+            class="block w-full py-3 text-sm  rounded-md transition mb-3 btn-solid">
             Sign Up
           </RouterLink>
 

@@ -52,7 +52,7 @@
             </button>
 
             <div v-if="filterOpen"
-              class="absolute top-full left-0 mt-3 z-40 rounded-2xl bg-white/95 backdrop-blur-md shadow-lg shadow-black/5 p-6"
+              class="absolute top-full left-0 mt-5 z-40 rounded-2xl bg-white/95 backdrop-blur-md shadow-lg shadow-black/5 p-6"
               style="width: min(320px, calc(100vw - 3rem));">
 
               <!-- Category -->
@@ -98,8 +98,7 @@
                   Reset
                 </button>
                 <button @click="applyFilters"
-                  class="px-6 py-2 text-xs text-white rounded-md transition hover:opacity-90 mt-4"
-                  style="background-color: #1B3A2D;">
+                  class="px-6 py-2 text-xs  rounded-md transition mt-4 btn-solid">
                   Apply
                 </button>
               </div>
@@ -197,7 +196,7 @@
 
 <script setup>
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
 import LoadingPanel from '../components/LoadingPanel.vue'
@@ -207,20 +206,28 @@ import { isAuthenticated, userId } from '../lib/auth.js'
 import { toggleWishlist, wishlistIds } from '../lib/wishlist.js'
 
 const router = useRouter()
+const route = useRoute()
+
+// Must match the category and condition CHECK constraints on public.listings.
+const categories = ['Tops', 'Bottoms', 'Bags', 'Shoes', 'Accessories']
+
+// Seeded from ?category=… so the navbar's Collections links land on a filtered
+// catalogue. Without this the query was carried in the URL and ignored, and every
+// category opened the same unfiltered page.
+const initialCategory = categories.includes(route.query.category) ? [route.query.category] : []
 
 const search = ref('')
 const sortBy = ref('latest')
 
 // Applied filters — the only ones load() reads.
 const priceMax = ref(10000)
-const selectedCategories = ref([])
 const selectedConditions = ref([])
 
 // Draft filters — what the popup binds to. Seeded from the applied values each
 // time the panel opens, so closing without pressing Apply changes nothing.
 const filterOpen = ref(false)
 const filterContainer = ref(null)
-const draft = ref({ categories: [], conditions: [], priceMax: 10000 })
+const draft = ref({ categories: [...initialCategory], conditions: [], priceMax: 10000 })
 const currentPage = ref(1)
 const perPage = 12
 
@@ -229,8 +236,7 @@ const total = ref(0)
 const loading = ref(true)
 const errorMsg = ref('')
 
-// Must match the category and condition CHECK constraints on public.listings.
-const categories = ['Tops', 'Blouses', 'Bags', 'Bottoms', 'Accessories', 'Shoes']
+const selectedCategories = ref([...initialCategory])
 const conditions = ['New with tag', 'Good as new', 'Fair']
 
 const PRICE_CEILING = 10000

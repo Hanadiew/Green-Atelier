@@ -1,6 +1,7 @@
 <template>
   <div class="page-shell">
-    <Navbar />
+    <!-- dark: full-height deep-green hero, so the bar inverts to light text until it is scrolled. -->
+    <Navbar dark />
 
     <!-- ===== HERO ===== -->
     <div class="relative w-full flex items-center justify-center overflow-hidden" style="height: 100vh; background-color: #1B3A2D;">
@@ -61,7 +62,7 @@
         <!-- Stats column -->
         <div class="w-full lg:w-[220px] lg:flex-shrink-0 space-y-6">
           <div v-for="stat in stats" :key="stat.label"
-            class="rounded-2xl p-6" style="background-color: #1B3A2D;">
+            class="rounded-2xl p-6 surface-brand">
             <p class="text-3xl font-light mb-1" style="color: #C9A96E; font-family: 'Georgia', serif;">{{ stat.value }}</p>
             <p class="text-xs text-gray-400 leading-relaxed">{{ stat.label }}</p>
           </div>
@@ -74,7 +75,7 @@
     <!-- .page-container sets its own max-width, so the editorial measure has to
          be a child of it rather than a class alongside it — otherwise this band
          renders wider than the sections either side. -->
-    <section class="py-24" style="background-color: #1B3A2D;">
+    <section class="py-24 surface-brand">
       <div class="page-container">
       <div class="max-w-5xl mx-auto">
 
@@ -89,7 +90,7 @@
           <div v-for="pillar in pillars" :key="pillar.title"
             class="rounded-2xl p-8 transition hover:scale-105 duration-300"
             style="background-color: #24503C;">
-            <div class="w-10 h-10 rounded-full flex items-center justify-center mb-5" style="background-color: #1B3A2D;">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center mb-5 surface-brand">
               <span class="text-xl">{{ pillar.icon }}</span>
             </div>
             <h3 class="text-sm font-semibold text-white mb-3">{{ pillar.title }}</h3>
@@ -230,8 +231,7 @@
         </p>
         <div class="flex items-center justify-center gap-4">
           <RouterLink to="/signup"
-            class="px-8 py-3 text-sm text-white rounded-md transition hover:opacity-90"
-            style="background-color: #1B3A2D;">
+            class="px-8 py-3 text-sm  rounded-md transition btn-solid">
             Join Green Atelier
           </RouterLink>
           <RouterLink to="/shop"

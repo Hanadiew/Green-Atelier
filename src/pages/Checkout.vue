@@ -199,8 +199,7 @@
               </div>
               <div class="flex gap-3">
                 <button @click="saveShipping"
-                  class="px-5 py-2 text-xs text-white rounded-md"
-                  style="background-color: #1B3A2D;">
+                  class="px-5 py-2 text-xs  rounded-md btn-solid">
                   Save address
                 </button>
                 <button @click="showAddressForm = false" class="text-xs text-gray-400 hover:text-gray-600">Cancel</button>
@@ -266,8 +265,7 @@
             </div>
 
             <button @click="handleProceedToPayment" :disabled="placing"
-              class="w-full py-3 text-sm text-white rounded-md transition hover:opacity-90 mt-2 disabled:opacity-60"
-              style="background-color: #1B3A2D;">
+              class="w-full py-3 text-sm  rounded-md transition mt-2 disabled:opacity-60 btn-solid">
               {{ placing ? 'Redirecting to Stripe…' : 'Proceed to Payment' }}
             </button>
 
@@ -346,10 +344,9 @@
 
           <!-- Proceed to Stripe -->
           <button @click="handleProceedToPayment"
-            class="w-full py-3 text-sm text-white rounded-md transition hover:opacity-90"
+            class="w-full py-3 text-sm  rounded-md transition btn-solid"
             :class="cartItems.length === 0 || placing ? 'opacity-40 cursor-not-allowed' : ''"
-            :disabled="cartItems.length === 0 || placing"
-            style="background-color: #1B3A2D;">
+            :disabled="cartItems.length === 0 || placing">
             {{ placing ? 'Redirecting to Stripe…' : 'Proceed to Payment' }}
           </button>
 

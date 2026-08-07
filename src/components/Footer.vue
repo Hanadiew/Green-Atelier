@@ -4,7 +4,7 @@
 
        The green runs the full width of the page; only the contents are held to
        .page-container, so they line up with every other element on the site. -->
-  <footer class="site-footer mt-auto" style="background-color: #1B3A2D;">
+  <footer class="site-footer mt-auto surface-brand">
     <div class="page-container">
 
     <!-- Stay Connected -->
@@ -20,8 +20,7 @@
         />
         <button
           @click="handleSubscribe"
-          class="text-xs px-5 py-2.5 rounded-full"
-          style="background-color: #C9A96E; color: white;">
+          class="text-xs px-5 py-2.5 rounded-full btn-gold">
           Submit
         </button>
       </div>
@@ -32,7 +31,6 @@
       <RouterLink to="/home" class="text-xs hover:text-white transition" style="color: #C9A96E;">Home</RouterLink>
       <RouterLink to="/shop" class="text-xs hover:text-white transition" style="color: #C9A96E;">Shop</RouterLink>
       <RouterLink to="/sell" class="text-xs hover:text-white transition" style="color: #C9A96E;">Sell</RouterLink>
-      <a href="#" class="text-xs hover:text-white transition" style="color: #C9A96E;">Rent</a>
       <RouterLink to="/about" class="text-xs hover:text-white transition" style="color: #C9A96E;">About Us</RouterLink>
       <RouterLink to="/contact" class="text-xs hover:text-white transition" style="color: #C9A96E;">Contact Us</RouterLink>
       <RouterLink to="/contact#faq" class="text-xs hover:text-white transition" style="color: #C9A96E;">FAQs</RouterLink>

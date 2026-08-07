@@ -66,8 +66,7 @@
             <p class="text-xs text-gray-400">Add one to receive earnings from your sales.</p>
           </div>
           <RouterLink to="/account?section=payout"
-            class="px-4 py-2 text-xs text-white rounded-md flex-shrink-0"
-            style="background-color: #1B3A2D;">
+            class="px-4 py-2 text-xs  rounded-md flex-shrink-0 btn-solid">
             Add Bank Account
           </RouterLink>
         </div>

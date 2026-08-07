@@ -40,7 +40,7 @@
           <div class="relative overflow-hidden order-1 sm:order-none" style="min-height: 16rem;" aria-hidden="true">
             <Transition name="care-img" mode="out-in">
               <img :key="steps[active].key" :src="steps[active].image" alt="" loading="lazy"
-                class="absolute inset-0 w-full h-full object-contain p-10" />
+                class="absolute inset-0 w-full h-full object-cover" />
             </Transition>
           </div>
 
@@ -71,10 +71,10 @@
 
 <script setup>
 import { ref } from 'vue'
-import bag from '../../assets/bag1.png'
-import shades from '../../assets/shades.png'
-import shirt from '../../assets/shirt.png'
-import shoes from '../../assets/shoes.png'
+import store from '../../assets/care guide/store.jpg'
+import clean from '../../assets/care guide/clean.jpg'
+import repair from '../../assets/care guide/repair.jpg'
+import rehome from '../../assets/care guide/rehome.jpg'
 import { useReveal } from '../../lib/motion.js'
 
 const { root, visible } = useReveal()
@@ -92,7 +92,7 @@ const steps = [
       'Use dust bags and padded hangers rather than plastic, which traps moisture.',
       'Keep pieces out of direct sunlight — fading is not reversible.',
     ],
-    image: bag,
+    image: store,
   },
   {
     key: 'Clean',
@@ -103,7 +103,7 @@ const steps = [
       'Wash cooler, on a gentler cycle, and turn pieces inside out.',
       'Spot-clean marks early rather than washing the whole garment.',
     ],
-    image: shirt,
+    image: clean,
   },
   {
     key: 'Repair',
@@ -114,7 +114,7 @@ const steps = [
       'Have linings, zips and straps replaced rather than retiring the piece.',
       'Keep spare buttons and care cards; they matter at resale too.',
     ],
-    image: shoes,
+    image: repair,
   },
   {
     key: 'Rehome',
@@ -125,7 +125,7 @@ const steps = [
       'Photograph it honestly, wear and all — buyers reward accuracy.',
       'Include the original receipt, box or authenticity card if you kept them.',
     ],
-    image: shades,
+    image: rehome,
   },
 ]
 

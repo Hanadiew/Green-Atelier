@@ -30,8 +30,7 @@
         </p>
 
         <RouterLink to="/shop" @click="dismiss"
-          class="block w-full py-3 text-sm text-white rounded-md transition hover:opacity-90"
-          style="background-color: #1B3A2D;">
+          class="block w-full py-3 text-sm  rounded-md transition btn-solid">
           Start shopping
         </RouterLink>
       </div>

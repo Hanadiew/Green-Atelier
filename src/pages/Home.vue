@@ -65,9 +65,9 @@
 
     <!-- Bags -->
     <div class="relative overflow-hidden rounded-sm cursor-pointer group">
-      <img src="../assets/collection/collection3.jpg" alt="Outerwear" class="w-full h-full object-cover transition duration-300 group-hover:scale-105" />
+      <img src="../assets/collection/collection3.jpg" alt="Bags" class="w-full h-full object-cover transition duration-300 group-hover:scale-105" />
       <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300 bg-black/55 backdrop-blur-sm">
-        <span class="text-white text-xs tracking-widest uppercase">Outerwear</span>
+        <span class="text-white text-xs tracking-widest uppercase">Bags</span>
       </div>
     </div>
 
@@ -191,7 +191,7 @@
 
 
 <!-- ========== OUR MISSION ========================================================================================== -->
-<section class="py-16" style="background-color: #1B3A2D;">
+<section class="py-16 surface-brand">
   <div class="page-container flex flex-col lg:flex-row lg:items-center gap-10 lg:gap-16">
 
   <!-- Left: Text -->

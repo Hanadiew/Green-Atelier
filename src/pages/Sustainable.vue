@@ -1,6 +1,7 @@
 <template>
   <div class="page-shell">
-    <Navbar />
+    <!-- dark: full-height deep-green hero, so the bar inverts to light text until it is scrolled. -->
+    <Navbar dark />
 
     <!-- The narrative order is the point: the problem, then that existing pieces
          still have value, then how the platform makes passing them on easy, then

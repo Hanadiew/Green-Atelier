@@ -48,6 +48,7 @@ export async function runAssessment({
   receipt = null,
   serialImage = null,
   certificate = null,
+  serialNumber = '',
   onProgress = null,
 }) {
   if (!reference) throw new Error('TrustCheck is not available for this brand and model.')
@@ -64,7 +65,9 @@ export async function runAssessment({
     has_back: Boolean(listingImages[1]),
     has_interior: Boolean(listingImages[2]),
     has_receipt: Boolean(receipt),
-    has_serial: Boolean(serialImage),
+    // A typed serial counts the same as a photo of one. serialImage stays
+    // supported so assessments stored before the slot was removed still score.
+    has_serial: Boolean(serialImage) || Boolean(serialNumber?.trim()),
     has_certificate: Boolean(certificate),
     ocr_origin_match: origin.matched,
   }

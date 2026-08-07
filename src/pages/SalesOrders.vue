@@ -29,7 +29,7 @@
         </svg>
         <p class="text-sm font-medium text-gray-500 mb-1">You don't have any sales yet.</p>
         <p class="text-xs text-gray-400 mb-6">Once someone buys one of your listings, it will show up here.</p>
-        <RouterLink to="/sell" class="px-6 py-2.5 text-xs text-white rounded-md" style="background-color: #1B3A2D;">
+        <RouterLink to="/sell" class="px-6 py-2.5 text-xs  rounded-md btn-solid">
           Start Selling
         </RouterLink>
       </div>
@@ -176,8 +176,7 @@
           </div>
 
           <button @click="closeDetails"
-            class="w-full mt-6 py-2.5 text-xs text-white rounded-md"
-            style="background-color: #1B3A2D;">
+            class="w-full mt-6 py-2.5 text-xs  rounded-md btn-solid">
             Close
           </button>
 

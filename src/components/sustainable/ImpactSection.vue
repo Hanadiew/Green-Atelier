@@ -1,6 +1,6 @@
 <template>
   <section ref="root" :class="{ 'is-visible': visible }"
-    class="py-20 sm:py-28" style="background-color: #1B3A2D;">
+    class="py-20 sm:py-28 surface-brand">
     <div class="page-container text-center">
 
       <p class="reveal text-xs tracking-widest uppercase mb-4" style="color: #C9A96E;">Platform Impact</p>

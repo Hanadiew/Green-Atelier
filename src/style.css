@@ -376,3 +376,72 @@ html.preloader-open body {
 .data-grid-page--on:hover {
   background: #142C22;
 }
+
+/* --- Button hover ------------------------------------------------------------
+   Every button answers the pointer. 42 of them had no hover state at all, so
+   they looked identical whether you were over them or not.
+
+   Deliberately inside `@layer base`: Tailwind's utilities sit in a later layer,
+   so any button that declares its own `hover:bg-*` still wins and nothing
+   already designed is overridden. This is only the floor for buttons that
+   specify nothing.
+
+   Inline `style="background-color: …"` beats both — those are handled by giving
+   the branded buttons real hover classes instead (see .btn-solid below). */
+@layer base {
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']) {
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      color 0.2s ease;
+  }
+
+  button:not(:disabled):hover {
+    background-color: rgba(27, 58, 45, 0.08);
+  }
+}
+
+/* --- Branded buttons ---------------------------------------------------------
+   The two button shapes the storefront actually uses. Both were written as an
+   inline background plus `hover:opacity-90`, which fades a button rather than
+   changing it — and because an inline style outranks every class, a
+   `hover:bg-*` utility could never have worked on them.
+
+   As classes, the hover is a genuine colour change: solid goes darker, outline
+   fills in. */
+.btn-solid {
+  background-color: #1B3A2D;
+  color: #fff;
+}
+
+.btn-solid:not(:disabled):hover {
+  background-color: #142C22;
+}
+
+.btn-outline-gold {
+  border: 1px solid #C9A96E;
+  color: #C9A96E;
+  background-color: transparent;
+}
+
+.btn-outline-gold:not(:disabled):hover {
+  background-color: #C9A96E;
+  color: #fff;
+}
+
+.btn-gold {
+  background-color: #C9A96E;
+  color: #fff;
+}
+
+.btn-gold:not(:disabled):hover {
+  background-color: #B08F51;
+}
+
+/* The same brand fill as .btn-solid, for panels and sections. Separate class on
+   purpose: those are not interactive and must not pick up a hover. */
+.surface-brand {
+  background-color: #1B3A2D;
+  color: #fff;
+}

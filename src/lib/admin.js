@@ -1125,3 +1125,62 @@ export async function getStaffMembers() {
     createdAt: row.created_at,
   }))
 }
+
+/**
+ * Monthly order count and platform fee for the dashboard chart.
+ *
+ * Two queries rather than one join: the order count comes from `orders`, while
+ * the fee lives per line on `order_items`, and an order with three items would
+ * otherwise be counted three times.
+ *
+ * Months with no activity are returned as zeros rather than omitted — a gap in
+ * the series would let the chart draw a straight line across a dead month and
+ * imply trade that never happened.
+ */
+export async function getMonthlyPerformance(months = 6) {
+  const since = new Date()
+  since.setMonth(since.getMonth() - (months - 1))
+  since.setDate(1)
+  since.setHours(0, 0, 0, 0)
+
+  const [ordersResult, itemsResult] = await Promise.all([
+    supabase.from('orders').select('created_at').gte('created_at', since.toISOString()),
+    supabase
+      .from('order_items')
+      .select('created_at, platform_fee')
+      .gte('created_at', since.toISOString()),
+  ])
+
+  if (ordersResult.error) console.error('Monthly orders failed:', ordersResult.error.message)
+  if (itemsResult.error) console.error('Monthly fees failed:', itemsResult.error.message)
+
+  const buckets = new Map()
+  for (let i = 0; i < months; i++) {
+    const d = new Date(since)
+    d.setMonth(since.getMonth() + i)
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    buckets.set(key, {
+      key,
+      label: d.toLocaleDateString('en-GB', { month: 'short' }),
+      orders: 0,
+      profit: 0,
+    })
+  }
+
+  const keyOf = (iso) => {
+    const d = new Date(iso)
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+  }
+
+  for (const row of ordersResult.data ?? []) {
+    const bucket = buckets.get(keyOf(row.created_at))
+    if (bucket) bucket.orders += 1
+  }
+
+  for (const row of itemsResult.data ?? []) {
+    const bucket = buckets.get(keyOf(row.created_at))
+    if (bucket) bucket.profit += Number(row.platform_fee) || 0
+  }
+
+  return [...buckets.values()]
+}

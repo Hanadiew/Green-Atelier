@@ -1,6 +1,6 @@
 <template>
   <section ref="root" :class="{ 'is-visible': visible }"
-    class="py-20 sm:py-28" style="background-color: #1B3A2D;">
+    class="py-20 sm:py-28 surface-brand">
     <div class="page-container">
 
       <div class="max-w-xl mb-14">

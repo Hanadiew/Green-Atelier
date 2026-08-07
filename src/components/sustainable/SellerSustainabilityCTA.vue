@@ -40,8 +40,7 @@
              link's own hover:opacity-90 and kill the hover fade. -->
         <div class="reveal" style="--reveal-delay: 300ms;">
           <RouterLink to="/sell"
-            class="inline-flex items-center gap-2 px-8 py-3 text-sm text-white rounded-md transition hover:opacity-90"
-            style="background-color: #1B3A2D;">
+            class="inline-flex items-center gap-2 px-8 py-3 text-sm  rounded-md transition btn-solid">
             Sell Your Item
             <svg xmlns="http://www.w3.org/2000/svg"
               class="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1"

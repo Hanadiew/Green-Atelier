@@ -2,18 +2,10 @@
   <section ref="root" :class="{ 'is-visible': visible }"
     class="relative w-full flex items-center overflow-hidden" style="height: 100vh; background-color: #1B3A2D;">
 
-    <!-- Parallax layer, and the only thing that moves — the copy stays put.
-         scale(1.2) leaves 10% of the height hidden above and below, and the
-         offset is capped at 8% of the viewport (useParallax caps its input at one
-         screen), so the translate can never run past that slack and expose the
-         background behind the image. -->
-    <img src="../../assets/collection/collection1.jpg" alt=""
-      class="absolute inset-0 w-full h-full object-cover"
-      style="transform-origin: center; will-change: transform;"
-      :style="{ transform: `translate3d(0, ${parallax}px, 0) scale(1.2)` }" />
-
-    <div class="absolute inset-0"
-      style="background: linear-gradient(to right, rgba(27,58,45,0.92) 0%, rgba(27,58,45,0.75) 45%, rgba(27,58,45,0.35) 100%);"></div>
+    <!-- No photograph. Every other hero on the site is a plain deep-green field
+         carrying an oversized faded word — see About — and the image here also
+         left the right-hand half pale, which is what made the navbar links
+         unreadable across it. -->
 
     <!-- Oversized wordmark, matching the About hero's treatment. -->
     <p class="absolute bottom-0 left-0 right-0 text-center font-light text-white select-none pointer-events-none"
@@ -22,7 +14,7 @@
     </p>
 
     <div class="relative z-10 w-full page-container">
-      <div class="max-w-xl">
+      <div class="max-w-2xl mx-auto text-center">
         <p class="reveal text-xs tracking-widest uppercase mb-6" style="color: #C9A96E;">
           Sustainability at Green Atelier
         </p>
@@ -32,13 +24,13 @@
           Give Fashion a<br />Second Life
         </h1>
 
-        <p class="reveal text-sm text-gray-300 leading-relaxed mb-10 max-w-md"
+        <p class="reveal text-sm text-gray-300 leading-relaxed mb-10 max-w-md mx-auto"
           style="--reveal-delay: 260ms;">
           Discover a more conscious way to experience luxury. Buy and resell pre-loved
           pieces, extend their life, and keep fashion in circulation.
         </p>
 
-        <div class="reveal flex flex-wrap items-center gap-4" style="--reveal-delay: 400ms;">
+        <div class="reveal flex flex-wrap items-center justify-center gap-4" style="--reveal-delay: 400ms;">
           <RouterLink to="/shop"
             class="px-8 py-3 text-sm text-white rounded-md transition hover:opacity-90"
             style="background-color: #C9A96E;">
@@ -67,11 +59,10 @@
 </template>
 
 <script setup>
-import { useParallax, useReveal } from '../../lib/motion.js'
+import { useReveal } from '../../lib/motion.js'
 import { scrollToElement } from '../../lib/smoothScroll.js'
 
 const { root, visible } = useReveal({ threshold: 0 })
-const parallax = useParallax(0.08)
 
 // Through Lenis rather than scrollIntoView: a native smooth scroll would run
 // against Lenis' own animation and stutter.

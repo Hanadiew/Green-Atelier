@@ -102,8 +102,7 @@
               </div>
               <div class="flex gap-3">
                 <button @click="savePersonal" :disabled="saving"
-                  class="px-6 py-2 text-xs text-white rounded-md disabled:opacity-60"
-                  style="background-color: #1B3A2D;">
+                  class="px-6 py-2 text-xs  rounded-md disabled:opacity-60 btn-solid">
                   {{ saving ? 'Saving…' : 'Save' }}
                 </button>
                 <button @click="cancelPersonal" class="px-6 py-2 text-xs text-gray-500 hover:text-gray-700 transition">
@@ -151,8 +150,7 @@
               </div>
               <div class="flex gap-3">
                 <button @click="saveAccount" :disabled="saving"
-                  class="px-6 py-2 text-xs text-white rounded-md disabled:opacity-60"
-                  style="background-color: #1B3A2D;">
+                  class="px-6 py-2 text-xs  rounded-md disabled:opacity-60 btn-solid">
                   {{ saving ? 'Saving…' : 'Save' }}
                 </button>
                 <button @click="cancelAccount" class="px-6 py-2 text-xs text-gray-500 hover:text-gray-700 transition">
@@ -253,8 +251,7 @@
             <p class="text-xs text-gray-400 mb-1">No bank account has been configured.</p>
             <p class="text-xs text-gray-300 mb-4">Add a bank account to receive earnings from your sales.</p>
             <button @click="openAddPayout"
-              class="px-5 py-2 text-xs text-white rounded-md"
-              style="background-color: #1B3A2D;">
+              class="px-5 py-2 text-xs  rounded-md btn-solid">
               Add Bank Account
             </button>
           </div>
@@ -281,8 +278,7 @@
             </div>
             <div class="flex gap-3 pt-1">
               <button @click="savePayout" :disabled="saving"
-                class="px-6 py-2 text-xs text-white rounded-md disabled:opacity-60"
-                style="background-color: #1B3A2D;">
+                class="px-6 py-2 text-xs  rounded-md disabled:opacity-60 btn-solid">
                 {{ saving ? 'Saving…' : 'Save' }}
               </button>
               <button @click="cancelPayout" class="px-6 py-2 text-xs text-gray-500 hover:text-gray-700 transition">
