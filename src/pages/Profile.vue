@@ -13,8 +13,8 @@
         <div>
           <p class="text-sm font-medium text-gray-800 mb-0.5">Listing submitted for review</p>
           <p class="text-xs text-gray-500">
-            Our authentication team will check it over. It appears in the shop once approved —
-            until then you will find it below marked "In review".
+            Our team will check it over. Once approved it appears in the shop. Until then
+            you will find it below, marked "In review".
           </p>
         </div>
       </div>
@@ -198,7 +198,7 @@
         :to="`/product/${item.id}`" @click.stop
         class="absolute bottom-2 left-2 flex items-center gap-1.5 px-2 py-1 rounded-full shadow-sm transition hover:opacity-90"
         style="background-color: #C9A96E;"
-        :title="`${pendingOffersFor(item.id)} offer${pendingOffersFor(item.id) > 1 ? 's' : ''} — tap to review`">
+        :title="`${pendingOffersFor(item.id)} offer${pendingOffersFor(item.id) > 1 ? 's' : ''}, tap to review`">
         <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
         <span class="text-white" style="font-size: 11.5px;">
           {{ pendingOffersFor(item.id) }} offer{{ pendingOffersFor(item.id) > 1 ? 's' : '' }}

@@ -30,7 +30,7 @@
             <p class="font-medium text-gray-900">{{ order.orderNumber }}</p>
           </td>
           <td>
-            <p class="text-sm text-gray-900">{{ order.buyer.fullName || '—' }}</p>
+            <p class="text-sm text-gray-900">{{ order.buyer.fullName || '-' }}</p>
             <p class="text-sm text-gray-500">@{{ order.buyer.username }}</p>
           </td>
           <td>

@@ -2,7 +2,7 @@
 // stays about data access.
 
 export function formatDate(value) {
-  if (!value) return '—'
+  if (!value) return '-'
   return new Date(value).toLocaleDateString('en-GB', {
     day: 'numeric',
     month: 'short',
@@ -11,7 +11,7 @@ export function formatDate(value) {
 }
 
 export function formatDateTime(value) {
-  if (!value) return '—'
+  if (!value) return '-'
   return new Date(value).toLocaleString('en-GB', {
     day: 'numeric',
     month: 'short',
@@ -27,7 +27,7 @@ export function formatMoney(value) {
 
 /** 'pending_review' -> 'Pending Review' */
 export function titleCase(value) {
-  if (!value) return '—'
+  if (!value) return '-'
   return String(value)
     .split('_')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))

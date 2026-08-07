@@ -47,7 +47,7 @@
         </button>
 
         <h2 class="text-xl font-bold text-gray-900 mb-6">
-          One last step—<span style="color: #C9A96E;">create your password</span>
+          One last step: <span style="color: #C9A96E;">create your password</span>
         </h2>
 
         <!-- Password -->

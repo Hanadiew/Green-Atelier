@@ -251,7 +251,7 @@
                 <!-- Stripe's test card numbers are fixed on their side and cannot be
                      customised, so the next best thing is making this one copyable. -->
                 <p class="mt-1.5 text-gray-400">
-                  Test mode — pay with
+                  Test mode. Pay with
                   <button @click="copyTestCard"
                     class="font-mono px-1.5 py-0.5 rounded border transition hover:bg-white"
                     style="border-color: #e5e7eb;"
@@ -309,9 +309,7 @@
             <div class="flex gap-2">
               <input v-model="promoCode" type="text" placeholder="Enter promo code"
                 class="flex-1 border border-gray-200 rounded-md px-3 py-2 text-xs outline-none bg-white placeholder-gray-300" />
-              <button @click="applyPromo"
-                class="px-3 py-2 text-xs text-white rounded-md"
-                style="background-color: #C9A96E;">
+              <button @click="applyPromo" class="px-3 py-2 text-xs rounded-md btn-gold">
                 Apply
               </button>
             </div>
@@ -477,7 +475,7 @@ const autoApplyBestPromo = async () => {
     promoCode.value = best.code
     promoValid.value = true
     discount.value = best.discount
-    promoMsg.value = `${best.code} applied — you save RM ${best.discount.toLocaleString()}.`
+    promoMsg.value = `${best.code} applied. You save RM ${best.discount.toLocaleString()}.`
     autoApplied.value = true
   } catch (error) {
     // No discount is a worse outcome than a crash here, but not much worse.

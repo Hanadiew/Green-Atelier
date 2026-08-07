@@ -3,23 +3,23 @@
     class="py-20 sm:py-28" style="background-color: #F7F5F0;">
     <div class="page-container">
 
-      <div class="max-w-xl mb-14">
-        <p class="reveal text-xs tracking-widest uppercase mb-4" style="color: #C9A96E;">How Green Atelier Contributes</p>
-        <h2 class="reveal text-3xl sm:text-4xl font-light text-gray-800 leading-snug"
-          style="font-family: 'Georgia', serif; --reveal-delay: 100ms;">
-          A More Circular Way to Experience Luxury
-        </h2>
-      </div>
+      <!-- Heading holds the left column and the accordion the right, so the two
+           read as one statement rather than a title stacked above a list. -->
+      <div class="grid gap-10 lg:grid-cols-2 lg:gap-16 lg:items-start">
 
-      <div class="grid gap-10 lg:grid-cols-2 lg:items-start">
+        <div class="max-w-xl">
+          <p class="reveal text-xs tracking-widest uppercase mb-4" style="color: #C9A96E;">How Green Atelier Contributes</p>
+          <h2 class="reveal text-3xl sm:text-4xl font-light text-gray-800 leading-snug"
+            style="font-family: 'Georgia', serif; --reveal-delay: 100ms;">
+            A More Circular Way to Experience Luxury
+          </h2>
+        </div>
 
-        <!-- Accordion. It is the primary control on every width: on mobile it is
-             all there is, and on desktop it also drives the image beside it. -->
         <div class="reveal divide-y divide-gray-200 border-t border-gray-200" style="--reveal-delay: 200ms;">
           <div v-for="(item, i) in practices" :key="item.title">
             <button type="button"
               class="w-full text-left py-5 flex items-start gap-5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A96E] rounded"
-              :aria-expanded="active === i" @click="select(i)" @mouseenter="preview(i)">
+              :aria-expanded="active === i" @click="active = i">
 
               <span class="text-xs tabular-nums mt-1 transition-all duration-300"
                 :class="active === i ? 'font-semibold' : 'text-gray-300 group-hover:text-gray-400'"
@@ -52,23 +52,6 @@
           </div>
         </div>
 
-        <!-- Companion visual. Decorative — the accordion already carries the
-             meaning — so it is hidden from assistive tech and from small screens
-             rather than being stacked as a second thing to scroll past. -->
-        <div class="reveal hidden lg:block relative rounded-2xl overflow-hidden"
-          style="--reveal-delay: 320ms; height: 26rem;" aria-hidden="true">
-          <img v-for="(item, i) in practices" :key="item.image" :src="item.image" alt=""
-            loading="lazy"
-            class="absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-out"
-            :class="active === i ? 'opacity-100 scale-100' : 'opacity-0 scale-105'" />
-          <div class="absolute inset-0"
-            style="background: linear-gradient(to top, rgba(27,58,45,0.55), rgba(27,58,45,0));"></div>
-          <p class="absolute bottom-6 left-7 right-7 text-sm text-white leading-snug"
-            style="font-family: 'Georgia', serif;">
-            {{ practices[active].caption }}
-          </p>
-        </div>
-
       </div>
     </div>
   </section>
@@ -76,51 +59,30 @@
 
 <script setup>
 import { ref } from 'vue'
-import collection1 from '../../assets/collection/collection1.jpg'
-import collection2 from '../../assets/collection/collection2.jpeg'
-import collection3 from '../../assets/collection/collection3.jpg'
-import collection4 from '../../assets/collection/collection4.jpeg'
 import { useReveal } from '../../lib/motion.js'
 
 const { root, visible } = useReveal()
 
+// One panel is always open — collapsing to nothing would leave the section
+// reading as a bare list of headings.
 const active = ref(0)
 
 const practices = [
   {
     title: 'Resell, Don’t Discard',
     detail: 'Give unwanted luxury pieces another opportunity to be worn instead of letting them sit unused or be thrown away.',
-    caption: 'A piece you have stopped wearing is someone else’s find.',
-    image: collection4,
   },
   {
     title: 'Choose Pre-Loved',
     detail: 'Discover existing luxury pieces and take part in a more circular fashion model, where demand is met by what already exists.',
-    caption: 'Everything here has already been made.',
-    image: collection2,
   },
   {
     title: 'Extend Product Lifecycles',
-    detail: 'Keep quality fashion circulating between owners for longer — the whole point of buying well in the first place.',
-    caption: 'Well made once, worn for years.',
-    image: collection3,
+    detail: 'Keep quality fashion moving between owners for longer. That is the point of buying well in the first place.',
   },
   {
     title: 'Shop More Mindfully',
     detail: 'Buy the piece you will keep reaching for rather than the one that is merely new, and reduce unnecessary overconsumption.',
-    caption: 'Fewer, better, longer.',
-    image: collection1,
   },
 ]
-
-const select = (i) => {
-  // Collapsing to nothing would leave the companion image showing a panel that
-  // is no longer open, so one is always selected.
-  active.value = i
-}
-
-// Hover is a shortcut on pointer devices, never the only way in.
-const preview = (i) => {
-  if (window.matchMedia('(min-width: 1024px)').matches) active.value = i
-}
 </script>

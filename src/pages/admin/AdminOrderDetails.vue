@@ -44,7 +44,7 @@
               <img :src="item.image" :alt="item.title" class="w-12 h-12 rounded object-cover" />
               <div class="flex-1 min-w-0">
                 <p class="font-medium text-gray-900 truncate">{{ item.title }}</p>
-                <p class="text-sm text-gray-500">{{ item.brand || '—' }}</p>
+                <p class="text-sm text-gray-500">{{ item.brand || '-' }}</p>
               </div>
               <div class="text-right">
                 <p class="font-semibold text-gray-900">{{ formatMoney(item.pricePaid) }}</p>
@@ -65,7 +65,7 @@
       <div class="space-y-4">
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <h3 class="font-bold text-gray-900 mb-4">Buyer</h3>
-          <p class="font-semibold text-gray-900">{{ order.buyer.fullName || '—' }}</p>
+          <p class="font-semibold text-gray-900">{{ order.buyer.fullName || '-' }}</p>
           <p class="text-sm text-gray-500">@{{ order.buyer.username }}</p>
           <router-link
             :to="`/admin/users/${order.buyer.id}`"
@@ -120,7 +120,7 @@
             </button>
           </div>
           <p v-else class="text-gray-600 text-sm">
-            This order is {{ titleCase(order.status).toLowerCase() }} — no further changes.
+            This order is {{ titleCase(order.status).toLowerCase() }}, so no further changes are possible.
           </p>
         </div>
       </div>

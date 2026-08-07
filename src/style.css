@@ -403,20 +403,71 @@ html.preloader-open body {
 }
 
 /* --- Branded buttons ---------------------------------------------------------
-   The two button shapes the storefront actually uses. Both were written as an
-   inline background plus `hover:opacity-90`, which fades a button rather than
-   changing it — and because an inline style outranks every class, a
-   `hover:bg-*` utility could never have worked on them.
+   One hover for every button on the storefront: a circle of the opposite brand
+   colour grows from the point where the pointer crossed the edge until it has
+   filled the button, and retracts toward wherever the pointer leaves. The
+   pairing is unchanged — deep green and gold swapping places — what changed is
+   that the colour arrives from somewhere instead of the whole button fading.
 
-   As classes, the hover is a genuine colour change: solid goes darker, outline
-   fills in. */
+   The circle is a ::before at `z-index: -1` under `isolation: isolate`, which
+   puts it above the button's own fill but below its label. That ordering is the
+   reason for the negative index rather than a positive one: inline content
+   paints after negative-index children, so the label stays legible without
+   being wrapped in an element of its own — and almost every one of these
+   buttons is a bare text node inside a <button> or <RouterLink>.
+
+   --origin-x / --origin-y are written by lib/originButton.js on pointer enter
+   and leave. Nothing here depends on that script: with no pointer — keyboard
+   focus, a touch tap, the moment before the module loads — the fallback centres
+   the circle and the hover still reads as intended.
+
+   --origin-size is the diameter as a share of the button's width. It has to
+   clear the diagonal from the far corner, which 300% does for anything up to
+   about square; a button taller than it is wide should raise it. */
+:is(.btn-solid, .btn-gold, .btn-outline-gold, .btn-outline-green, .btn-outline-light) {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  transition: color 0.35s ease, border-color 0.35s ease;
+}
+
+:is(.btn-solid, .btn-gold, .btn-outline-gold, .btn-outline-green, .btn-outline-light)::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  left: var(--origin-x, 50%);
+  top: var(--origin-y, 50%);
+  width: var(--origin-size, 300%);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  /* Slow to leave the origin, then settling rather than stopping — the shape of
+     the spring the Framer original animates the scale with. */
+  transition: transform 0.55s cubic-bezier(0.45, 0, 0.15, 1);
+  pointer-events: none;
+}
+
+:is(.btn-solid, .btn-gold, .btn-outline-gold, .btn-outline-green, .btn-outline-light):not(:disabled):hover::before,
+:is(.btn-solid, .btn-gold, .btn-outline-gold, .btn-outline-green, .btn-outline-light):not(:disabled):focus-visible::before {
+  transform: translate(-50%, -50%) scale(1);
+}
+
 .btn-solid {
   background-color: #1B3A2D;
   color: #fff;
 }
 
-.btn-solid:not(:disabled):hover {
-  background-color: #142C22;
+.btn-solid::before {
+  background-color: #C9A96E;
+}
+
+.btn-gold {
+  background-color: #C9A96E;
+  color: #fff;
+}
+
+.btn-gold::before {
+  background-color: #1B3A2D;
 }
 
 .btn-outline-gold {
@@ -425,18 +476,91 @@ html.preloader-open body {
   background-color: transparent;
 }
 
-.btn-outline-gold:not(:disabled):hover {
+.btn-outline-gold::before {
   background-color: #C9A96E;
+}
+
+.btn-outline-gold:not(:disabled):hover,
+.btn-outline-gold:not(:disabled):focus-visible {
   color: #fff;
 }
 
-.btn-gold {
-  background-color: #C9A96E;
+/* The secondary of the pair — sits beside a .btn-solid and fills to match it. */
+.btn-outline-green {
+  border: 1px solid #1B3A2D;
+  color: #1B3A2D;
+  background-color: transparent;
+}
+
+.btn-outline-green::before {
+  background-color: #1B3A2D;
+}
+
+.btn-outline-green:not(:disabled):hover,
+.btn-outline-green:not(:disabled):focus-visible {
   color: #fff;
 }
 
-.btn-gold:not(:disabled):hover {
-  background-color: #B08F51;
+/* For buttons sitting on a photograph, where the only readable resting state is
+   white on the image itself. It fills gold rather than green: green over a dark
+   overlay would barely register as a change. */
+.btn-outline-light {
+  border: 1px solid #fff;
+  color: #fff;
+  background-color: transparent;
+}
+
+.btn-outline-light::before {
+  background-color: #C9A96E;
+}
+
+.btn-outline-light:not(:disabled):hover,
+.btn-outline-light:not(:disabled):focus-visible {
+  border-color: #C9A96E;
+}
+
+/* Reduced motion keeps the colour change — that is the affordance — and drops
+   only the travel. */
+@media (prefers-reduced-motion: reduce) {
+  :is(.btn-solid, .btn-gold, .btn-outline-gold, .btn-outline-green, .btn-outline-light)::before {
+    transition: none;
+  }
+}
+
+/* --- Editorial display type --------------------------------------------------
+   The headline treatment used on the About page: a serif set large with tight
+   negative tracking, split over two lines where the second is lighter and
+   dimmed. The pair reads as one sentence with a stress on the first half, which
+   is what stops a two-line heading from sitting there as two equal statements.
+
+   Tracking has to go negative as the size goes up: Georgia's default spacing is
+   built for body copy and looks loose at 48px and above. */
+.display {
+  font-family: 'Georgia', serif;
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+/* The second line. Lighter and dropped in contrast rather than a different
+   colour, so it works on the cream page and the green panel alike. */
+.display-soft {
+  font-weight: 300;
+  opacity: 0.45;
+}
+
+.on-dark .display-soft {
+  opacity: 0.5;
+}
+
+/* Section label. A small serif line rather than the gold letterspaced caps used
+   elsewhere: at this size the caps read as a system label, and these sections
+   are prose. */
+.eyebrow {
+  font-family: 'Georgia', serif;
+  font-weight: 300;
+  font-size: 1rem;
+  color: #C9A96E;
 }
 
 /* The same brand fill as .btn-solid, for panels and sections. Separate class on

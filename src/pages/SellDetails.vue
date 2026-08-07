@@ -171,8 +171,8 @@
           <!-- Carries the guidance the three labelled slots used to give, now that
                the photo grid below is the only listing of uploads. -->
           <p class="text-xs text-gray-400 -mt-3">
-            The first three are used for authenticity checks — front, back, then the
-            interior or brand label. Add any flaws too.
+            The first three are used for checks: front, back, then the interior or brand
+            label. Photograph any flaws too.
           </p>
 
           <!-- Drag & drop zone. `dragging` is driven by dragenter/dragleave
@@ -201,8 +201,7 @@
               <!-- The zone was clickable but said so nowhere; on a phone there is
                    nothing to drag and the whole step looked like a dead end. -->
               <button type="button" @click.stop="triggerMediaUpload"
-                class="inline-flex items-center gap-2 px-4 py-2 text-xs tracking-widest uppercase rounded-lg border transition hover:bg-[#1B3A2D] hover:text-white hover:border-[#1B3A2D]"
-                style="border-color: #1B3A2D; color: #1B3A2D;">
+                class="inline-flex items-center gap-2 px-4 py-2 text-xs tracking-widest uppercase rounded-lg btn-outline-green">
                 <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 16V4m0 0L8 8m4-4l4 4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
                 </svg>
@@ -558,8 +557,7 @@
 
       <button
         @click="serviceFeeModal = false"
-        class="w-full py-3 text-sm text-white rounded-md transition hover:opacity-90"
-        style="background-color: #1a1a2e;">
+        class="w-full py-3 text-sm rounded-md btn-solid">
         Got it
       </button>
 
@@ -584,8 +582,7 @@
             class="text-sm text-gray-400 hover:text-gray-600 transition disabled:opacity-50">Reset</button>
           <button @click="handleContinue"
             :disabled="submitting"
-            class="px-8 py-2.5 text-sm text-white rounded-md transition hover:opacity-90 disabled:opacity-60"
-            style="background-color: #7A9E8E;">
+            class="px-8 py-2.5 text-sm rounded-md disabled:opacity-60 btn-solid">
             {{ submitting
             ? (isEditMode ? 'Saving…' : 'Submitting…')
             : isEditMode ? 'Save Changes' : currentStep === steps.length - 1 ? 'Submit Listing' : 'Continue' }}

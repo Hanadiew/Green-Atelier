@@ -74,7 +74,7 @@
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <h3 class="font-bold text-gray-900 mb-2">OCR text</h3>
           <p class="text-xs text-gray-500 mb-3">
-            Private — receipts can carry the original price and the buyer's name.
+            Private. Receipts can carry the original price and the buyer's name.
           </p>
           <pre
             v-if="assessment.verification.ocrText"

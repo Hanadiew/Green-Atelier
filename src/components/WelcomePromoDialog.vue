@@ -26,7 +26,7 @@
           {{ copied ? 'Copied ✓' : promo.code }}
         </button>
         <p class="text-xs text-gray-400 mb-6">
-          Nothing to remember — we apply it at checkout once your bag qualifies.
+          Nothing to remember. We apply it at checkout once your bag qualifies.
         </p>
 
         <RouterLink to="/shop" @click="dismiss"

@@ -126,7 +126,7 @@ async function submit() {
       description: description.value.trim() || null,
     })
     close()
-    showToast('Report sent. Thank you — our team will take a look.')
+    showToast('Report sent. Our team will take a look.')
   } catch (err) {
     error.value = err.message
   } finally {

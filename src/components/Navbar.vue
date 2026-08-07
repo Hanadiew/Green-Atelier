@@ -54,7 +54,7 @@
           @click="showShop = !showShop"
           :aria-expanded="showShop"
           aria-haspopup="true"
-          class="text-sm" :class="linkClass"
+          class="text-sm" :class="navLinkClass('/shop')"
         >
           Shop
         </button>
@@ -88,8 +88,10 @@
           </ul>
         </div>
       </div>
-      <RouterLink to="/sell" class="text-sm" :class="linkClass">Sell</RouterLink>
-      <RouterLink to="/sustainable" class="text-sm" :class="linkClass">Sustainable</RouterLink>
+      <RouterLink to="/sell" class="text-sm" :class="navLinkClass('/sell')"
+        :aria-current="isOn('/sell') ? 'page' : undefined">Sell</RouterLink>
+      <RouterLink to="/sustainable" class="text-sm" :class="navLinkClass('/sustainable')"
+        :aria-current="isOn('/sustainable') ? 'page' : undefined">Sustainable</RouterLink>
     </div>
 
     <!-- Center: Logo. Tighter letter-spacing on a phone, where 0.2em on twelve
@@ -274,19 +276,22 @@
            target a thumb needs; the old py-2.5 on text-sm came to 34px and the
            three primary links ran together as one block of text. -->
       <nav class="divide-y divide-gray-100">
-        <RouterLink to="/shop" class="flex items-center justify-between py-3.5 text-[15px] text-gray-900">
+        <RouterLink to="/shop" class="flex items-center justify-between py-3.5 text-[15px] text-gray-900"
+          :class="{ 'nav-current-row': isOn('/shop') }" :aria-current="isOn('/shop') ? 'page' : undefined">
           Shop All
           <svg class="h-4 w-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
           </svg>
         </RouterLink>
-        <RouterLink to="/sell" class="flex items-center justify-between py-3.5 text-[15px] text-gray-900">
+        <RouterLink to="/sell" class="flex items-center justify-between py-3.5 text-[15px] text-gray-900"
+          :class="{ 'nav-current-row': isOn('/sell') }" :aria-current="isOn('/sell') ? 'page' : undefined">
           Sell
           <svg class="h-4 w-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
           </svg>
         </RouterLink>
-        <RouterLink to="/sustainable" class="flex items-center justify-between py-3.5 text-[15px] text-gray-900">
+        <RouterLink to="/sustainable" class="flex items-center justify-between py-3.5 text-[15px] text-gray-900"
+          :class="{ 'nav-current-row': isOn('/sustainable') }" :aria-current="isOn('/sustainable') ? 'page' : undefined">
           Sustainable
           <svg class="h-4 w-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
@@ -349,6 +354,18 @@ const inverted = computed(() => props.dark && !surfaced.value)
 const linkClass = computed(() =>
   inverted.value ? 'text-white/85 hover:text-white' : 'text-gray-700 hover:text-black',
 )
+
+// Where you are. The bar looked the same on every page, and with three of the
+// storefront's pages opening on the same deep-green field there was nothing at
+// the top of the screen to tell them apart.
+const isOn = (path) => route.path === path || route.path.startsWith(`${path}/`)
+
+// Full opacity plus the gold rule, rather than the muted resting colour — the
+// mark has to survive both the inverted bar and the white one.
+const navLinkClass = (path) => {
+  if (!isOn(path)) return linkClass.value
+  return inverted.value ? 'text-white nav-current' : 'text-gray-900 nav-current'
+}
 const iconClass = computed(() =>
   inverted.value ? 'text-white/85 hover:text-white' : 'text-gray-600 hover:text-black',
 )
@@ -431,5 +448,32 @@ onUnmounted(() => {
   .logo-mark {
     letter-spacing: 0.2em;
   }
+}
+
+/* You-are-here. A gold rule under the current link, drawn outside the text box
+   so it cannot change the bar's height or nudge the links either side of it.
+   Colour alone would not carry it — the resting and active links are both
+   white on an inverted bar. */
+.nav-current {
+  position: relative;
+}
+
+.nav-current::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.5rem;
+  height: 1.5px;
+  border-radius: 1px;
+  background-color: #C9A96E;
+}
+
+/* The same mark in the mobile sheet, where the rows are full width and an
+   underline spanning to the chevron would read as a divider. */
+.nav-current-row {
+  border-left: 2px solid #C9A96E;
+  margin-left: -0.75rem;
+  padding-left: 0.625rem;
 }
 </style>

@@ -70,8 +70,7 @@
         <div class="flex justify-center mt-6">
           <button
             @click="handleContinue"
-            class="px-10 py-2.5 text-sm text-white rounded-md transition hover:opacity-90"
-            style="background-color: #7A9E8E;">
+            class="px-10 py-2.5 text-sm rounded-md btn-solid">
             Continue
           </button>
         </div>
@@ -211,9 +210,9 @@
             Sign up to list your item
           </h3>
           <p class="text-xs text-gray-400 leading-relaxed mb-7">
-            Listings are tied to a seller account so buyers know who they are dealing
-            with — and so your sales and payouts reach you. We have kept your answers;
-            you will pick up right where you left off.
+            Listings are tied to a seller account so buyers know who they are dealing with,
+            and so your sales and payouts reach you. Your answers are saved, so you will
+            pick up where you left off.
           </p>
 
           <RouterLink :to="{ path: '/signup', query: { redirect: intendedPath } }"

@@ -89,7 +89,7 @@ const cards = [
     summary:
       'Synthetic textiles can shed microfibres during washing, which are difficult to filter out again.',
     detail:
-      'Washing less often and more gently reduces shedding — the same habits that keep a luxury piece looking good enough to resell later.',
+      'Washing less often and more gently reduces shedding. The same habits keep a piece good enough to resell later.',
   },
 ]
 

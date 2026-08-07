@@ -123,7 +123,7 @@
                   ></div>
                   <span class="text-sm font-medium">{{ listing.trustcheck.score }}/100</span>
                 </div>
-                <p v-else class="text-sm text-gray-500">—</p>
+                <p v-else class="text-sm text-gray-500">-</p>
               </td>
               <td>
                 <AdminBadge

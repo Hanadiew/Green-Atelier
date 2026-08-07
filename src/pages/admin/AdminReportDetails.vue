@@ -75,8 +75,8 @@
       <div class="space-y-4">
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <h3 class="font-bold text-gray-900 mb-3">Reporter</h3>
-          <p class="font-semibold text-gray-900">{{ report.reporter?.fullName || '—' }}</p>
-          <p class="text-sm text-gray-500">@{{ report.reporter?.username ?? '—' }}</p>
+          <p class="font-semibold text-gray-900">{{ report.reporter?.fullName || '-' }}</p>
+          <p class="text-sm text-gray-500">@{{ report.reporter?.username ?? '-' }}</p>
         </div>
 
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-4">
@@ -147,7 +147,7 @@
               <textarea
                 v-model="form.adminNotes"
                 rows="5"
-                placeholder="What action was taken and why — the reporter will see this."
+                placeholder="What action was taken and why. The reporter will see this."
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
               ></textarea>
             </div>

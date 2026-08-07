@@ -12,20 +12,40 @@
         GREEN ATELIER
       </p>
 
-      <!-- Content -->
+      <!-- Content. Centred and symmetric, against the Sustainable hero's
+           left-aligned block: both open on the same deep-green field, and the
+           layout is what tells them apart from across the room. The name of the
+           page is stated outright above the headline for everyone else. -->
       <div class="text-center page-container relative z-10">
-        <p class="text-xs tracking-widest uppercase mb-6" style="color: #C9A96E;">Est. 2024 · Kuala Lumpur, Malaysia</p>
-        <h1 class="text-5xl font-light text-white mb-6 leading-tight" style="font-family: 'Georgia', serif;">
-          Luxury Reimagined.<br />Planet Respected.
+
+        <div class="flex items-center justify-center gap-3 mb-6">
+          <span class="h-px w-8 bg-[#C9A96E]/50" aria-hidden="true"></span>
+          <p class="text-xs uppercase" style="color: #C9A96E; letter-spacing: 0.3em;">About Us</p>
+          <span class="h-px w-8 bg-[#C9A96E]/50" aria-hidden="true"></span>
+        </div>
+
+        <h1 class="display on-dark text-4xl sm:text-5xl lg:text-6xl text-white mb-6">
+          Luxury Reimagined.<br /><span class="display-soft">Planet Respected.</span>
         </h1>
-        <p class="text-sm text-gray-300 max-w-lg mx-auto leading-relaxed mb-10">
-          Green Atelier is Malaysia's first authenticated pre-loved luxury fashion platform — where
-          timeless pieces find new homes and the earth breathes a little easier.
+
+        <p class="text-sm text-gray-300 max-w-lg mx-auto leading-relaxed mb-6">
+          A Malaysian marketplace for pre-loved luxury fashion, where every listing is
+          reviewed before it reaches the shop.
         </p>
+
+        <!-- Demoted from the eyebrow slot, which the page name now occupies. It
+             is a footnote about the company, not the first thing to read. -->
+        <!-- /60 rather than a fainter tint: below that it stops clearing 4.5:1
+             against the green, and it is still small uppercase text. -->
+        <p class="text-xs uppercase text-white/60 mb-12" style="letter-spacing: 0.2em;">
+          Est. 2024 · Kuala Lumpur, Malaysia
+        </p>
+
         <button @click="scrollTo('story')"
-          class="flex flex-col items-center gap-2 mx-auto text-gray-400 hover:text-white transition animate-bounce">
+          class="flex flex-col items-center gap-2 mx-auto text-gray-400 hover:text-white transition rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4"
+          style="outline-color: #C9A96E;">
           <span class="text-xs tracking-widest uppercase">Discover Our Story</span>
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 motion-safe:animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 9l-7 7-7-7"/>
           </svg>
         </button>
@@ -34,40 +54,55 @@
     </div>
 
     <!-- ===== OUR STORY ===== -->
-    <section id="story" class="page-container py-24">
-      <div class="max-w-5xl mx-auto flex items-center gap-20">
+    <!-- Two columns of equal weight, prose against a short list of what the
+         platform actually does, rather than prose against a stack of numbers.
+         The numbers now get a band of their own below, where they are read as a
+         set instead of as a sidebar. -->
+    <section id="story" class="page-container py-24 sm:py-32">
+      <div class="max-w-5xl mx-auto grid gap-12 lg:grid-cols-2 lg:gap-24 lg:items-start">
 
-        <div class="flex-1">
-          <p class="text-xs tracking-widest uppercase mb-4" style="color: #C9A96E;">Our Story</p>
-          <h2 class="text-3xl font-light text-gray-800 mb-6 leading-snug" style="font-family: 'Georgia', serif;">
-            Born from a love of fashion<br />and a responsibility to the earth
+        <div>
+          <p class="eyebrow mb-5">Our Story</p>
+          <h2 class="display text-3xl sm:text-4xl lg:text-5xl text-gray-900">
+            Born from a love of fashion<br /><span class="display-soft">and a duty to the earth</span>
           </h2>
-          <p class="text-sm text-gray-500 leading-relaxed mb-4">
-            Green Atelier began as a Final Year Project with a simple but powerful question — why
-            does luxury fashion have to cost the earth? Our founders, fashion enthusiasts and sustainability
-            advocates, saw an opportunity to bridge the gap between desire and responsibility.
-          </p>
-          <p class="text-sm text-gray-500 leading-relaxed mb-4">
-            What started as a university project has grown into a vision for a platform where every
-            transaction is a conscious choice. We believe that a Chanel bag, a Gucci blouse, or a
-            pair of Lacoste sneakers can outlive a single season — and that their second life is just
-            as meaningful as their first.
-          </p>
-          <p class="text-sm text-gray-500 leading-relaxed">
-            Today, Green Atelier connects verified sellers with discerning buyers across Malaysia,
-            championing a new kind of luxury — one that gives back to people and the planet.
-          </p>
         </div>
 
-        <!-- Stats column -->
-        <div class="w-full lg:w-[220px] lg:flex-shrink-0 space-y-6">
-          <div v-for="stat in stats" :key="stat.label"
-            class="rounded-2xl p-6 surface-brand">
-            <p class="text-3xl font-light mb-1" style="color: #C9A96E; font-family: 'Georgia', serif;">{{ stat.value }}</p>
-            <p class="text-xs text-gray-400 leading-relaxed">{{ stat.label }}</p>
-          </div>
+        <div>
+          <p class="text-sm text-gray-500 leading-relaxed mb-4">
+            Green Atelier began as a Final Year Project built around one question: why does
+            luxury fashion have to cost the earth?
+          </p>
+          <p class="text-sm text-gray-500 leading-relaxed mb-4">
+            A Chanel bag, a Gucci blouse or a pair of Lacoste sneakers can easily outlive one
+            season. The problem was never the clothes. It was that passing them on took more
+            effort than replacing them.
+          </p>
+          <p class="text-sm text-gray-500 leading-relaxed mb-8">
+            So we built the shortest route between an owner who is finished with a piece and
+            the next person who wants it: list, verify, sell, ship.
+          </p>
+
+          <ul class="space-y-3 border-t border-gray-100 pt-8">
+            <li v-for="point in storyPoints" :key="point" class="flex items-center gap-3 text-sm text-gray-500">
+              <svg class="h-4 w-4 flex-shrink-0" style="color: #C9A96E;" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 13l4 4L19 7" />
+              </svg>
+              {{ point }}
+            </li>
+          </ul>
         </div>
 
+      </div>
+
+      <!-- The numbers, as their own row. Serif and large, so they carry the
+           section rather than annotating it. -->
+      <div class="max-w-5xl mx-auto grid gap-10 sm:grid-cols-3 mt-20 pt-16 border-t border-gray-100">
+        <div v-for="stat in stats" :key="stat.label">
+          <p class="display text-4xl sm:text-5xl text-gray-900 mb-3">{{ stat.value }}</p>
+          <p class="text-sm text-gray-500 leading-relaxed">{{ stat.label }}</p>
+        </div>
       </div>
     </section>
 
@@ -75,81 +110,53 @@
     <!-- .page-container sets its own max-width, so the editorial measure has to
          be a child of it rather than a class alongside it — otherwise this band
          renders wider than the sections either side. -->
-    <section class="py-24 surface-brand">
-      <div class="page-container">
-      <div class="max-w-5xl mx-auto">
+    <!-- An inset panel rather than a full-bleed band. Held inside the page
+         gutter with a deep radius, the green reads as a placed object on the
+         cream page instead of a stripe across it, and the generous inner
+         padding is what keeps it from looking like a card. -->
+    <section class="page-container pb-24 sm:pb-32">
+      <div class="max-w-5xl mx-auto on-dark rounded-[2rem] surface-brand px-8 py-16 sm:px-16 sm:py-24">
 
-        <div class="text-center mb-16">
-          <p class="text-xs tracking-widest uppercase mb-4" style="color: #C9A96E;">Our Mission</p>
-          <h2 class="text-3xl font-light text-white leading-snug" style="font-family: 'Georgia', serif;">
-            Fashion that gives back to earth
+        <div class="max-w-xl mb-16">
+          <p class="eyebrow mb-5">Our Mission</p>
+          <h2 class="display text-3xl sm:text-4xl lg:text-5xl text-white">
+            Fashion that gives back<br /><span class="display-soft">more than it takes</span>
           </h2>
         </div>
 
-        <div class="grid gap-6 sm:grid-cols-3">
-          <div v-for="pillar in pillars" :key="pillar.title"
-            class="rounded-2xl p-8 transition hover:scale-105 duration-300"
-            style="background-color: #24503C;">
-            <div class="w-10 h-10 rounded-full flex items-center justify-center mb-5 surface-brand">
-              <span class="text-xl">{{ pillar.icon }}</span>
-            </div>
-            <h3 class="text-sm font-semibold text-white mb-3">{{ pillar.title }}</h3>
-            <p class="text-xs text-gray-400 leading-relaxed">{{ pillar.desc }}</p>
+        <div class="grid gap-x-12 gap-y-10 sm:grid-cols-3">
+          <div v-for="pillar in pillars" :key="pillar.title">
+            <h3 class="text-base text-white mb-3" style="font-family: 'Georgia', serif;">{{ pillar.title }}</h3>
+            <p class="text-sm text-white/50 leading-relaxed">{{ pillar.desc }}</p>
           </div>
         </div>
 
         <!-- Impact numbers -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mt-12 pt-12 border-t border-green-900">
-          <div v-for="impact in impacts" :key="impact.label" class="text-center">
-            <p class="text-3xl font-light mb-1" style="color: #C9A96E; font-family: 'Georgia', serif;">{{ impact.value }}</p>
-            <p class="text-xs text-gray-400">{{ impact.label }}</p>
+        <div class="grid gap-10 sm:grid-cols-3 mt-16 pt-16 border-t border-white/10">
+          <div v-for="impact in impacts" :key="impact.label">
+            <p class="display text-4xl sm:text-5xl mb-3" style="color: #C9A96E;">{{ impact.value }}</p>
+            <p class="text-sm text-white/50 leading-relaxed">{{ impact.label }}</p>
           </div>
         </div>
 
-      </div>
       </div>
     </section>
 
     <!-- ===== CIRCULAR FASHION EDUCATION ===== -->
-    <section class="page-container py-24">
+    <!-- The same interactive cycle used on the Sustainable page, so the two
+         tellings of the story stay in step. -->
+    <CircularFashion />
+
+    <section class="page-container pb-24">
       <div class="max-w-5xl mx-auto">
 
-        <div class="text-center mb-16">
-          <p class="text-xs tracking-widest uppercase mb-4" style="color: #C9A96E;">Circular Fashion</p>
-          <h2 class="text-3xl font-light text-gray-800 leading-snug" style="font-family: 'Georgia', serif;">
-            The cycle that changes everything
-          </h2>
-          <p class="text-sm text-gray-400 mt-4 max-w-md mx-auto leading-relaxed">
-            Circular fashion keeps garments in use for longer, reducing waste and the demand for new production.
-          </p>
-        </div>
-
-        <!-- Circular cycle diagram -->
-        <div class="flex items-center justify-center gap-0 mb-16">
-          <div v-for="(step, i) in circularSteps" :key="step.title" class="flex items-center">
-            <div class="flex flex-col items-center text-center" style="width: 140px;">
-              <div class="w-16 h-16 rounded-full flex items-center justify-center mb-4 transition hover:scale-110 duration-300"
-                :style="`background-color: ${step.color};`">
-                <span class="text-2xl">{{ step.icon }}</span>
-              </div>
-              <p class="text-xs font-semibold text-gray-800 mb-1">{{ step.title }}</p>
-              <p class="text-xs text-gray-400 leading-relaxed">{{ step.desc }}</p>
-            </div>
-            <!-- Arrow between steps -->
-            <div v-if="i < circularSteps.length - 1" class="flex-shrink-0 mx-2">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7"/>
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <!-- Did you know cards -->
-        <div class="grid gap-5 sm:grid-cols-3">
-          <div v-for="fact in facts" :key="fact.stat"
-            class="rounded-2xl p-6 border border-gray-100 hover:border-gray-200 hover:shadow-sm transition duration-300">
-            <p class="text-3xl font-light mb-3" style="color: #C9A96E; font-family: 'Georgia', serif;">{{ fact.stat }}</p>
-            <p class="text-xs text-gray-500 leading-relaxed">{{ fact.desc }}</p>
+        <!-- Did you know. Ruled columns rather than bordered cards: three boxed
+             panels this far down the page repeat the pattern above them and the
+             numbers stop registering. -->
+        <div class="grid gap-10 sm:grid-cols-3 sm:divide-x sm:divide-gray-100">
+          <div v-for="fact in facts" :key="fact.stat" class="sm:px-8 sm:first:pl-0 sm:last:pr-0">
+            <p class="display text-4xl sm:text-5xl mb-3" style="color: #C9A96E;">{{ fact.stat }}</p>
+            <p class="text-sm text-gray-500 leading-relaxed">{{ fact.desc }}</p>
           </div>
         </div>
 
@@ -162,26 +169,27 @@
     <section class="page-container mb-24">
       <div class="relative overflow-hidden rounded-3xl h-[300px] sm:h-[480px]">
 
-      <img src="../assets/hero.jpg" alt="Banner" class="w-full h-full object-cover object-top" />
+      <!-- A pile of knitwear, close in. Object-center rather than object-top:
+           the frame is all texture, so there is no subject a top crop would
+           protect. -->
+      <img src="../assets/cta-about.jpg" alt="" loading="lazy"
+        class="w-full h-full object-cover object-center" />
 
       <!-- Overlay -->
       <div class="absolute inset-0 flex flex-col items-center justify-center text-center"
-        style="background: linear-gradient(to bottom, rgba(27,58,45,0.3), rgba(27,58,45,0.8));">
-        <p class="text-xs tracking-widest uppercase mb-4" style="color: #C9A96E;">Shop Consciously</p>
-        <h2 class="text-4xl font-light text-white mb-4 leading-snug" style="font-family: 'Georgia', serif;">
-          Every piece has a story.<br />Be part of its next chapter.
+        style="background: linear-gradient(to bottom, rgba(27,58,45,0.6), rgba(27,58,45,0.9));">
+        <p class="eyebrow mb-5">Shop Consciously</p>
+        <h2 class="display on-dark text-3xl sm:text-4xl lg:text-5xl text-white mb-5">
+          Every piece has a story.<br /><span class="display-soft">Be part of its next chapter.</span>
         </h2>
         <p class="text-sm text-gray-300 max-w-md leading-relaxed mb-8">
-          Discover authenticated luxury fashion that's been loved before — and is ready to be loved again.
+          Reviewed luxury fashion that has been worn before and is ready to be worn again.
         </p>
         <div class="flex items-center gap-4">
-          <RouterLink to="/shop"
-            class="px-8 py-3 text-sm text-white rounded-md transition hover:opacity-90"
-            style="background-color: #C9A96E;">
+          <RouterLink to="/shop" class="px-8 py-3 text-sm rounded-md btn-gold">
             Shop Now
           </RouterLink>
-          <RouterLink to="/sell"
-            class="px-8 py-3 text-sm border border-white text-white rounded-md hover:bg-white hover:text-gray-800 transition">
+          <RouterLink to="/sell" class="px-8 py-3 text-sm rounded-md btn-outline-light">
             Start Selling
           </RouterLink>
         </div>
@@ -194,24 +202,19 @@
     <section class="page-container pb-24">
       <div class="max-w-5xl mx-auto">
 
-        <div class="text-center mb-12">
-          <p class="text-xs tracking-widest uppercase mb-4" style="color: #C9A96E;">Our Values</p>
-          <h2 class="text-3xl font-light text-gray-800" style="font-family: 'Georgia', serif;">
-            What we stand for
+        <div class="max-w-xl mb-16">
+          <p class="eyebrow mb-5">Our Values</p>
+          <h2 class="display text-3xl sm:text-4xl lg:text-5xl text-gray-900">
+            What we stand for<br /><span class="display-soft">and what we will not claim</span>
           </h2>
         </div>
 
-        <div class="grid gap-5 sm:grid-cols-2">
-          <div v-for="value in values" :key="value.title"
-            class="flex items-start gap-5 p-6 rounded-2xl border border-gray-100 hover:shadow-sm transition duration-300">
-            <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-              style="background-color: #F2F0EB;">
-              <span class="text-lg">{{ value.icon }}</span>
-            </div>
-            <div>
-              <h3 class="text-sm font-semibold text-gray-800 mb-2">{{ value.title }}</h3>
-              <p class="text-xs text-gray-500 leading-relaxed">{{ value.desc }}</p>
-            </div>
+        <!-- Four plain columns, title and one line each. The rule above every
+             column is what groups them, so the values read as a set. -->
+        <div class="grid gap-x-10 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
+          <div v-for="value in values" :key="value.title" class="border-t border-gray-200 pt-6">
+            <h3 class="text-base text-gray-900 mb-3" style="font-family: 'Georgia', serif;">{{ value.title }}</h3>
+            <p class="text-sm text-gray-500 leading-relaxed">{{ value.desc }}</p>
           </div>
         </div>
 
@@ -221,22 +224,20 @@
     <!-- ===== TEAM / CTA ===== -->
     <section class="py-20 text-center" style="background-color: #F2F0EB;">
       <div class="page-container">
-        <p class="text-xs tracking-widest uppercase mb-4" style="color: #C9A96E;">Join The Movement</p>
-        <h2 class="text-3xl font-light text-gray-800 mb-4" style="font-family: 'Georgia', serif;">
-          Be part of something bigger
+        <p class="eyebrow mb-5">Join The Movement</p>
+        <h2 class="display text-3xl sm:text-4xl lg:text-5xl text-gray-900 mb-5">
+          Be part of something<br /><span class="display-soft">bigger than one wardrobe</span>
         </h2>
         <p class="text-sm text-gray-500 max-w-md mx-auto leading-relaxed mb-8">
-          Whether you're here to shop, sell, or simply learn — every action you take on Green Atelier
-          contributes to a more sustainable fashion future.
+          Buy a piece, list one, or just read on. Each of those keeps a garment in use
+          a little longer.
         </p>
         <div class="flex items-center justify-center gap-4">
           <RouterLink to="/signup"
             class="px-8 py-3 text-sm  rounded-md transition btn-solid">
             Join Green Atelier
           </RouterLink>
-          <RouterLink to="/shop"
-            class="px-8 py-3 text-sm border rounded-md text-gray-700 hover:bg-gray-50 transition"
-            style="border-color: #1B3A2D;">
+          <RouterLink to="/shop" class="px-8 py-3 text-sm rounded-md btn-outline-green">
             Explore the Shop
           </RouterLink>
         </div>
@@ -251,64 +252,58 @@
 <script setup>
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
+import CircularFashion from '../components/sustainable/CircularFashion.vue'
 import { scrollToElement } from '../lib/smoothScroll.js'
 
 // Through Lenis rather than scrollIntoView, which would run against Lenis' own
 // animation and stutter.
 const scrollTo = (id) => scrollToElement(`#${id}`)
 
+// Sits beside the story text, so it has to be the concrete half of the pitch:
+// what actually happens to a piece, in order.
+const storyPoints = [
+  'Every listing reviewed before it reaches the shop',
+  'Receipts, serials and close-up photos attached by the seller',
+  'Payment held by Stripe until the order is delivered',
+]
+
 const stats = [
-  { value: '200+', label: 'Luxury items rehomed and authenticated' },
-  { value: '84t', label: 'CO₂ emissions saved through resale' },
-  { value: '99%', label: 'Authentication accuracy rate' },
+  { value: '200+', label: 'Luxury pieces listed and rehomed' },
+  { value: '84t', label: 'Estimated CO₂ avoided through resale' },
+  { value: '100%', label: 'Listings reviewed before they go live' },
 ]
 
 const pillars = [
   {
-    icon: '🌿',
     title: 'Reduce Waste',
     desc: 'Every resold item diverts textile waste from landfill and extends the life of a garment by an average of 2.2 years.',
-    color: '#1B3A2D',
   },
   {
-    icon: '♻️',
     title: 'Circular Economy',
-    desc: 'We champion a system where fashion is kept in circulation — bought, loved, resold — rather than discarded.',
-    color: '#1B3A2D',
+    desc: 'Bought, worn, resold, worn again. A piece stays in circulation instead of ending up in a bin.',
   },
   {
-    icon: '🔍',
-    title: 'Verified Authenticity',
-    desc: 'Every item is reviewed by our authentication team, ensuring buyers receive genuine luxury pieces every time.',
-    color: '#1B3A2D',
+    title: 'Reviewed Listings',
+    desc: 'Our team checks every listing before it reaches the shop, and sellers can add receipts, serial numbers and close-up photos for buyers to weigh up.',
   },
 ]
 
 const impacts = [
-  { value: '73%', label: 'Reduction in carbon footprint per resold item' },
+  { value: '73%', label: 'Lower carbon footprint per resold item' },
   { value: '2.2yrs', label: 'Average garment life extension' },
-  { value: '500+', label: 'Trusted sellers on the platform' },
-  { value: '0', label: 'Landfill contributions from our listings' },
-]
-
-const circularSteps = [
-  { icon: '🛍️', title: 'Buy', desc: 'Purchase a pre-loved luxury piece', color: '#E8F5EE' },
-  { icon: '💚', title: 'Love', desc: 'Wear and cherish your piece', color: '#D4EDDA' },
-  { icon: '📦', title: 'Resell', desc: 'List it on Green Atelier when ready', color: '#C3E6CB' },
-  { icon: '🔄', title: 'Rehome', desc: 'A new owner gives it new life', color: '#B1DFC0' },
-  { icon: '🌍', title: 'Impact', desc: 'Together we reduce fashion waste', color: '#A0D9B5' },
+  { value: '500+', label: 'Sellers on the platform' },
 ]
 
 const facts = [
-  { stat: '100B', desc: 'garments produced globally each year — 85% end up in landfills by year\'s end.' },
-  { stat: '1,500Mt', desc: 'of textile waste projected annually by 2025 without circular fashion practices.' },
-  { stat: '10%', desc: 'of global carbon emissions come from the fashion industry — more than aviation and shipping combined.' },
+  { stat: '100B', desc: 'garments are made worldwide each year. About 85% are in landfill within twelve months.' },
+  { stat: '1,500Mt', desc: 'of textile waste is projected each year by 2025 if nothing changes.' },
+  { stat: '10%', desc: 'of global carbon emissions come from fashion, more than aviation and shipping combined.' },
 ]
 
 const values = [
-  { icon: '✨', title: 'Authenticity First', desc: 'Every listing on Green Atelier goes through a rigorous authentication process. No counterfeits, no compromises.' },
-  { icon: '🤝', title: 'Community & Trust', desc: 'We build trust between buyers and sellers through transparency, verified profiles, and secure transactions.' },
-  { icon: '🌱', title: 'Sustainability at Core', desc: 'Environmental responsibility is not an afterthought — it\'s built into every feature, decision, and interaction on our platform.' },
-  { icon: '💎', title: 'Accessible Luxury', desc: 'We believe great fashion should be accessible. Pre-loved luxury makes iconic pieces available to more people at fair prices.' },
+  { title: 'Checked Before It Sells', desc: 'Our team reviews every listing, and sellers can attach receipts, serial numbers and close-up photos so you know what you are buying.' },
+  { title: 'Community & Trust', desc: 'Verified profiles, secure payments, and a clear record of how each seller has traded before.' },
+  { title: 'Sustainability at Core', desc: 'Keeping pieces in use is the point of the platform, not a line at the end of the page.' },
+  { title: 'Accessible Luxury', desc: 'Buying second hand puts pieces that were out of reach at full price within reach.' },
 ]
 </script>

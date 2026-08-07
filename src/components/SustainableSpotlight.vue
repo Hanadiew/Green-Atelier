@@ -17,8 +17,8 @@
         </h2>
 
         <p class="reveal lede" style="--reveal-delay: 280ms;">
-          Every piece resold here is a piece that never had to be made. That is the
-          whole of it — no offsets, no pledges, just a garment staying in use.
+          Every piece resold here is a piece that never had to be made. No offsets,
+          no pledges, just a garment staying in use.
         </p>
 
         <div class="stats">
@@ -101,7 +101,7 @@ const stats = [
     suffix: ' yrs',
     label: 'Longer active life for a garment that is resold rather than replaced.',
     detail:
-      'Keeping a piece in use is the single biggest lever an owner has — bigger than fibre choice, bigger than washing habits.',
+      'Keeping a piece in use is the biggest lever an owner has. It beats fibre choice and washing habits combined.',
   },
   {
     key: 'footprint',

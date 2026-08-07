@@ -31,7 +31,7 @@
 
     <p v-if="loading" class="text-sm text-gray-500 py-16 text-center">Loading chart…</p>
     <p v-else-if="!hasAnything" class="text-sm text-gray-500 py-16 text-center">
-      No orders yet — the chart fills in as sales come through.
+      No orders yet. The chart fills in as sales come through.
     </p>
 
     <div v-else class="chart" @mouseleave="hover = null">

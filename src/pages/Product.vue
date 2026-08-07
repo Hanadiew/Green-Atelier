@@ -329,8 +329,7 @@
         <div class="flex items-center justify-between mb-6">
           <h2 class="text-2xl font-light text-gray-800" style="font-family: 'Georgia', serif;">New In</h2>
           <RouterLink to="/shop"
-            class="inline-flex items-center gap-2 px-5 py-2.5 text-xs tracking-widest uppercase rounded-lg border transition hover:bg-[#1B3A2D] hover:text-white hover:border-[#1B3A2D]"
-            style="border-color: #1B3A2D; color: #1B3A2D;">
+            class="inline-flex items-center gap-2 px-5 py-2.5 text-xs tracking-widest uppercase rounded-lg btn-outline-green">
             View Listings
             <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 12h14M13 6l6 6-6 6"/>

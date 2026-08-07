@@ -100,9 +100,9 @@ export async function removeSavedCard(paymentMethodId) {
 }
 
 export const TEST_CARD_CHOICES = [
-  { key: 'visa', label: 'Visa — payment succeeds' },
-  { key: 'mastercard', label: 'Mastercard — payment succeeds' },
-  { key: 'declined', label: 'Visa — always declined' },
+  { key: 'visa', label: 'Visa (payment succeeds)' },
+  { key: 'mastercard', label: 'Mastercard (payment succeeds)' },
+  { key: 'declined', label: 'Visa (always declined)' },
 ]
 
 export const PAYMENT_STATUS_LABELS = {

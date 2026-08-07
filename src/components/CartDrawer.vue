@@ -45,9 +45,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
         </svg>
         <p class="text-sm text-gray-400 mb-6">Your bag is empty</p>
-        <button @click="$emit('close')"
-          class="px-8 py-3 text-sm text-white rounded-md transition hover:opacity-90"
-          style="background-color: #C9A96E;">
+        <button @click="$emit('close')" class="px-8 py-3 text-sm rounded-md btn-gold">
           Continue Shopping
         </button>
       </div>
@@ -87,8 +85,7 @@
       </div>
       <button
         @click="handleCheckout"
-        class="w-full py-3 text-sm text-white rounded-md transition hover:opacity-90 mb-3"
-        style="background-color: #C9A96E;">
+        class="w-full py-3 text-sm rounded-md mb-3 btn-gold">
         Checkout
       </button>
       <button

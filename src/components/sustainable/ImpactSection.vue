@@ -9,7 +9,7 @@
         See the Difference
       </h2>
       <p class="reveal text-sm text-gray-400 max-w-md mx-auto leading-relaxed mb-14" style="--reveal-delay: 180ms;">
-        Counted from listings on Green Atelier — not a projection.
+        Counted from listings on Green Atelier, not projected.
       </p>
 
       <!-- Loading -->
@@ -48,8 +48,7 @@
 
       <div class="reveal mt-12" style="--reveal-delay: 320ms;">
         <RouterLink to="/shop"
-          class="inline-flex items-center gap-2 px-8 py-3 text-sm text-white rounded-md transition hover:opacity-90 group"
-          style="background-color: #C9A96E;">
+          class="inline-flex items-center gap-2 px-8 py-3 text-sm rounded-md group btn-gold">
           Explore Pre-Loved Pieces
           <svg xmlns="http://www.w3.org/2000/svg"
             class="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1"

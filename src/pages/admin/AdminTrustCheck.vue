@@ -47,7 +47,7 @@
                   <p class="text-sm text-gray-500">{{ item.listing.brand }}</p>
                 </div>
               </div>
-              <p v-else class="text-sm text-gray-400">—</p>
+              <p v-else class="text-sm text-gray-400">-</p>
             </td>
             <td>
               <p class="text-sm text-gray-900">{{ item.reference.brand }} {{ item.reference.model }}</p>

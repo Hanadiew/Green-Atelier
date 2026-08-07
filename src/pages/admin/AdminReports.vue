@@ -56,13 +56,13 @@
                 <p class="font-medium text-gray-900">@{{ report.reportedUser.username }}</p>
                 <p class="text-xs text-gray-500">User</p>
               </div>
-              <p v-else class="text-sm text-gray-400">—</p>
+              <p v-else class="text-sm text-gray-400">-</p>
             </td>
             <td>
               <p class="text-sm text-gray-600">{{ titleCase(report.reason) }}</p>
             </td>
             <td>
-              <p class="text-sm text-gray-600">@{{ report.reporter?.username ?? '—' }}</p>
+              <p class="text-sm text-gray-600">@{{ report.reporter?.username ?? '-' }}</p>
             </td>
             <td>
               <AdminBadge

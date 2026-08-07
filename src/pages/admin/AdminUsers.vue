@@ -65,13 +65,13 @@
                   {{ (user.username || '?').charAt(0).toUpperCase() }}
                 </div>
                 <div class="min-w-0">
-                  <p class="font-medium text-gray-900 truncate">{{ user.fullName || '—' }}</p>
+                  <p class="font-medium text-gray-900 truncate">{{ user.fullName || '-' }}</p>
                   <p class="text-sm text-gray-500 truncate">@{{ user.username }}</p>
                 </div>
               </div>
             </td>
             <td><p class="text-sm text-gray-600">{{ user.email }}</p></td>
-            <td><p class="text-sm text-gray-600">{{ user.location || '—' }}</p></td>
+            <td><p class="text-sm text-gray-600">{{ user.location || '-' }}</p></td>
             <td>
               <AdminBadge
                 v-if="user.isTrustedSeller"
@@ -79,7 +79,7 @@
                 variant="success"
                 size="sm"
               />
-              <span v-else class="text-sm text-gray-400">—</span>
+              <span v-else class="text-sm text-gray-400">-</span>
             </td>
             <td>
               <p class="text-sm text-gray-600">{{ formatDate(user.createdAt) }}</p>

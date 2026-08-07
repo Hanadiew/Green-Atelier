@@ -7,10 +7,12 @@
     <div v-if="promos.length" class="fixed right-0 top-2/3 -translate-y-1/2 z-40 flex items-stretch no-print">
 
       <!-- Handle -->
+      <!-- Taller than it is wide, so the fill circle needs a diameter measured
+           against the height rather than the default share of the width. -->
       <button
         @click="open = !open"
-        class="self-center rounded-l-lg shadow-lg text-white transition hover:opacity-90"
-        style="background-color: #C9A96E; writing-mode: vertical-rl; padding: 14px 8px;"
+        class="self-center rounded-l-lg shadow-lg btn-gold"
+        style="writing-mode: vertical-rl; padding: 14px 8px; --origin-size: 900%;"
         :aria-expanded="open"
         aria-label="Promotions">
         <span class="text-xs tracking-widest uppercase">
@@ -26,8 +28,7 @@
           <p class="text-xs tracking-widest uppercase mb-1" style="color: #C9A96E;">Green Atelier</p>
           <h3 class="text-sm font-semibold text-gray-800 mb-1">Current offers</h3>
           <p class="text-xs text-gray-400 mb-4 leading-relaxed">
-            Applied automatically at checkout when your bag qualifies — no need to
-            type anything.
+            Applied at checkout once your bag qualifies. Nothing to type.
           </p>
 
           <div class="space-y-3 max-h-80 overflow-y-auto" data-lenis-prevent>

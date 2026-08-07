@@ -9,8 +9,8 @@
           Care for What You Own
         </h2>
         <p class="reveal text-sm text-gray-400 max-w-md mx-auto leading-relaxed" style="--reveal-delay: 180ms;">
-          The longer a piece stays in good condition, the longer it stays worth owning —
-          and the more it is worth to whoever has it next.
+          A piece kept in good condition stays worth owning for longer, and worth more
+          to whoever has it next.
         </p>
       </div>
 
@@ -90,7 +90,7 @@ const steps = [
     tips: [
       'Keep leather and structured bags stuffed so they hold their shape.',
       'Use dust bags and padded hangers rather than plastic, which traps moisture.',
-      'Keep pieces out of direct sunlight — fading is not reversible.',
+      'Keep pieces out of direct sunlight. Fading cannot be undone.',
     ],
     image: store,
   },
@@ -110,7 +110,7 @@ const steps = [
     title: 'Repair before you replace',
     body: 'A worn heel, a loose seam or a missing button is a repair, not the end of a piece. Quality construction is what makes repair worth doing at all.',
     tips: [
-      'Resole and reheel good shoes — the uppers usually outlive the soles.',
+      'Resole and reheel good shoes. The uppers usually outlive the soles.',
       'Have linings, zips and straps replaced rather than retiring the piece.',
       'Keep spare buttons and care cards; they matter at resale too.',
     ],
@@ -122,7 +122,7 @@ const steps = [
     body: 'When a piece no longer fits your wardrobe, passing it on keeps it in circulation. That is the last and most useful thing an owner can do for it.',
     tips: [
       'List it while it is still in good condition, not years later.',
-      'Photograph it honestly, wear and all — buyers reward accuracy.',
+      'Photograph it honestly, wear and all. Buyers reward accuracy.',
       'Include the original receipt, box or authenticity card if you kept them.',
     ],
     image: rehome,

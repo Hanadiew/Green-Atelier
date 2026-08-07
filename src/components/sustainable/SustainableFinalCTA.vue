@@ -5,11 +5,14 @@
            panel, including the buttons. -->
       <div class="group relative rounded-3xl overflow-hidden" style="min-height: 32rem;">
 
-        <img src="../../assets/hero.jpg" alt="" loading="lazy"
-          class="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-[1200ms] ease-out group-hover:scale-105" />
+        <!-- Discarded clothing outside a textile bank — the thing the whole page
+             argues against, put behind the ask. Centred rather than top-aligned:
+             the pile is the subject and it sits low in the frame. -->
+        <img src="../../assets/textile-waste.jpg" alt="" loading="lazy"
+          class="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-[1200ms] ease-out group-hover:scale-105" />
 
         <div class="absolute inset-0"
-          style="background: linear-gradient(to bottom, rgba(27,58,45,0.45), rgba(27,58,45,0.9));"></div>
+          style="background: linear-gradient(to bottom, rgba(27,58,45,0.6), rgba(27,58,45,0.92));"></div>
 
         <div class="relative flex flex-col items-center justify-center text-center px-6 sm:px-10 py-24"
           style="min-height: 32rem;">
@@ -27,8 +30,7 @@
 
           <div class="reveal flex flex-wrap items-center justify-center gap-4" style="--reveal-delay: 360ms;">
             <RouterLink to="/shop"
-              class="px-8 py-3 text-sm text-white rounded-md transition hover:opacity-90"
-              style="background-color: #C9A96E;">
+              class="px-8 py-3 text-sm rounded-md btn-gold">
               Explore Collection
             </RouterLink>
             <RouterLink to="/sell"

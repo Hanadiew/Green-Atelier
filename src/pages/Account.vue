@@ -225,8 +225,8 @@
         <div v-if="activeSection === 'payout'">
           <h2 class="text-base font-semibold text-gray-800 mb-2">Payout Information</h2>
           <p class="text-xs text-gray-400 mb-6 leading-relaxed">
-            Earnings from your sales are paid directly to this bank account once an order is
-            delivered. Green Atelier does not hold your funds — this is only where a payout is sent.
+            Earnings from your sales are paid to this bank account once an order is delivered.
+            Green Atelier does not hold your funds. This is only where a payout is sent.
           </p>
 
           <!-- Existing account, view mode -->
@@ -292,8 +292,8 @@
         <div v-if="activeSection === 'payment'">
           <h2 class="text-base font-semibold text-gray-800 mb-1">Payment methods</h2>
           <p class="text-xs text-gray-400 mb-6 leading-relaxed max-w-lg">
-            Cards are held securely by Stripe — Green Atelier never stores your card
-            number. A saved card appears ready to use on the payment page.
+            Stripe holds your card details. Green Atelier never stores your card number.
+            A saved card is ready to use on the payment page.
           </p>
 
           <div v-if="cardsLoading" class="py-12 text-center">
@@ -339,9 +339,8 @@
             <div class="rounded-xl px-5 py-4" style="background-color: #F7F5F0;">
               <p class="text-sm text-gray-700 mb-1">Save a test card</p>
               <p class="text-xs text-gray-400 mb-3 leading-relaxed">
-                Green Atelier runs on Stripe test mode, so these are Stripe's own test
-                cards — no real money is ever charged. Saving one means the payment page
-                already has a card and you can pay in a click.
+                Green Atelier runs in Stripe test mode, so these are Stripe's own test cards
+                and no real money is charged. Save one and the payment page is ready to go.
               </p>
               <div class="flex flex-wrap gap-2">
                 <button v-for="choice in TEST_CARD_CHOICES" :key="choice.key"

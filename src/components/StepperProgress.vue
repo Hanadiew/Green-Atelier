@@ -13,10 +13,10 @@
             class="block w-full h-2 transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#C9A96E]"
             :style="{ backgroundColor: segmentColour(i) }"
             :aria-current="i === current ? 'step' : undefined"
-            :title="`${step.label}${completed[i] ? ' — done' : ''}`"
+            :title="`${step.label}${completed[i] ? ' (done)' : ''}`"
             @click="$emit('update:current', i)">
             <span class="sr-only">
-              {{ step.label }} — step {{ i + 1 }} of {{ steps.length }}{{ completed[i] ? ', complete' : '' }}
+              {{ step.label }}, step {{ i + 1 }} of {{ steps.length }}{{ completed[i] ? ', complete' : '' }}
             </span>
           </button>
         </li>

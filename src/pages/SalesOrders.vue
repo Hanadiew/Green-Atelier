@@ -88,7 +88,7 @@
               @change="handleStatusChange(sale, $event)"
               class="w-full border border-gray-200 rounded-md px-2 py-2 text-xs text-gray-600 outline-none bg-white disabled:opacity-60">
               <option :value="sale.status" disabled>
-                {{ updatingId === sale.id ? 'Updating…' : sale.statusLabel + ' — change to…' }}
+                {{ updatingId === sale.id ? 'Updating…' : sale.statusLabel + ' (change to…)' }}
               </option>
               <option v-for="opt in nextStatusOptions(sale.status)" :key="opt" :value="opt">
                 {{ statusLabel(opt) }}

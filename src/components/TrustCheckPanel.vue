@@ -31,7 +31,7 @@
         <label class="text-xs text-gray-400 mb-1 block">Model</label>
         <select v-model="selectedModel" :disabled="!selectedBrand"
           class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white disabled:bg-gray-50 disabled:text-gray-300">
-          <option value="">{{ selectedBrand ? 'Choose a model' : '—' }}</option>
+          <option value="">{{ selectedBrand ? 'Choose a model' : 'Choose a brand first' }}</option>
           <option v-for="m in availableModels" :key="m.slug" :value="m.model">{{ m.model }}</option>
         </select>
       </div>
@@ -47,8 +47,8 @@
           {{ selectedBrand ? 'Choose a model to continue' : 'TrustCheck is not available for this item yet' }}
         </p>
         <p class="text-xs text-gray-400 leading-relaxed">
-          Version 1 covers six models. If yours is not listed you can publish without an
-          assessment — buyers simply will not see a TrustCheck score.
+          Version 1 covers six models. If yours is not listed you can still publish. Your
+          listing simply will not show a TrustCheck score.
         </p>
       </div>
     </div>
@@ -82,8 +82,8 @@
       <div>
         <p class="text-sm font-semibold text-gray-800 mb-1">Supporting documents</p>
         <p class="text-xs text-gray-400 mb-3">
-          Optional, but each one raises your Evidence Score. Kept private — buyers see only
-          that a document exists, never its contents.
+          Optional, but each one raises your Evidence Score. These stay private: buyers see
+          that a document exists, never what is in it.
         </p>
 
         <div class="space-y-3">

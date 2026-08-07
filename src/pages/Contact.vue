@@ -13,7 +13,8 @@
           How Can We Assist You?
         </h1>
         <p class="text-xs text-gray-300 max-w-md mx-auto leading-relaxed">
-          Whether you have questions about listing an item, our multi-step verification process, or need order assistance — we are here to support your circular fashion journey.
+          Questions about listing an item, how we review submissions, or an order that needs
+          chasing? Send us a message and we will get back to you.
         </p>
       </div>
     </div>
@@ -114,7 +115,7 @@
             </div>
             <div>
               <p class="text-xs font-semibold text-gray-700 mb-0.5">Operating Hours</p>
-              <p class="text-xs text-gray-500">Monday — Friday: 9:00 AM – 6:00 PM</p>
+              <p class="text-xs text-gray-500">Monday to Friday: 9:00 AM to 6:00 PM</p>
               <p class="text-xs text-gray-500">Saturday & Sunday: Closed</p>
             </div>
           </div>
@@ -139,7 +140,7 @@
 
         <!-- Social Media Links -->
         <div class="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm flex flex-col justify-center space-y-4">
-          <p class="text-xs tracking-widest uppercase text-center" style="color: #C9A96E;">Follow Our Journey</p>
+          <p class="text-xs tracking-widest uppercase text-center" style="color: #C9A96E;">Follow Us</p>
           <div class="flex justify-center gap-6">
             <!-- Instagram -->
             <a href="#" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-500 hover:text-white transition-all duration-300 hover:scale-110" style="background-color: #F2F0EB;" onmouseover="this.style.backgroundColor='#C9A96E'; this.style.color='white'" onmouseout="this.style.backgroundColor='#F2F0EB'; this.style.color='#6B7280'">
@@ -289,7 +290,7 @@
                 <h3 class="text-sm font-semibold text-gray-800 uppercase tracking-wider">Refund Policy</h3>
               </div>
               <p class="text-xs text-gray-500 leading-relaxed">
-                To guarantee confidence on every transaction, Green Atelier operates a full buyer-protection guarantee.
+                Every order is covered by buyer protection. The two cases below are when a refund applies.
               </p>
 
               <div class="space-y-4">
@@ -329,8 +330,8 @@
                   </div>
                   <div class="bg-white p-4 rounded-xl border border-gray-100">
                     <p class="text-[10px] uppercase text-gray-400 tracking-wider font-semibold mb-1">Delivery Timeframe</p>
-                    <p class="text-lg font-light" style="color: #C9A96E; font-family: 'Georgia', serif;">5 — 7 Business Days</p>
-                    <p class="text-xs text-gray-400 mt-1">Accounts for transit to authentication studio + physical verification + final shipping.</p>
+                    <p class="text-lg font-light" style="color: #C9A96E; font-family: 'Georgia', serif;">5 to 7 Business Days</p>
+                    <p class="text-xs text-gray-400 mt-1">Covers transit to our studio, checking the piece, and shipping it on to you.</p>
                   </div>
                 </div>
 
