@@ -24,21 +24,22 @@
       :per-page="perPage"
       :total="total"
       @update:page="page = $event"
+    @update:per-page="perPage = $event; page = 1"
     >
       <table class="w-full">
-        <thead class="bg-gray-50 border-b border-gray-200">
+        <thead>
           <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Listing</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Reference</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Evidence</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Score</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Assessment</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Actions</th>
+            <th>Listing</th>
+            <th>Reference</th>
+            <th>Evidence</th>
+            <th>Score</th>
+            <th>Assessment</th>
+            <th>Actions</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-gray-200">
-          <tr v-for="item in assessments" :key="item.listingId" class="hover:bg-gray-50">
-            <td class="px-6 py-4">
+        <tbody>
+          <tr v-for="item in assessments" :key="item.listingId">
+            <td>
               <div v-if="item.listing" class="flex items-center gap-3">
                 <img :src="item.listing.image" :alt="item.listing.title" class="w-10 h-10 rounded object-cover" />
                 <div class="min-w-0">
@@ -48,24 +49,24 @@
               </div>
               <p v-else class="text-sm text-gray-400">—</p>
             </td>
-            <td class="px-6 py-4">
+            <td>
               <p class="text-sm text-gray-900">{{ item.reference.brand }} {{ item.reference.model }}</p>
               <p class="text-xs text-gray-500">{{ item.reference.country }}</p>
             </td>
-            <td class="px-6 py-4">
+            <td>
               <p class="text-sm text-gray-600">{{ evidenceCount(item.evidence) }}/7 signals</p>
             </td>
-            <td class="px-6 py-4">
+            <td>
               <p class="font-semibold text-gray-900">{{ item.score }}/100</p>
             </td>
-            <td class="px-6 py-4">
+            <td>
               <AdminBadge
                 :label="titleCase(item.status)"
                 :variant="TRUSTCHECK_STATUS_VARIANT[item.status] || 'default'"
                 size="sm"
               />
             </td>
-            <td class="px-6 py-4">
+            <td>
               <router-link
                 :to="`/admin/trustcheck/${item.listingId}`"
                 class="text-emerald-600 hover:text-emerald-700 text-sm font-medium"
@@ -93,13 +94,13 @@ const error = ref(null)
 const status = ref('')
 const page = ref(1)
 const total = ref(0)
-const perPage = 20
+const perPage = ref(20)
 
 watch(status, () => {
   if (page.value === 1) fetchAssessments()
   else page.value = 1
 })
-watch(page, fetchAssessments)
+watch([page, perPage], fetchAssessments)
 onMounted(fetchAssessments)
 
 function evidenceCount(evidence) {
@@ -114,7 +115,7 @@ async function fetchAssessments() {
     const result = await getTrustCheckAssessments({
       status: status.value || null,
       page: page.value,
-      perPage,
+      perPage: perPage.value,
     })
     assessments.value = result.assessments
     total.value = result.total

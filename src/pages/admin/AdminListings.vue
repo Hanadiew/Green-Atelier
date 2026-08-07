@@ -72,24 +72,24 @@
       <p class="text-gray-500 text-sm">Try adjusting your filters</p>
     </div>
 
-    <div v-else class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div v-else class="data-grid-shell data-grid overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full">
-          <thead class="bg-gray-50 border-b border-gray-200">
+          <thead>
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Product</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Seller</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Brand</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Price</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">TrustCheck</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Status</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Date</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Actions</th>
+              <th>Product</th>
+              <th>Seller</th>
+              <th>Brand</th>
+              <th>Price</th>
+              <th>TrustCheck</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th>Actions</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-200">
-            <tr v-for="listing in listings" :key="listing.id" class="hover:bg-gray-50">
-              <td class="px-6 py-4">
+          <tbody>
+            <tr v-for="listing in listings" :key="listing.id">
+              <td>
                 <div class="flex items-center gap-3">
                   <img
                     :src="listing.image"
@@ -101,16 +101,16 @@
                   </div>
                 </div>
               </td>
-              <td class="px-6 py-4">
+              <td>
                 <p class="text-sm text-gray-600">{{ listing.seller.username }}</p>
               </td>
-              <td class="px-6 py-4">
+              <td>
                 <p class="text-sm text-gray-600">{{ listing.brand }}</p>
               </td>
-              <td class="px-6 py-4">
+              <td>
                 <p class="font-semibold text-gray-900">RM {{ listing.price.toFixed(2) }}</p>
               </td>
-              <td class="px-6 py-4">
+              <td>
                 <div v-if="listing.trustcheck" class="flex items-center gap-2">
                   <div
                     :class="[
@@ -126,17 +126,17 @@
                 </div>
                 <p v-else class="text-sm text-gray-500">—</p>
               </td>
-              <td class="px-6 py-4">
+              <td>
                 <AdminBadge
                   :label="formatStatus(listing.status)"
                   :variant="getStatusVariant(listing.status)"
                   size="sm"
                 />
               </td>
-              <td class="px-6 py-4">
+              <td>
                 <p class="text-sm text-gray-600">{{ formatDate(listing.createdAt) }}</p>
               </td>
-              <td class="px-6 py-4">
+              <td>
                 <div class="flex gap-2">
                   <router-link
                     :to="`/admin/listings/${listing.id}`"
@@ -151,27 +151,37 @@
         </table>
       </div>
 
-      <!-- Pagination -->
-      <div v-if="pagination.total > 0" class="border-t border-gray-200 px-6 py-4 flex items-center justify-between">
-        <p class="text-sm text-gray-600">
-          Showing {{ (pagination.page - 1) * perPage + 1 }} to
-          {{ Math.min(pagination.page * perPage, pagination.total) }} of {{ pagination.total }}
-        </p>
-        <div class="flex gap-2">
-          <button
-            @click="pagination.page = Math.max(1, pagination.page - 1)"
-            :disabled="pagination.page === 1"
-            class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 text-sm"
-          >
-            Previous
-          </button>
-          <button
-            @click="pagination.page = pagination.page + 1"
-            :disabled="pagination.page * perPage >= pagination.total"
-            class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 text-sm"
-          >
-            Next
-          </button>
+      <!-- Pagination, matching every other queue: rows-per-page on the left,
+           range and numbered pages on the right. -->
+      <div v-if="pagination.total > 0" class="data-grid-footer">
+        <label class="flex items-center gap-2 text-sm text-gray-600">
+          <span class="hidden sm:inline">Rows per page</span>
+          <select v-model.number="perPage"
+            class="border border-gray-200 rounded-lg pl-2.5 pr-7 py-1.5 text-sm bg-white text-gray-800 outline-none focus:border-emerald-600 transition">
+            <option v-for="size in [10, 20, 50, 100]" :key="size" :value="size">{{ size }}</option>
+          </select>
+        </label>
+
+        <div class="flex items-center gap-3 sm:gap-4">
+          <p class="text-sm text-gray-500 whitespace-nowrap">
+            {{ (pagination.page - 1) * perPage + 1 }} –
+            {{ Math.min(pagination.page * perPage, pagination.total) }} of {{ pagination.total }}
+          </p>
+          <div class="flex items-center gap-1">
+            <button @click="pagination.page = Math.max(1, pagination.page - 1)"
+              :disabled="pagination.page === 1" class="data-grid-page" aria-label="Previous page">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <span class="data-grid-page data-grid-page--on">{{ pagination.page }}</span>
+            <button @click="pagination.page = pagination.page + 1"
+              :disabled="pagination.page * perPage >= pagination.total" class="data-grid-page" aria-label="Next page">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -201,9 +211,9 @@ const pagination = ref({
   page: 1,
   total: 0,
 })
-const perPage = 20
+const perPage = ref(20)
 
-watch([filters, pagination], () => {
+watch([filters, pagination, perPage], () => {
   fetchListings()
 }, { deep: true })
 
@@ -221,7 +231,7 @@ async function fetchListings() {
       search: filters.value.search,
       category: filters.value.category || null,
       page: pagination.value.page,
-      perPage,
+      perPage: perPage.value,
     })
 
     listings.value = data

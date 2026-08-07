@@ -10,41 +10,42 @@
     :per-page="perPage"
     :total="total"
     @update:page="page = $event"
+    @update:per-page="perPage = $event; page = 1"
   >
     <table class="w-full">
-      <thead class="bg-gray-50 border-b border-gray-200">
+      <thead>
         <tr>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">From</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Subject</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Received</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Status</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Actions</th>
+          <th>From</th>
+          <th>Subject</th>
+          <th>Received</th>
+          <th>Status</th>
+          <th>Actions</th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-gray-200">
+      <tbody>
         <tr
           v-for="message in messages"
           :key="message.id"
           :class="['hover:bg-gray-50', message.is_read ? '' : 'bg-emerald-50/40']"
         >
-          <td class="px-6 py-4">
+          <td>
             <p :class="['text-gray-900', message.is_read ? '' : 'font-semibold']">{{ message.name }}</p>
             <p class="text-sm text-gray-500">{{ message.email }}</p>
           </td>
-          <td class="px-6 py-4">
+          <td>
             <p class="text-sm text-gray-900">{{ message.subject || '(no subject)' }}</p>
           </td>
-          <td class="px-6 py-4">
+          <td>
             <p class="text-sm text-gray-600">{{ formatDateTime(message.created_at) }}</p>
           </td>
-          <td class="px-6 py-4">
+          <td>
             <AdminBadge
               :label="message.is_read ? 'Read' : 'Unread'"
               :variant="message.is_read ? 'default' : 'warning'"
               size="sm"
             />
           </td>
-          <td class="px-6 py-4">
+          <td>
             <router-link
               :to="`/admin/enquiries/${message.id}`"
               class="text-emerald-600 hover:text-emerald-700 text-sm font-medium"
@@ -70,9 +71,9 @@ const loading = ref(false)
 const error = ref(null)
 const page = ref(1)
 const total = ref(0)
-const perPage = 20
+const perPage = ref(20)
 
-watch(page, fetchMessages)
+watch([page, perPage], fetchMessages)
 onMounted(fetchMessages)
 
 async function fetchMessages() {
@@ -80,7 +81,7 @@ async function fetchMessages() {
   error.value = null
 
   try {
-    const result = await getContactMessages({ page: page.value, perPage })
+    const result = await getContactMessages({ page: page.value, perPage: perPage.value })
     messages.value = result.messages
     total.value = result.total
   } catch (err) {

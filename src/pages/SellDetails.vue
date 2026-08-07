@@ -256,6 +256,7 @@
             v-model="trustCheck"
             :initial-brand="form.brand"
             :listing-images="imageFiles"
+            @update:files="trustFiles = $event"
           />
 
           <!-- Fallback paperwork upload.
@@ -588,7 +589,7 @@ import { fetchPayoutAccount } from '../lib/payouts.js'
 import ToggleSwitch from '../components/ToggleSwitch.vue'
 import { userId } from '../lib/auth.js'
 import { fetchDefaultAddress } from '../lib/addresses.js'
-import { matchBrand, saveAssessment } from '../lib/trustcheck/index.js'
+import { matchBrand, saveAssessment, saveVerificationDocs } from '../lib/trustcheck/index.js'
 import {
   createListing,
   fetchListing,
@@ -704,6 +705,9 @@ const reloadPayoutAccount = async () => {
 // The TrustCheck result, held in memory until the listing row exists. Assessment
 // runs on the local File objects, so nothing is uploaded for an abandoned draft.
 const trustCheck = ref(null)
+// Held separately from `trustCheck` so paperwork survives the seller never
+// running the assessment — see saveVerificationDocs.
+const trustFiles = ref({})
 
 // TrustCheck covers six models. It is required when the seller's brand is one we
 // support, and skipped entirely otherwise.
@@ -946,11 +950,22 @@ try {
     serialNumber: details.value.serialNumber,
   })
 
-  if (trustCheck.value && listing?.id) {
-    try {
-      await saveAssessment(listing.id, trustCheck.value, userId.value)
-    } catch (assessmentError) {
-      console.error('TrustCheck assessment not saved:', assessmentError.message)
+  if (listing?.id) {
+    // Evidence first and unconditionally. It used to ride along inside
+    // saveAssessment, so an unscored listing reached the moderator showing no
+    // documents at all even though the seller had attached them.
+    if (trustCheck.value) {
+      try {
+        await saveAssessment(listing.id, trustCheck.value, userId.value)
+      } catch (assessmentError) {
+        console.error('TrustCheck assessment not saved:', assessmentError.message)
+      }
+    } else {
+      try {
+        await saveVerificationDocs(listing.id, trustFiles.value, {}, userId.value)
+      } catch (docError) {
+        console.error('Authenticity documents not saved:', docError.message)
+      }
     }
   }
 
@@ -978,6 +993,7 @@ const handleReset = () => {
   errorMsg.value = ''
   imageFiles.value = []
   trustCheck.value = null
+  trustFiles.value = {}
   details.value = { ...defaultDetails, packaging: [], images: [] }
 }
 

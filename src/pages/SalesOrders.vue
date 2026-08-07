@@ -37,7 +37,7 @@
       <!-- Sales list -->
       <div v-else class="space-y-4">
         <div v-for="sale in orders" :key="sale.id"
-          class="bg-white rounded-xl border border-gray-100 p-5 flex flex-wrap items-center gap-5 shadow-sm">
+          class="data-grid-shell p-5 flex flex-wrap items-center gap-5 transition hover:bg-gray-50">
 
           <!-- Image -->
           <div class="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">

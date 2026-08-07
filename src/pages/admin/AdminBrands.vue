@@ -80,19 +80,20 @@
       :per-page="perPage"
       :total="total"
       @update:page="page = $event"
+    @update:per-page="perPage = $event; page = 1"
     >
       <table class="w-full">
-        <thead class="bg-gray-50 border-b border-gray-200">
+        <thead>
           <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Brand</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Slug</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Status</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Actions</th>
+            <th>Brand</th>
+            <th>Slug</th>
+            <th>Status</th>
+            <th>Actions</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-gray-200">
-          <tr v-for="brand in brands" :key="brand.id" class="hover:bg-gray-50">
-            <td class="px-6 py-4">
+        <tbody>
+          <tr v-for="brand in brands" :key="brand.id">
+            <td>
               <div class="flex items-center gap-3">
                 <img
                   v-if="brand.logo_url"
@@ -103,15 +104,15 @@
                 <p class="font-medium text-gray-900">{{ brand.name }}</p>
               </div>
             </td>
-            <td class="px-6 py-4"><p class="text-sm text-gray-600">{{ brand.slug }}</p></td>
-            <td class="px-6 py-4">
+            <td><p class="text-sm text-gray-600">{{ brand.slug }}</p></td>
+            <td>
               <AdminBadge
                 :label="brand.is_active ? 'Active' : 'Hidden'"
                 :variant="brand.is_active ? 'success' : 'default'"
                 size="sm"
               />
             </td>
-            <td class="px-6 py-4">
+            <td>
               <button
                 @click="toggleActive(brand)"
                 :disabled="togglingId === brand.id"
@@ -139,7 +140,7 @@ const error = ref(null)
 const search = ref('')
 const page = ref(1)
 const total = ref(0)
-const perPage = 20
+const perPage = ref(20)
 
 const showCreate = ref(false)
 const saving = ref(false)
@@ -155,7 +156,7 @@ const slugFromName = computed(() =>
     .replace(/^-|-$/g, ''),
 )
 
-watch(page, fetchBrands)
+watch([page, perPage], fetchBrands)
 onMounted(fetchBrands)
 
 function runSearch() {
@@ -168,7 +169,7 @@ async function fetchBrands() {
   error.value = null
 
   try {
-    const result = await getAdminBrands({ search: search.value, page: page.value, perPage })
+    const result = await getAdminBrands({ search: search.value, page: page.value, perPage: perPage.value })
     brands.value = result.brands
     total.value = result.total
   } catch (err) {

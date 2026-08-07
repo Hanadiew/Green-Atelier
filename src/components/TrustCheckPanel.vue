@@ -245,7 +245,10 @@ const props = defineProps({
   modelValue: { type: Object, default: null },
 })
 
-const emit = defineEmits(['update:modelValue'])
+// `update:files` is emitted whenever a slot changes, independently of the
+// assessment: the parent has to be able to store evidence the seller attached
+// but never scored.
+const emit = defineEmits(['update:modelValue', 'update:files'])
 
 const selectedBrand = ref(matchBrand(props.initialBrand) ?? '')
 const selectedModel = ref('')
@@ -334,12 +337,14 @@ const onFileChosen = (event) => {
   }
 
   files.value = { ...files.value, [pendingSlot.value]: file }
+  emit('update:files', { ...files.value })
   pendingSlot.value = null
   clearResult()
 }
 
 const clearFile = (slot) => {
   files.value = { ...files.value, [slot]: null }
+  emit('update:files', { ...files.value })
   clearResult()
 }
 

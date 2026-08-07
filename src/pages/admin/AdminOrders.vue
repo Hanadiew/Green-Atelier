@@ -9,53 +9,54 @@
     :per-page="perPage"
     :total="total"
     @update:page="page = $event"
+    @update:per-page="perPage = $event; page = 1"
   >
     <table class="w-full">
-      <thead class="bg-gray-50 border-b border-gray-200">
+      <thead>
         <tr>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Order</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Buyer</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Items</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Total</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Payment</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Status</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Placed</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Actions</th>
+          <th>Order</th>
+          <th>Buyer</th>
+          <th>Items</th>
+          <th>Total</th>
+          <th>Payment</th>
+          <th>Status</th>
+          <th>Placed</th>
+          <th>Actions</th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-gray-200">
-        <tr v-for="order in orders" :key="order.id" class="hover:bg-gray-50">
-          <td class="px-6 py-4">
+      <tbody>
+        <tr v-for="order in orders" :key="order.id">
+          <td>
             <p class="font-medium text-gray-900">{{ order.orderNumber }}</p>
           </td>
-          <td class="px-6 py-4">
+          <td>
             <p class="text-sm text-gray-900">{{ order.buyer.fullName || '—' }}</p>
             <p class="text-sm text-gray-500">@{{ order.buyer.username }}</p>
           </td>
-          <td class="px-6 py-4">
+          <td>
             <p class="text-sm text-gray-600">{{ order.items.length }}</p>
           </td>
-          <td class="px-6 py-4">
+          <td>
             <p class="font-semibold text-gray-900">{{ formatMoney(order.total) }}</p>
           </td>
-          <td class="px-6 py-4">
+          <td>
             <AdminBadge
               :label="titleCase(order.paymentStatus)"
               :variant="PAYMENT_STATUS_VARIANT[order.paymentStatus] || 'default'"
               size="sm"
             />
           </td>
-          <td class="px-6 py-4">
+          <td>
             <AdminBadge
               :label="titleCase(order.status)"
               :variant="ORDER_STATUS_VARIANT[order.status] || 'default'"
               size="sm"
             />
           </td>
-          <td class="px-6 py-4">
+          <td>
             <p class="text-sm text-gray-600">{{ formatDate(order.placedAt) }}</p>
           </td>
-          <td class="px-6 py-4">
+          <td>
             <router-link
               :to="`/admin/orders/${order.id}`"
               class="text-emerald-600 hover:text-emerald-700 text-sm font-medium"
@@ -87,9 +88,9 @@ const loading = ref(false)
 const error = ref(null)
 const page = ref(1)
 const total = ref(0)
-const perPage = 20
+const perPage = ref(20)
 
-watch(page, fetchOrders)
+watch([page, perPage], fetchOrders)
 onMounted(fetchOrders)
 
 async function fetchOrders() {
@@ -97,7 +98,7 @@ async function fetchOrders() {
   error.value = null
 
   try {
-    const result = await getAdminOrders({ page: page.value, perPage })
+    const result = await getAdminOrders({ page: page.value, perPage: perPage.value })
     orders.value = result.orders
     total.value = result.total
   } catch (err) {
