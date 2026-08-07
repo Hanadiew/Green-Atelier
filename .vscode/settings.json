@@ -1,0 +1,20 @@
+{
+  // Tailwind v4 configures itself from CSS — @theme, @utility, @variant and
+  // @apply live in src/style.css. VS Code's built-in CSS language service only
+  // knows standard at-rules, so it flags every one of them as "Unknown at rule".
+  // The stylesheet is valid and the build compiles it fine; this silences the
+  // false positive rather than changing any behaviour.
+  "css.lint.unknownAtRules": "ignore",
+  "scss.lint.unknownAtRules": "ignore",
+  "less.lint.unknownAtRules": "ignore",
+
+  // With the Tailwind CSS IntelliSense extension installed, this gives the
+  // stylesheet real Tailwind-aware diagnostics and completions in place of the
+  // generic CSS ones — including inside @theme.
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
+  "editor.quickSuggestions": {
+    "strings": "on"
+  }
+}
