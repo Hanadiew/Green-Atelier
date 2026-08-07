@@ -75,19 +75,6 @@
   animation-play-state: paused;
 }
 
-@keyframes scroll-reviews {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-33.33%); }
-}
-
-.animate-scroll-reviews {
-  animation: scroll-reviews 20s linear infinite;
-}
-
-.animate-scroll-reviews:hover {
-  animation-play-state: paused;
-}
-
 /* Kept in one place so .page-shell and .site-footer cannot disagree about how
    tall the footer is — the shell's height is derived from it. Dropped from 26rem
    when the oversized GREEN ATELIER wordmark came out of the footer; left at the
@@ -527,6 +514,81 @@ html.preloader-open body {
   }
 }
 
+/* --- Underlined form field ---------------------------------------------------
+   The listing form's inputs and selects. A rule under the field rather than a
+   boxed input: on a panel that has no shadow, four boxed controls would put
+   five competing rectangles in one card.
+
+   The rule darkens on focus and takes the brand gold, which is a real state
+   change rather than the browser's default outline being suppressed and
+   nothing replacing it. */
+.form-line {
+  border-bottom: 1px solid #E5E0D5;
+  transition: border-color 0.2s ease;
+}
+
+.form-line:hover {
+  border-bottom-color: #CFC7B5;
+}
+
+.form-line:focus {
+  border-bottom-color: #C9A96E;
+  border-bottom-width: 2px;
+  /* Compensate so the field does not shift by a pixel when it takes focus. */
+  padding-bottom: calc(0.625rem - 1px);
+}
+
+/* --- Hero field --------------------------------------------------------------
+   Replaces the flat #1B3A2D that every dark hero used. Three soft radial washes
+   over the base green: one gold, one sage, one deeper green, none of them
+   reaching full opacity. The first is centred on the pointer via --hx/--hy
+   (written by lib/heroField.js), so the light follows the cursor across the
+   field rather than sitting where it was painted.
+
+   The washes live on a ::before at z-index -1 under `isolation: isolate`, which
+   keeps them above the base colour and below the hero's own content without any
+   of that content needing a stacking context of its own.
+
+   Everything degrades: with no pointer the fallback centres the wash high in
+   the frame, and the drift below is the only motion, so the field still reads
+   as a gradient rather than a flat block. */
+.hero-field {
+  position: relative;
+  isolation: isolate;
+  background-color: #1B3A2D;
+}
+
+.hero-field::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(55rem 40rem at var(--hx, 50%) var(--hy, 30%), rgba(201, 169, 110, 0.20), transparent 60%),
+    radial-gradient(45rem 38rem at 12% 88%, rgba(122, 158, 142, 0.22), transparent 62%),
+    radial-gradient(50rem 42rem at 88% 8%, rgba(46, 88, 68, 0.65), transparent 65%);
+}
+
+/* A second, slower layer that moves on its own, so the field is never wholly
+   still on a touch screen where there is no pointer to follow. */
+.hero-field::after {
+  content: '';
+  position: absolute;
+  inset: -20%;
+  z-index: -1;
+  background: radial-gradient(38rem 30rem at 30% 40%, rgba(201, 169, 110, 0.10), transparent 60%);
+  animation: hero-drift 26s ease-in-out infinite alternate;
+}
+
+@keyframes hero-drift {
+  from { transform: translate3d(-6%, -4%, 0) scale(1); }
+  to   { transform: translate3d(8%, 6%, 0) scale(1.15); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-field::after { animation: none; }
+}
+
 /* --- Editorial display type --------------------------------------------------
    The headline treatment used on the About page: a serif set large with tight
    negative tracking, split over two lines where the second is lighter and
@@ -553,13 +615,18 @@ html.preloader-open body {
   opacity: 0.5;
 }
 
-/* Section label. A small serif line rather than the gold letterspaced caps used
-   elsewhere: at this size the caps read as a system label, and these sections
-   are prose. */
+/* Section label. Letterspaced caps in the body sans, not the display serif: set
+   in Georgia at 16px it sat close enough to the headline beneath it to read as
+   a first line of the heading rather than a label above it. Small caps put
+   clear daylight between the two.
+
+   One definition for every section on the site, so the labels cannot drift
+   apart page by page. */
 .eyebrow {
-  font-family: 'Georgia', serif;
-  font-weight: 300;
-  font-size: 1rem;
+  font-size: 0.8125rem;
+  line-height: 1.125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
   color: #C9A96E;
 }
 

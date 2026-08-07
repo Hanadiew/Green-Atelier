@@ -23,7 +23,7 @@
         <button @click="copy"
           class="w-full font-mono text-sm tracking-widest py-3 rounded-lg border-2 border-dashed transition hover:bg-gray-50 mb-2"
           style="border-color: #C9A96E; color: #1B3A2D;">
-          {{ copied ? 'Copied ✓' : promo.code }}
+          {{ copied ? 'Copied' : promo.code }}
         </button>
         <p class="text-xs text-gray-400 mb-6">
           Nothing to remember. We apply it at checkout once your bag qualifies.
@@ -39,6 +39,7 @@
 </template>
 
 <script setup>
+import Icon from '../components/Icon.vue'
 import { ref, watch } from 'vue'
 import { isAuthenticated, userId } from '../lib/auth.js'
 import { fetchLivePromos, isFirstTimeBuyer, livePromos, welcomePromo } from '../lib/promos.js'

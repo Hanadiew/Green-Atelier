@@ -98,20 +98,34 @@
 
       </div>
 
-      <!-- ===== TABS ===== -->
-      <div class="border-b border-gray-100">
-        <!-- Scrolls rather than wraps: a wrapped tab row moves the underline to a
-             second line and stops reading as tabs at all. -->
-        <div class="flex items-center gap-8 overflow-x-auto no-scrollbar whitespace-nowrap">
-          <button v-for="tab in visibleTabs" :key="tab"
-            @click="activeTab = tab"
-            class="py-4 text-sm transition border-b-2"
-            :class="activeTab === tab
-              ? 'border-gray-800 text-gray-800 font-medium'
-              : 'border-transparent text-gray-400 hover:text-gray-600'">
-            {{ tab }}
-          </button>
-        </div>
+      <!-- ===== TABS =====
+           A segmented control rather than an underline row. The underline sat on
+           a full-width rule that ran the width of the page with nothing under
+           its right-hand two thirds, so the row read as a page divider that
+           happened to have words on the left. This is a self-contained control:
+           it ends where the tabs end, and the selected one is a filled pill
+           rather than a 2px line.
+
+           Each tab carries its count, so you can see whether a section is worth
+           opening before you open it. The count is omitted rather than shown as
+           0, which would read as an error state. -->
+      <div role="tablist" aria-label="Profile sections"
+        class="inline-flex items-center gap-1 p-1 rounded-full overflow-x-auto no-scrollbar max-w-full"
+        style="background-color: #F2F0EB;">
+        <button v-for="tab in visibleTabs" :key="tab"
+          type="button" role="tab" :aria-selected="activeTab === tab"
+          class="flex items-center gap-2 px-4 sm:px-5 py-2 rounded-full text-sm whitespace-nowrap transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#C9A96E]"
+          :class="activeTab === tab
+            ? 'bg-white text-gray-900'
+            : 'text-gray-500 hover:text-gray-800'"
+          style="--tw-ring-offset-color: #F2F0EB;"
+          @click="activeTab = tab">
+          {{ tab }}
+          <span v-if="tabCount(tab)" class="text-xs tabular-nums"
+            :class="activeTab === tab ? 'text-gray-400' : 'text-gray-400'">
+            {{ tabCount(tab) }}
+          </span>
+        </button>
       </div>
 
       
@@ -781,6 +795,16 @@ const isSeller = computed(() => stats.value.itemsForSale > 0 || stats.value.sold
 
 // Wishlist and order history are private to their owner.
 const visibleTabs = computed(() => (isOwnProfile.value ? tabs : ['Listings']))
+
+// Shown beside each tab name. Returns 0 for an empty or still-loading section,
+// and the template omits the badge entirely in that case: "Orders 0" reads as
+// something being wrong, where "Orders" alone reads as nothing to see yet.
+const tabCount = (tab) => ({
+  Listings: listings.value.length,
+  Wishlist: wishlist.value.length,
+  Orders: orders.value.length,
+  Reports: myReports.value.length,
+}[tab] ?? 0)
 
 watch(isOwnProfile, (own) => {
   if (!own && activeTab.value !== 'Listings') activeTab.value = 'Listings'

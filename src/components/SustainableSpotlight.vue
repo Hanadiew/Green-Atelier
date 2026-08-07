@@ -72,7 +72,6 @@
           loading="lazy"
           decoding="async"
         />
-        <div class="media-fade"></div>
       </div>
 
     </div>
@@ -350,15 +349,15 @@ onUnmounted(() => {
   object-fit: cover;
   object-position: center 60%;
   will-change: transform;
-}
-
-/* Feathers the photograph into the card instead of butting it against the type. */
-.media-fade {
-  position: absolute;
-  inset: 0 0 auto;
-  height: 35%;
-  background: linear-gradient(to bottom, #dbe4d8 0%, rgba(219, 228, 216, 0) 100%);
-  pointer-events: none;
+  /* The photograph fades out at its own top edge rather than having a solid
+     overlay laid over it. The overlay had to be painted in the card's exact
+     colour to disappear, and it was a shade off, which left the image's top
+     edge drawn as a hard line across the panel. A mask has no colour to match:
+     the pixels themselves go transparent and the card shows through, whatever
+     the card happens to be. Slow at first and quicker after, so the top third
+     dissolves rather than wiping. */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.15) 12%, rgba(0, 0, 0, 0.6) 26%, #000 42%);
+  mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.15) 12%, rgba(0, 0, 0, 0.6) 26%, #000 42%);
 }
 
 @media (prefers-reduced-motion: reduce) {

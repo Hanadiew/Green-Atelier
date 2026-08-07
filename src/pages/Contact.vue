@@ -6,7 +6,7 @@
     <!-- ===== HERO / HEADER ===== -->
     <!-- The green band stays full-bleed; only its contents take the shared
          measure, so the band still reaches both edges of the viewport. -->
-    <div class="page-top pb-16 text-center" style="background-color: #1B3A2D; color: white;">
+    <div class="hero-field page-top pb-16 text-center" style="color: white;">
       <div class="page-container">
         <p class="text-xs tracking-widest uppercase mb-3" style="color: #C9A96E;">Conscious Support</p>
         <h1 class="text-4xl font-light leading-tight mb-4" style="font-family: 'Georgia', serif;">
@@ -207,7 +207,7 @@
             <!-- Tab: How Selling Works -->
             <div v-if="activeFaqTab === 'selling'" class="space-y-6">
               <div class="flex items-center gap-3">
-                <span class="text-xl">🛍️</span>
+                <Icon name="bag" size="md" style="color: #C9A96E;" />
                 <h3 class="text-sm font-semibold text-gray-800 uppercase tracking-wider">How Selling Works</h3>
               </div>
               <p class="text-xs text-gray-500 leading-relaxed">
@@ -253,7 +253,7 @@
             <!-- Tab: Authentication Process -->
             <div v-if="activeFaqTab === 'authentication'" class="space-y-6">
               <div class="flex items-center gap-3">
-                <span class="text-xl">🔍</span>
+                <Icon name="search" size="md" style="color: #C9A96E;" />
                 <h3 class="text-sm font-semibold text-gray-800 uppercase tracking-wider">Authentication Process</h3>
               </div>
               <p class="text-xs text-gray-500 leading-relaxed">
@@ -286,7 +286,7 @@
             <!-- Tab: Refunds -->
             <div v-if="activeFaqTab === 'refunds'" class="space-y-6">
               <div class="flex items-center gap-3">
-                <span class="text-xl">🛡️</span>
+                <Icon name="shield" size="md" style="color: #C9A96E;" />
                 <h3 class="text-sm font-semibold text-gray-800 uppercase tracking-wider">Refund Policy</h3>
               </div>
               <p class="text-xs text-gray-500 leading-relaxed">
@@ -317,7 +317,7 @@
             <!-- Tab: Shipping -->
             <div v-if="activeFaqTab === 'shipping'" class="space-y-6">
               <div class="flex items-center gap-3">
-                <span class="text-xl">📦</span>
+                <Icon name="box" size="md" style="color: #C9A96E;" />
                 <h3 class="text-sm font-semibold text-gray-800 uppercase tracking-wider">Shipping Policy</h3>
               </div>
               
@@ -347,7 +347,7 @@
             <!-- Tab: Returns -->
             <div v-if="activeFaqTab === 'returns'" class="space-y-6">
               <div class="flex items-center gap-3">
-                <span class="text-xl">🔄</span>
+                <Icon name="refresh" size="md" style="color: #C9A96E;" />
                 <h3 class="text-sm font-semibold text-gray-800 uppercase tracking-wider">Returns Policy</h3>
               </div>
               <p class="text-xs text-gray-500 leading-relaxed">
@@ -411,6 +411,7 @@
 </template>
 
 <script setup>
+import Icon from '../components/Icon.vue'
 import { onMounted, ref } from 'vue'
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'

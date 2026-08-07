@@ -111,7 +111,8 @@
             <li v-for="signal in SIGNALS" :key="signal.key" class="flex items-center gap-2 text-sm">
               <span :class="['w-5 h-5 rounded-full flex items-center justify-center text-xs text-white',
                              listing.trustcheck.evidence[signal.key] ? 'bg-green-500' : 'bg-gray-300']">
-                {{ listing.trustcheck.evidence[signal.key] ? '✓' : '·' }}
+                <Icon v-if="listing.trustcheck.evidence[signal.key]" name="check" size="sm" />
+            <span v-else class="text-gray-300">-</span>
               </span>
               <span :class="listing.trustcheck.evidence[signal.key] ? 'text-gray-900' : 'text-gray-500'">
                 {{ signal.label }}
@@ -177,6 +178,7 @@
 </template>
 
 <script setup>
+import Icon from '../../components/Icon.vue'
 import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AdminBadge from '../../components/admin/AdminBadge.vue'

@@ -233,7 +233,7 @@
                 :class="selectedPayment === method.key ? 'border-gray-800' : 'border-gray-200 hover:border-gray-300'">
                 <input type="radio" v-model="selectedPayment" :value="method.key" class="accent-gray-800 w-3.5 h-3.5" />
                 <div class="flex items-center gap-3">
-                  <span class="text-lg">{{ method.icon }}</span>
+                  <Icon :name="method.icon" size="md" class="text-gray-500" />
                   <span class="text-sm text-gray-700">{{ method.label }}</span>
                 </div>
               </label>
@@ -242,7 +242,7 @@
             <!-- Card details are collected by Stripe on its own hosted page, so
                  GAFS never sees or stores a card number. -->
             <div class="flex items-start gap-3 rounded-lg px-4 py-3" style="background-color: #F7F5F0;">
-              <span class="text-sm leading-none mt-0.5">🔒</span>
+              <Icon name="lock" size="sm" class="mt-0.5" />
               <div class="text-xs text-gray-500 leading-relaxed">
                 <p>
                   You'll be taken to Stripe's secure payment page to complete this order.
@@ -258,7 +258,7 @@
                     :title="testCardCopied ? 'Copied' : 'Click to copy'">
                     {{ TEST_CARD }}
                   </button>
-                  <span v-if="testCardCopied" class="text-green-600">copied ✓</span>
+                  <span v-if="testCardCopied" class="text-green-600">copied</span>
                   <span class="block mt-0.5">Any future expiry date, any 3-digit CVC.</span>
                 </p>
               </div>
@@ -376,6 +376,7 @@
 </template>
 
 <script setup>
+import Icon from '../components/Icon.vue'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { cartItems, cartSubtotal, removeFromCart } from '../cart.js'
@@ -440,9 +441,9 @@ const shippingAddress = computed(
 const newShipping = ref({ firstName: '', lastName: '', street: '', city: '', postcode: '' })
 
 const paymentMethods = [
-  { key: 'card', label: 'Credit / Debit Card', icon: '💳' },
-  { key: 'fpx', label: 'Online Banking (FPX)', icon: '🏦' },
-  { key: 'ewallet', label: 'e-Wallet (Touch \'n Go / GrabPay)', icon: '📱' },
+  { key: 'card', label: 'Credit / Debit Card', icon: 'card' },
+  { key: 'fpx', label: 'Online Banking (FPX)', icon: 'bank' },
+  { key: 'ewallet', label: 'e-Wallet (Touch \'n Go / GrabPay)', icon: 'phone' },
 ]
 
 const loadAddresses = async () => {

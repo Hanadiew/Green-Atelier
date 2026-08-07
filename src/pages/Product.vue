@@ -78,7 +78,7 @@
             {{ product.status !== 'active' ? unavailableLabel
                : isOwnListing ? 'This is your listing'
                : inCart ? 'In your Bag'
-               : addedToCart ? 'Added to Bag ✓' : 'Add to Bag' }}
+               : addedToCart ? 'Added to Bag' : 'Add to Bag' }}
             </button>
 
             <button @click="handleWishlist"
@@ -311,7 +311,7 @@
             <!-- Sustainability -->
             <div class="bg-white rounded-xl p-5">
               <div class="flex items-center gap-1 mb-2">
-                <span class="text-green-600 text-xs">🌿</span>
+                <Icon name="leaf" size="sm" class="text-green-600" />
                 <p class="text-xs font-medium text-gray-700">Sustainability Calculator</p>
               </div>
               <p class="text-xs font-semibold text-gray-800 mb-2">
@@ -445,6 +445,7 @@
 </template>
 
 <script setup>
+import Icon from '../components/Icon.vue'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { addToCart, cartItems } from '../cart.js'

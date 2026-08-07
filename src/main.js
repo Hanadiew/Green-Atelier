@@ -9,6 +9,7 @@ import { initCart } from './cart.js'
 import { scrollToElement, scrollToTop } from './lib/smoothScroll.js'
 import { beginRouteLoading, endRouteLoading } from './lib/loading.js'
 import { initOriginButtons } from './lib/originButton.js'
+import { initHeroField } from './lib/heroField.js'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -157,3 +158,6 @@ initCart()
 
 // Tracks where the pointer meets a branded button, for the hover fill.
 initOriginButtons()
+
+// Moves the hero gradient's warm wash with the pointer.
+initHeroField()

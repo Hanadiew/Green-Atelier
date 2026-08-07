@@ -4,13 +4,7 @@
     <Navbar dark />
 
     <!-- ===== HERO ===== -->
-    <div class="relative w-full flex items-center justify-center overflow-hidden" style="height: 100vh; background-color: #1B3A2D;">
-
-      <!-- Background text -->
-      <p class="absolute bottom-0 left-0 right-0 text-center font-light text-white select-none pointer-events-none"
-        style="font-family: 'Georgia', serif; font-size: clamp(4rem, 12vw, 10rem); opacity: 0.06; letter-spacing: 0.05em; line-height: 1;">
-        GREEN ATELIER
-      </p>
+    <div class="hero-field relative w-full flex items-center justify-center overflow-hidden" style="height: 100vh;">
 
       <!-- Content. Centred and symmetric, against the Sustainable hero's
            left-aligned block: both open on the same deep-green field, and the
@@ -28,27 +22,10 @@
           Luxury Reimagined.<br /><span class="display-soft">Planet Respected.</span>
         </h1>
 
-        <p class="text-sm text-gray-300 max-w-lg mx-auto leading-relaxed mb-6">
+        <p class="text-sm text-gray-300 max-w-lg mx-auto leading-relaxed">
           A Malaysian marketplace for pre-loved luxury fashion, where every listing is
           reviewed before it reaches the shop.
         </p>
-
-        <!-- Demoted from the eyebrow slot, which the page name now occupies. It
-             is a footnote about the company, not the first thing to read. -->
-        <!-- /60 rather than a fainter tint: below that it stops clearing 4.5:1
-             against the green, and it is still small uppercase text. -->
-        <p class="text-xs uppercase text-white/60 mb-12" style="letter-spacing: 0.2em;">
-          Est. 2024 · Kuala Lumpur, Malaysia
-        </p>
-
-        <button @click="scrollTo('story')"
-          class="flex flex-col items-center gap-2 mx-auto text-gray-400 hover:text-white transition rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4"
-          style="outline-color: #C9A96E;">
-          <span class="text-xs tracking-widest uppercase">Discover Our Story</span>
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 motion-safe:animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 9l-7 7-7-7"/>
-          </svg>
-        </button>
       </div>
 
     </div>
@@ -98,7 +75,7 @@
 
       <!-- The numbers, as their own row. Serif and large, so they carry the
            section rather than annotating it. -->
-      <div class="max-w-5xl mx-auto grid gap-10 sm:grid-cols-3 mt-20 pt-16 border-t border-gray-100">
+      <div v-if="stats.length" class="max-w-5xl mx-auto grid gap-10 sm:grid-cols-3 mt-20 pt-16 border-t border-gray-100">
         <div v-for="stat in stats" :key="stat.label">
           <p class="display text-4xl sm:text-5xl text-gray-900 mb-3">{{ stat.value }}</p>
           <p class="text-sm text-gray-500 leading-relaxed">{{ stat.label }}</p>
@@ -131,11 +108,17 @@
           </div>
         </div>
 
-        <!-- Impact numbers -->
-        <div class="grid gap-10 sm:grid-cols-3 mt-16 pt-16 border-t border-white/10">
+        <!-- Published research, not our own figures. Said outright, because the
+             row above it on this page is our own and the two must not blur. -->
+        <div class="mt-16 pt-16 border-t border-white/10">
+          <p class="text-xs uppercase text-white/40 mb-8" style="letter-spacing: 0.2em;">
+            What the research says about resale
+          </p>
+          <div class="grid gap-10 sm:grid-cols-2">
           <div v-for="impact in impacts" :key="impact.label">
             <p class="display text-4xl sm:text-5xl mb-3" style="color: #C9A96E;">{{ impact.value }}</p>
             <p class="text-sm text-white/50 leading-relaxed">{{ impact.label }}</p>
+            </div>
           </div>
         </div>
 
@@ -147,21 +130,6 @@
          tellings of the story stay in step. -->
     <CircularFashion />
 
-    <section class="page-container pb-24">
-      <div class="max-w-5xl mx-auto">
-
-        <!-- Did you know. Ruled columns rather than bordered cards: three boxed
-             panels this far down the page repeat the pattern above them and the
-             numbers stop registering. -->
-        <div class="grid gap-10 sm:grid-cols-3 sm:divide-x sm:divide-gray-100">
-          <div v-for="fact in facts" :key="fact.stat" class="sm:px-8 sm:first:pl-0 sm:last:pr-0">
-            <p class="display text-4xl sm:text-5xl mb-3" style="color: #C9A96E;">{{ fact.stat }}</p>
-            <p class="text-sm text-gray-500 leading-relaxed">{{ fact.desc }}</p>
-          </div>
-        </div>
-
-      </div>
-    </section>
 
     <!-- ===== PRODUCT BANNER ===== -->
     <!-- The container is a wrapper here rather than the frame itself: its inline
@@ -222,8 +190,12 @@
     </section>
 
     <!-- ===== TEAM / CTA ===== -->
-    <section class="py-20 text-center" style="background-color: #F2F0EB;">
-      <div class="page-container">
+    <!-- Held inside the gutter like the mission panel above, rather than run as
+         a full-width band. Two inset panels on one page read as a pair; a band
+         between them reads as a page break. -->
+    <section class="page-container pb-24 sm:pb-32">
+      <div class="max-w-5xl mx-auto rounded-[2rem] px-8 py-16 sm:px-16 sm:py-20 text-center"
+        style="background-color: #F2F0EB;">
         <p class="eyebrow mb-5">Join The Movement</p>
         <h2 class="display text-3xl sm:text-4xl lg:text-5xl text-gray-900 mb-5">
           Be part of something<br /><span class="display-soft">bigger than one wardrobe</span>
@@ -233,10 +205,6 @@
           a little longer.
         </p>
         <div class="flex items-center justify-center gap-4">
-          <RouterLink to="/signup"
-            class="px-8 py-3 text-sm  rounded-md transition btn-solid">
-            Join Green Atelier
-          </RouterLink>
           <RouterLink to="/shop" class="px-8 py-3 text-sm rounded-md btn-outline-green">
             Explore the Shop
           </RouterLink>
@@ -253,12 +221,8 @@
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
 import CircularFashion from '../components/sustainable/CircularFashion.vue'
-import { scrollToElement } from '../lib/smoothScroll.js'
-
-// Through Lenis rather than scrollIntoView, which would run against Lenis' own
-// animation and stutter.
-const scrollTo = (id) => scrollToElement(`#${id}`)
-
+import { computed, onMounted, ref } from 'vue'
+import { fetchPlatformImpact } from '../lib/listings.js'
 // Sits beside the story text, so it has to be the concrete half of the pitch:
 // what actually happens to a piece, in order.
 const storyPoints = [
@@ -267,11 +231,38 @@ const storyPoints = [
   'Payment held by Stripe until the order is delivered',
 ]
 
-const stats = [
-  { value: '200+', label: 'Luxury pieces listed and rehomed' },
-  { value: '84t', label: 'Estimated CO₂ avoided through resale' },
-  { value: '100%', label: 'Listings reviewed before they go live' },
-]
+// Counted from the database rather than written down here. The three figures
+// that used to sit in this array (200+ pieces, 84t of CO₂, 500+ sellers) were
+// invented, and a number a visitor cannot check is worth less than no number.
+// If nothing has sold yet the row simply does not render.
+const platformImpact = ref(null)
+
+const stats = computed(() => {
+  if (!platformImpact.value) return []
+
+  const { itemsRehomed, co2SavedKg, activeListings } = platformImpact.value
+  const rows = []
+
+  if (itemsRehomed > 0) {
+    rows.push({ value: String(itemsRehomed), label: 'Pieces rehomed through Green Atelier' })
+  }
+  if (co2SavedKg > 0) {
+    rows.push({ value: `${Math.round(co2SavedKg)}kg`, label: 'CO₂ avoided, totalled across those sales' })
+  }
+  if (activeListings > 0) {
+    rows.push({ value: String(activeListings), label: 'Pieces looking for a new owner' })
+  }
+  return rows
+})
+
+onMounted(async () => {
+  try {
+    platformImpact.value = await fetchPlatformImpact()
+  } catch (error) {
+    // A visitor loses one row of numbers, nothing else on the page.
+    console.error('Could not load platform impact:', error.message)
+  }
+})
 
 const pillars = [
   {
@@ -288,17 +279,13 @@ const pillars = [
   },
 ]
 
+// Published research on resale, not our own performance. Labelled as such in
+// the template so the two kinds of number are never read as one claim.
 const impacts = [
-  { value: '73%', label: 'Lower carbon footprint per resold item' },
-  { value: '2.2yrs', label: 'Average garment life extension' },
-  { value: '500+', label: 'Sellers on the platform' },
+  { value: '73%', label: 'Lower carbon footprint when a garment is resold rather than made new' },
+  { value: '2.2yrs', label: 'Average extension to a garment\'s life when it changes owner' },
 ]
 
-const facts = [
-  { stat: '100B', desc: 'garments are made worldwide each year. About 85% are in landfill within twelve months.' },
-  { stat: '1,500Mt', desc: 'of textile waste is projected each year by 2025 if nothing changes.' },
-  { stat: '10%', desc: 'of global carbon emissions come from fashion, more than aviation and shipping combined.' },
-]
 
 const values = [
   { title: 'Checked Before It Sells', desc: 'Our team reviews every listing, and sellers can attach receipts, serial numbers and close-up photos so you know what you are buying.' },
