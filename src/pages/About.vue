@@ -293,7 +293,7 @@ onMounted(async () => {
 const pillars = [
   {
     title: 'Reduce Waste',
-    desc: 'Every resold item diverts textile waste from landfill and extends the life of a garment by an average of 2.2 years.',
+    desc: 'Every resold piece keeps a garment out of landfill for longer. Nine extra months of wear cuts its carbon, water and waste footprint by 20 to 30%.',
   },
   {
     title: 'Circular Economy',
@@ -307,9 +307,13 @@ const pillars = [
 
 // Published research on resale, not our own performance. Labelled as such in
 // the template so the two kinds of number are never read as one claim.
+//
+// Checked August 2026. The pair this replaced (73% and 2.2 years) could not be
+// traced to any source: the nearest real figures are ThredUp's 25% and WRAP's
+// nine months, both named here alongside the body that published them.
 const impacts = [
-  { value: '73%', label: 'Lower carbon footprint when a garment is resold rather than made new' },
-  { value: '2.2yrs', label: 'Average extension to a garment\'s life when it changes owner' },
+  { value: '25%', label: 'Less carbon when a piece is bought secondhand rather than made new (ThredUp / Green Story)' },
+  { value: '20%', label: 'Lower carbon, water and waste footprint from nine extra months of wear (WRAP)' },
 ]
 
 

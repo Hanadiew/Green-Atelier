@@ -88,8 +88,8 @@ const hovered = ref(null)
 const focused = ref(null)
 const opened = ref(null)
 
-const life = useCountUp(2.2, { decimals: 1 })
-const footprint = useCountUp(73)
+const life = useCountUp(9)
+const footprint = useCountUp(25)
 
 // The same two figures the Sustainable page states. Nothing invented here, and
 // nothing attributed to a customer.
@@ -97,8 +97,8 @@ const stats = [
   {
     key: 'life',
     ...life,
-    suffix: ' yrs',
-    label: 'Longer active life for a garment that is resold rather than replaced.',
+    suffix: ' months',
+    label: 'Extra active life is enough to cut a garment’s footprint by a fifth.',
     detail:
       'Keeping a piece in use is the biggest lever an owner has. It beats fibre choice and washing habits combined.',
   },
@@ -106,7 +106,7 @@ const stats = [
     key: 'footprint',
     ...footprint,
     suffix: '%',
-    label: 'Less carbon, waste and water than buying the same piece new.',
+    label: 'Less carbon than buying the same piece new, on average.',
     detail:
       'Most of a garment’s footprint is spent before it is first worn. Buying one that already exists avoids that cost outright.',
   },

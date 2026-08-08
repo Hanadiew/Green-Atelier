@@ -140,7 +140,7 @@
             100 Billion<br /><span class="display-soft">Garments</span>
           </h3>
           <p class="text-sm text-gray-500 leading-relaxed relative z-10 max-w-xs">
-            Produced annually, with 85% ending up in landfills by the year's end.
+            Made worldwide each year, roughly double the number made two decades ago.
           </p>
         </div>
 
@@ -156,10 +156,10 @@
             style="font-size: 7rem; line-height: 1; font-family: var(--font-display); font-weight: 500; color: #DCD6C7; opacity: 0.7;"
             aria-hidden="true">02</p>
           <h3 class="display text-2xl text-gray-900 mb-3 relative z-10">
-            1500 Million<br /><span class="display-soft">Tonnes</span>
+            150 Million<br /><span class="display-soft">Tonnes</span>
           </h3>
           <p class="text-sm text-gray-500 leading-relaxed relative z-10">
-            Projected textile waste annually by 2025 without circular practices.
+            Of textile waste projected each year by 2030, up from about 120 million today.
           </p>
         </div>
 

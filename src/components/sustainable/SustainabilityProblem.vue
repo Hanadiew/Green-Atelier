@@ -66,9 +66,9 @@ const hovered = ref(null)
 const focused = ref(null)
 const opened = ref(null)
 
-// Qualitative on purpose. The project's research supports the 2.2-year and 73%
-// figures shown above; it does not support per-issue numbers, so none are
-// asserted here rather than borrowing statistics from elsewhere.
+// Qualitative on purpose. The figures elsewhere on this page are sourced
+// (WRAP, ThredUp, UNEP); there is no comparable source for a number per issue
+// here, so none is asserted rather than borrowing one that does not fit.
 const cards = [
   {
     title: 'Textile Waste',

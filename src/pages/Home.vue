@@ -211,8 +211,8 @@
       Fashion that gives back<br />to earth
     </h2>
     <p class="text-sm text-gray-400 mt-4 leading-relaxed max-w-sm">
-      Reselling a piece adds about 2.2 years to its life. That is less waste, fewer
-      emissions, and luxury that lasts.
+      Nine extra months of wear cuts a garment's carbon, water and waste footprint by
+      a fifth. Resale is how a piece gets them.
     </p>
   </div>
 
