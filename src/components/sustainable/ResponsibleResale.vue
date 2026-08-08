@@ -2,15 +2,23 @@
   <section ref="root" :class="{ 'is-visible': visible }" class="py-20 sm:py-28">
     <div class="page-container">
 
-      <div class="max-w-xl mb-14">
-        <p class="reveal text-xs tracking-widest uppercase mb-4" style="color: #C9A96E;">Responsible Resale</p>
-        <h2 class="reveal text-3xl sm:text-4xl font-light text-gray-800 leading-snug mb-5"
-          style="font-family: 'Georgia', serif; --reveal-delay: 100ms;">
-          Sustainability Needs Trust
-        </h2>
-        <p class="reveal text-sm text-gray-500 leading-relaxed" style="--reveal-delay: 180ms;">
-          Resale only works if buyers can judge what they are buying. So we show what is
-          known about a piece, and say plainly what is not.
+      <!-- Heading left, description right. The sentence used to sit directly
+           under the headline in the same narrow column, which read as a third
+           line of the title; across the measure and right-aligned it reads as a
+           note about the section. Stacks back to one column below lg, where
+           there is no width to place it against. -->
+      <div class="mb-14 grid gap-6 lg:grid-cols-2 lg:gap-16 lg:items-end">
+        <div>
+          <p class="reveal eyebrow mb-5">Green Atelier TrustCheck</p>
+          <h2 class="reveal display text-3xl sm:text-4xl lg:text-5xl text-gray-900"
+            style="--reveal-delay: 100ms;">
+            What the score<br /><span class="display-soft">on a listing means</span>
+          </h2>
+        </div>
+
+        <p class="reveal text-sm text-gray-500 leading-relaxed lg:text-right lg:pb-2" style="--reveal-delay: 180ms;">
+          TrustCheck rates how complete a seller's evidence is, out of 100. It is not a
+          verdict on whether a piece is genuine, and the difference matters.
         </p>
       </div>
 

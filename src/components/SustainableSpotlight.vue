@@ -193,7 +193,7 @@ onUnmounted(() => {
 .headline {
   margin: 0;
   color: #26332a;
-  font-family: 'Georgia', serif;
+  font-family: var(--font-display);
   font-weight: 400;
   font-size: clamp(2rem, 5.4vw, 4rem);
   line-height: 1.08;
@@ -258,7 +258,7 @@ onUnmounted(() => {
 .stat-figure {
   display: block;
   color: #1b3a2d;
-  font-family: 'Georgia', serif;
+  font-family: var(--font-display);
   font-size: clamp(2.25rem, 5vw, 3.25rem);
   line-height: 1;
   font-variant-numeric: tabular-nums;

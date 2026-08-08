@@ -39,7 +39,7 @@
                   backgroundColor: active >= i ? '#1B3A2D' : '#F2F0EB',
                   color: active >= i ? '#fff' : '#9CA3AF',
                   border: active >= i ? '1px solid #1B3A2D' : '1px solid #D1D5DB',
-                  fontFamily: 'Georgia, serif',
+                  fontFamily: 'var(--font-display)',
                   transform: active === i ? 'scale(1.12)' : 'scale(1)',
                 }">
                 {{ i + 1 }}
@@ -47,7 +47,7 @@
 
               <span class="text-sm transition-colors duration-300"
                 :class="active === i ? 'text-gray-900' : 'text-gray-400 group-hover:text-gray-600'"
-                style="font-family: 'Georgia', serif;">
+                style="font-family: var(--font-display);">
                 {{ step.title }}
               </span>
             </button>
@@ -84,9 +84,9 @@
       <div class="sm:hidden divide-y divide-gray-300 border-t border-gray-300">
         <div v-for="(step, i) in steps" :key="step.title" class="py-6 flex gap-4">
           <span class="w-9 h-9 flex-shrink-0 rounded-full flex items-center justify-center text-sm surface-brand"
-            style="font-family: 'Georgia', serif;">{{ i + 1 }}</span>
+            style="font-family: var(--font-display);">{{ i + 1 }}</span>
           <div>
-            <p class="text-base text-gray-900 mb-2" style="font-family: 'Georgia', serif;">{{ step.title }}</p>
+            <p class="text-base text-gray-900 mb-2" style="font-family: var(--font-display);">{{ step.title }}</p>
             <p class="text-sm text-gray-500 leading-relaxed mb-3">{{ step.detail }}</p>
             <ul class="space-y-2">
               <li v-for="point in step.points" :key="point" class="flex items-start gap-2.5 text-sm text-gray-500">

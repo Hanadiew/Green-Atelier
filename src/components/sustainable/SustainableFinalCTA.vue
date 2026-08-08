@@ -19,7 +19,7 @@
           <p class="reveal text-xs tracking-widest uppercase mb-5" style="color: #C9A96E;">Your Move</p>
 
           <h2 class="reveal text-4xl sm:text-5xl font-light text-white mb-6 leading-tight"
-            style="font-family: 'Georgia', serif; --reveal-delay: 120ms;">
+            style="font-family: var(--font-display); --reveal-delay: 120ms;">
             Make Your Next<br />Choice Count
           </h2>
 

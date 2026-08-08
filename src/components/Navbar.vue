@@ -99,7 +99,7 @@
     <div class="absolute left-1/2 -translate-x-1/2">
       <RouterLink to="/home">
         <span class="tracking-widest text-xs sm:text-sm font-light whitespace-nowrap logo-mark"
-          style="color: #C9A96E; font-family: 'Georgia', serif;">
+          style="color: #C9A96E; font-family: var(--font-display);">
           GREEN ATELIER
         </span>
       </RouterLink>
@@ -108,8 +108,11 @@
     <!-- Right: Icons -->
     <div class="flex items-center gap-4 sm:gap-5">
 
-      <!-- Wishlist with count badge -->
-      <RouterLink to="/wishlist" class="relative" :class="iconClass">
+      <!-- Wishlist with count badge. Hidden below md: three icons plus a burger
+           plus a centred wordmark is more than fits on a 375px bar, and this is
+           the one of the three that is neither the bag nor the account. It moves
+           into the sheet, where it gets a labelled row instead of a bare heart. -->
+      <RouterLink to="/wishlist" class="relative hidden md:inline-flex" :class="iconClass">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
           stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
           <path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5" />
@@ -202,7 +205,7 @@
     <RouterLink to="/orders"
       class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.048 18.566A2 2 0 0 0 4 21h16a2 2 0 0 0 1.952-2.434l-2-9A2 2 0 0 0 18 8H6a2 2 0 0 0-1.952 1.566z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 11V6a4 4 0 0 1 8 0v5"/>
       </svg>
       Orders
     </RouterLink>
@@ -303,6 +306,28 @@
           <svg class="h-4 w-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
           </svg>
+        </RouterLink>
+
+        <!-- The wishlist, off the bar and in here at this width. The count moves
+             with it, as a number beside the name rather than a badge on a heart:
+             there is room to simply say it. -->
+        <RouterLink to="/wishlist" class="flex items-center justify-between py-3.5 text-[15px] text-gray-900"
+          :class="{ 'nav-current-row': isOn('/wishlist') }" :aria-current="isOn('/wishlist') ? 'page' : undefined">
+          <span class="flex items-center gap-2.5">
+            <svg class="h-4 w-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5" />
+            </svg>
+            Wishlist
+          </span>
+          <span class="flex items-center gap-2">
+            <span v-if="wishlistCount > 0" class="text-xs tabular-nums" style="color: #C9A96E;">
+              {{ wishlistCount }}
+            </span>
+            <svg class="h-4 w-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </span>
         </RouterLink>
       </nav>
 

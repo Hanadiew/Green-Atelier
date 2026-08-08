@@ -27,39 +27,35 @@
         <!-- ===== STEP 0: OVERVIEW ===== -->
         <div v-if="currentStep === 0" class="space-y-5 mt-6">
           <div>
-            <label class="text-xs text-gray-400 mb-1 block">Title</label>
+            <label class="text-xs text-gray-400 mb-1 block">Title <span class="text-red-400" aria-hidden="true">*</span></label>
             <input v-model="details.title" type="text" placeholder="e.g. Kisslock Frame Bag 27"
               class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white placeholder-gray-300" />
             <p class="text-xs text-gray-400 mt-1">This is the name buyers see in the shop.</p>
           </div>
           <div>
-            <label class="text-xs text-gray-400 mb-1 block">Category</label>
+            <label class="text-xs text-gray-400 mb-1 block">Category <span class="text-red-400" aria-hidden="true">*</span></label>
             <select v-model="details.category" class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white">
               <option v-for="c in CATEGORIES" :key="c" :value="c">{{ c }}</option>
             </select>
           </div>
           <div>
-            <label class="text-xs text-gray-400 mb-1 block">Condition</label>
+            <label class="text-xs text-gray-400 mb-1 block">Condition <span class="text-red-400" aria-hidden="true">*</span></label>
             <select v-model="details.condition" class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white">
               <option v-for="c in CONDITIONS" :key="c" :value="c">{{ c }}</option>
             </select>
           </div>
           <div>
-            <label class="text-xs text-gray-400 mb-1 block">Color</label>
-            <select v-model="details.color" class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white">
-              <option>Brown</option><option>Black</option><option>White</option>
-              <option>Beige</option><option>Navy</option><option>Other</option>
-            </select>
+            <label for="sell-color" class="text-xs text-gray-400 mb-1 block">Color <span class="text-red-400" aria-hidden="true">*</span></label>
+            <input id="sell-color" v-model="details.color" type="text" placeholder="e.g. Tan brown"
+              class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white placeholder-gray-300 focus:border-[#C9A96E] transition-colors" />
           </div>
           <div>
-            <label class="text-xs text-gray-400 mb-1 block">Material</label>
-            <select v-model="details.material" class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white">
-              <option>Leather</option><option>Canvas</option><option>Silk</option>
-              <option>Cotton</option><option>Straw Woven</option><option>Other</option>
-            </select>
+            <label for="sell-material" class="text-xs text-gray-400 mb-1 block">Material <span class="text-gray-400 font-normal">(optional)</span></label>
+            <input id="sell-material" v-model="details.material" type="text" placeholder="e.g. Calfskin leather"
+              class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white placeholder-gray-300 focus:border-[#C9A96E] transition-colors" />
           </div>
           <div>
-            <label class="text-xs text-gray-400 mb-1 block">Size</label>
+            <label class="text-xs text-gray-400 mb-1 block">Size <span class="text-red-400" aria-hidden="true">*</span></label>
             <input v-model="details.size" type="text" placeholder="Input text"
               class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white placeholder-gray-300" />
           </div>
@@ -80,12 +76,10 @@
   <!-- Description -->
   <div>
     <label class="text-sm text-gray-700 mb-2 block">Description</label>
-    <textarea
+    <RichTextEditor
       v-model="details.description"
-      rows="4"
-      placeholder="Describe your item or reasons to sell"
-      class="w-full border border-gray-200 rounded-md px-4 py-3 text-sm text-gray-700 outline-none bg-white placeholder-gray-300 resize-y"
-    ></textarea>
+      label="Item description"
+      placeholder="Describe your item, its condition, and anything a buyer should know" />
 
     <!-- Hint box -->
     <div class="mt-2 rounded-md px-4 py-3 flex gap-3" style="background-color: #F7F5F0;">
@@ -609,6 +603,7 @@ import { holdFor } from '../lib/loading.js'
 import TrustCheckPanel from '../components/TrustCheckPanel.vue'
 import { fetchPayoutAccount } from '../lib/payouts.js'
 import ToggleSwitch from '../components/ToggleSwitch.vue'
+import RichTextEditor from '../components/RichTextEditor.vue'
 import { userId } from '../lib/auth.js'
 import { fetchDefaultAddress } from '../lib/addresses.js'
 import { matchBrand, saveAssessment, saveVerificationDocs } from '../lib/trustcheck/index.js'
@@ -676,8 +671,12 @@ const defaultDetails = {
   title: '',
   category: CATEGORIES.includes(route.query.category) ? route.query.category : 'Tops',
   condition: CONDITIONS.includes(route.query.condition) ? route.query.condition : 'Good as new',
-  color: 'Brown',
-  material: 'Leather',
+  // Empty, not guessed. These carried 'Brown' and 'Leather', which showed a
+  // seller two fields already answered on a form they had not touched — and
+  // whatever they failed to notice got published as fact. Only the three
+  // answers actually given on the Sell page are carried in.
+  color: '',
+  material: '',
   size: '',
   vintage: false,
   authDoc: null,
@@ -864,8 +863,14 @@ const removeImage = (index) => {
 const validateStep = (step) => {
   const d = details.value
   if (step === 0) {
-    if (!d.title.trim()) return 'Give your item a title so buyers can find it.'
-    if (d.title.trim().length < 2) return 'That title is too short.'
+    if (!(d.title || '').trim()) return 'Give your item a title so buyers can find it.'
+    if ((d.title || '').trim().length < 2) return 'That title is too short.'
+    if (!d.category) return 'Choose a category.'
+    if (!d.condition) return 'Choose the condition.'
+    // Material is the one optional field here: plenty of pieces have no single
+    // answer, and forcing one would only produce guesses on the listing.
+    if (!(d.color || '').trim()) return 'Add the colour, so buyers searching for it can find your piece.'
+    if (!(d.size || '').trim()) return 'Add the size, even if it is approximate.'
   }
   if (step === 2 && existingImages.value.length + imageFiles.value.length < 3) {
     return 'Please have at least 3 photos total.'

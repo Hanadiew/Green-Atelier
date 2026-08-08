@@ -5,7 +5,7 @@
     <div class="page-top page-container pb-16">
 
       <div class="mb-8">
-        <h1 class="text-2xl font-light text-gray-900" style="font-family: 'Georgia', serif;">Wallet</h1>
+        <h1 class="text-2xl font-light text-gray-900" style="font-family: var(--font-display);">Wallet</h1>
         <p class="text-xs text-gray-400 mt-1">
           Earnings from your sales are paid directly to your bank account. Green Atelier does not
           hold your funds.

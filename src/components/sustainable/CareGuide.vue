@@ -5,7 +5,7 @@
       <div class="text-center mb-12">
         <p class="reveal text-xs tracking-widest uppercase mb-4" style="color: #C9A96E;">Care Guide</p>
         <h2 class="reveal text-3xl sm:text-4xl font-light text-gray-800 leading-snug mb-4"
-          style="font-family: 'Georgia', serif; --reveal-delay: 100ms;">
+          style="font-family: var(--font-display); --reveal-delay: 100ms;">
           Care for What You Own
         </h2>
         <p class="reveal text-sm text-gray-400 max-w-md mx-auto leading-relaxed" style="--reveal-delay: 180ms;">
@@ -48,7 +48,7 @@
             <Transition name="care-copy" mode="out-in">
               <div :key="steps[active].key">
                 <p class="text-xs tabular-nums mb-4" style="color: #C9A96E;">0{{ active + 1 }} / 0{{ steps.length }}</p>
-                <h3 class="text-2xl font-light text-gray-800 mb-4" style="font-family: 'Georgia', serif;">
+                <h3 class="text-2xl font-light text-gray-800 mb-4" style="font-family: var(--font-display);">
                   {{ steps[active].title }}
                 </h3>
                 <p class="text-sm text-gray-500 leading-relaxed mb-6">{{ steps[active].body }}</p>

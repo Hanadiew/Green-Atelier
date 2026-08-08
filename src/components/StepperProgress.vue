@@ -90,10 +90,13 @@ defineEmits(['update:current'])
 const atStart = computed(() => props.current <= 0)
 const atEnd = computed(() => props.current >= props.steps.length - 1)
 
+// One colour at two strengths rather than three different colours. Green for
+// "here" against gold for "done" read as two unrelated states; the same gold,
+// pale where you are and solid where you have been, reads as one bar filling.
 const segmentColour = (i) => {
-  if (i === props.current) return '#1B3A2D' // where you are
-  if (props.completed[i]) return '#C9A96E' // done
-  return '#E5E7EB' // still to do
+  if (props.completed[i]) return '#C9A96E'              // done
+  if (i === props.current) return 'rgba(201,169,110,0.35)' // where you are
+  return '#E5E7EB'                                      // still to do
 }
 </script>
 

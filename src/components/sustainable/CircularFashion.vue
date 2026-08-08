@@ -5,7 +5,7 @@
       <div class="text-center mb-14">
         <p class="reveal text-xs tracking-widest uppercase mb-4" style="color: #C9A96E;">Circular Fashion</p>
         <h2 class="reveal text-3xl sm:text-4xl font-light text-gray-800 leading-snug mb-4"
-          style="font-family: 'Georgia', serif; --reveal-delay: 100ms;">
+          style="font-family: var(--font-display); --reveal-delay: 100ms;">
           Keep Luxury in Circulation
         </h2>
         <p class="reveal text-sm text-gray-400 max-w-md mx-auto leading-relaxed" style="--reveal-delay: 180ms;">
@@ -36,7 +36,7 @@
                   <p class="text-xs tracking-widest uppercase mb-3" style="color: #C9A96E;">
                     Stage {{ active + 1 }} of {{ stages.length }}
                   </p>
-                  <h3 class="text-2xl font-light text-gray-800 mb-3" style="font-family: 'Georgia', serif;">
+                  <h3 class="text-2xl font-light text-gray-800 mb-3" style="font-family: var(--font-display);">
                     {{ stages[active].label }}
                   </h3>
                   <p class="text-xs text-gray-500 leading-relaxed">{{ stages[active].detail }}</p>

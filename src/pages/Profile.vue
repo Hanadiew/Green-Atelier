@@ -26,7 +26,10 @@
       </div>
 
       <!-- ===== PROFILE HEADER ===== -->
-      <div class="py-10 flex items-center justify-between border-b border-gray-100 flex-wrap gap-8">
+      <!-- No bottom rule. The tab pill below is a self-contained control with
+           its own edge, so a full-width line between them read as a divider
+           belonging to nothing. -->
+      <div class="py-10 flex items-center justify-between flex-wrap gap-8">
 
         <div class="flex items-center gap-8">
           <!-- Avatar -->
@@ -168,7 +171,10 @@
       </select>
     </label>
 
-    <span class="control-pill">
+    <!-- Owner only. A visitor browsing someone else's profile has no use for
+         a switch that reveals items they cannot buy, and sold stock is not
+         theirs to page through. -->
+    <span v-if="isOwnProfile" class="control-pill">
       <span class="control-pill__label">Sold items</span>
       <ToggleSwitch v-model="showSold" size="sm" />
     </span>
@@ -178,7 +184,7 @@
     <!-- Empty state -->
     <div v-if="listings.length === 0" class="flex flex-col items-center justify-center py-24 text-center">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-200 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M2.048 18.566A2 2 0 0 0 4 21h16a2 2 0 0 0 1.952-2.434l-2-9A2 2 0 0 0 18 8H6a2 2 0 0 0-1.952 1.566z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M8 11V6a4 4 0 0 1 8 0v5"/>
       </svg>
       <p class="text-sm font-medium text-gray-500 mb-1">No listings yet</p>
       <p class="text-xs text-gray-400 mb-6">
@@ -255,7 +261,7 @@
     <!-- Empty state -->
     <div v-if="wishlist.length === 0" class="flex flex-col items-center justify-center py-24 text-center">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-200 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 010-6.364z"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/>
       </svg>
       <p class="text-sm font-medium text-gray-500 mb-1">No saved items yet</p>
       <p class="text-xs text-gray-400 mb-6">Heart items you love to save them here</p>
@@ -363,11 +369,72 @@
             </div>
             <span class="text-xs text-gray-400">View details →</span>
           </div>
+
+          <!-- Only once it has actually arrived, and only on your own orders.
+               @click.stop so rating a seller does not also open the order
+               detail modal the card sits inside. -->
+          <div v-if="isOwnProfile && order.status === 'Delivered' && order.sellerId"
+            class="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between gap-3 flex-wrap"
+            @click.stop>
+            <div v-if="order.myReview" class="flex items-center gap-2">
+              <StarRating :value="order.myReview.rating" readonly size="sm" />
+              <span class="text-xs text-gray-400">Your rating</span>
+            </div>
+            <span v-else class="text-xs text-gray-400">How was this seller?</span>
+
+            <button type="button" @click="openReview(order)"
+              class="text-xs tracking-wider uppercase px-4 py-2 rounded-lg btn-outline-green">
+              {{ order.myReview ? 'Edit review' : 'Write a review' }}
+            </button>
+          </div>
         </div>
 
       </div>
     </div>
 
+  </div>
+
+  <!-- ===== REVIEWS TAB =====
+       Public. This is the point of the feature: a buyer deciding whether to
+       trust a seller reads what previous buyers said. -->
+  <div v-if="activeTab === 'Reviews'">
+    <div v-if="sellerReviews.length === 0" class="flex flex-col items-center justify-center py-24 text-center">
+      <p class="text-sm font-medium text-gray-500 mb-1">No reviews yet</p>
+      <p class="text-xs text-gray-400">
+        {{ isOwnProfile
+          ? 'Buyers can rate you once an order has been delivered.'
+          : 'This seller has not been reviewed yet.' }}
+      </p>
+    </div>
+
+    <div v-else>
+      <div class="flex items-center gap-4 mb-8 pb-6 border-b border-gray-100">
+        <p class="display text-4xl text-gray-900 tabular-nums">{{ reviewSummary.display }}</p>
+        <div>
+          <StarRating :value="Math.round(reviewSummary.average)" readonly />
+          <p class="text-xs text-gray-400 mt-1">
+            {{ reviewSummary.count }} {{ reviewSummary.count === 1 ? 'review' : 'reviews' }}
+          </p>
+        </div>
+      </div>
+
+      <div class="space-y-6">
+        <div v-for="review in sellerReviews" :key="review.id"
+          class="pb-6 border-b border-gray-100 last:border-0">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-9 h-9 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
+              <img v-if="review.avatar" :src="review.avatar" alt="" class="w-full h-full object-cover" />
+            </div>
+            <div class="min-w-0">
+              <p class="text-sm text-gray-800">{{ review.name }}</p>
+              <p class="text-xs text-gray-400">{{ review.date }}</p>
+            </div>
+            <StarRating :value="review.rating" readonly size="sm" class="ml-auto" />
+          </div>
+          <p v-if="review.body" class="text-sm text-gray-500 leading-relaxed">{{ review.body }}</p>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- ===== REPORTS TAB ===== -->
@@ -594,6 +661,45 @@
 
 <ReportDialog v-model="showReport" :user-id="profileRow?.id ?? null" />
 
+  <!-- Review dialog -->
+  <Teleport to="body">
+    <div v-if="reviewFor" class="fixed inset-0 z-[80] flex items-center justify-center bg-black/40 px-4"
+      role="dialog" aria-modal="true" aria-labelledby="review-title" @click.self="closeReview">
+      <div class="bg-white rounded-2xl border w-full max-w-md px-7 py-7" style="border-color: #E5E0D5;">
+
+        <h3 id="review-title" class="text-lg text-gray-900 mb-1" style="font-family: var(--font-display); font-weight: 500;">
+          Rate this seller
+        </h3>
+        <p class="text-xs text-gray-400 mb-6">{{ reviewFor.brand }} &middot; {{ reviewFor.name }}</p>
+
+        <label class="text-xs text-gray-600 uppercase tracking-widest mb-2 block">Your rating</label>
+        <StarRating :value="reviewRating" label="Your rating" class="mb-6"
+          @update:value="reviewRating = $event" />
+
+        <label for="review-body" class="text-xs text-gray-600 uppercase tracking-widest mb-2 block">
+          Comments <span class="text-gray-400 normal-case tracking-normal">(optional)</span>
+        </label>
+        <textarea id="review-body" v-model="reviewBody" rows="4" maxlength="1000"
+          placeholder="How was the item, and how did the seller handle the sale?"
+          class="w-full border rounded-md px-4 py-3 text-sm text-gray-700 outline-none bg-white placeholder-gray-300 resize-y focus:border-[#C9A96E] transition-colors"
+          style="border-color: #E5E0D5;"></textarea>
+
+        <p v-if="reviewError" class="text-xs text-red-500 mt-2" role="alert">{{ reviewError }}</p>
+
+        <div class="flex items-center justify-end gap-3 mt-6">
+          <button type="button" @click="closeReview"
+            class="px-5 py-2.5 text-xs tracking-wider uppercase text-gray-500 hover:text-gray-800 transition">
+            Cancel
+          </button>
+          <button type="button" :disabled="reviewSaving" @click="submitReview"
+            class="px-6 py-2.5 text-xs tracking-wider uppercase rounded-lg disabled:opacity-60 btn-solid">
+            {{ reviewSaving ? 'Saving…' : 'Submit review' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </Teleport>
+
 </template>
 
 <script setup>
@@ -603,6 +709,8 @@ import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
 import ReportDialog from '../components/ReportDialog.vue'
 import ToggleSwitch from '../components/ToggleSwitch.vue'
+import StarRating from '../components/StarRating.vue'
+import { fetchMyReviewsByOrder, fetchSellerReviews, saveReview, summarise } from '../lib/reviews.js'
 import { isAuthenticated, profile as ownProfile, userId } from '../lib/auth.js'
 import { fetchProfileByUsername, fetchProfileStats } from '../lib/profiles.js'
 import { fetchWishlist, removeFromWishlist } from '../lib/wishlist.js'
@@ -620,7 +728,7 @@ import { showToast } from '../lib/toast.js'
 const router = useRouter()
 const route = useRoute()
 
-const tabs = ['Listings', 'Wishlist', 'Orders', 'Reports']
+const tabs = ['Listings', 'Reviews', 'Wishlist', 'Orders', 'Reports']
 const activeTab = ref(tabs.includes(route.query.tab) ? route.query.tab : 'Listings')
 
 // Listings filters
@@ -727,6 +835,67 @@ const STATUS_BADGES = {
 }
 
 const profileRow = ref(null)
+
+// --- Reviews ---------------------------------------------------------------
+const sellerReviews = ref([])
+const myReviews = ref({})
+const reviewSummary = computed(() => summarise(sellerReviews.value))
+
+const reviewFor = ref(null)
+const reviewRating = ref(0)
+const reviewBody = ref('')
+const reviewSaving = ref(false)
+const reviewError = ref('')
+
+const openReview = (order) => {
+  reviewFor.value = order
+  reviewRating.value = order.myReview?.rating ?? 0
+  reviewBody.value = order.myReview?.body ?? ''
+  reviewError.value = ''
+}
+
+const closeReview = () => { reviewFor.value = null }
+
+const submitReview = async () => {
+  if (!reviewRating.value) {
+    reviewError.value = 'Choose a rating from 1 to 5 stars.'
+    return
+  }
+
+  reviewSaving.value = true
+  reviewError.value = ''
+  try {
+    const saved = await saveReview({
+      orderId: reviewFor.value.orderUuid,
+      sellerId: reviewFor.value.sellerId,
+      buyerId: userId.value,
+      rating: reviewRating.value,
+      body: reviewBody.value,
+    })
+    myReviews.value = { ...myReviews.value, [saved.order_id]: saved }
+    closeReview()
+    showToast("Thank you. Your review is on the seller's profile.")
+  } catch (error) {
+    reviewError.value = error.message
+  } finally {
+    reviewSaving.value = false
+  }
+}
+
+const loadReviews = async (sellerId) => {
+  try {
+    sellerReviews.value = sellerId ? await fetchSellerReviews(sellerId) : []
+    // Only the signed-in buyer's own reviews, and only for their own profile:
+    // the Orders tab is the only thing that reads them.
+    myReviews.value = isOwnProfile.value && userId.value
+      ? await fetchMyReviewsByOrder(userId.value)
+      : {}
+  } catch (error) {
+    // A profile that cannot load its reviews still shows everything else.
+    console.error('Could not load reviews:', error.message)
+    sellerReviews.value = []
+  }
+}
 const stats = ref({ itemsForSale: 0, sold: 0 })
 const earnings = ref({ totalEarnings: 0, paidOut: 0, pendingEarnings: 0, itemsSold: 0 })
 const listings = ref([])
@@ -794,7 +963,9 @@ onUnmounted(() => clearTimeout(bannerTimer))
 const isSeller = computed(() => stats.value.itemsForSale > 0 || stats.value.sold > 0)
 
 // Wishlist and order history are private to their owner.
-const visibleTabs = computed(() => (isOwnProfile.value ? tabs : ['Listings']))
+// Reviews about a seller are the reason to look at their profile, so they
+// stay visible to a visitor. Wishlist and order history do not.
+const visibleTabs = computed(() => (isOwnProfile.value ? tabs : ['Listings', 'Reviews']))
 
 // Shown beside each tab name. Returns 0 for an empty or still-loading section,
 // and the template omits the badge entirely in that case: "Orders 0" reads as
@@ -804,6 +975,7 @@ const tabCount = (tab) => ({
   Wishlist: wishlist.value.length,
   Orders: orders.value.length,
   Reports: myReports.value.length,
+  Reviews: sellerReviews.value.length,
 }[tab] ?? 0)
 
 watch(isOwnProfile, (own) => {
@@ -839,6 +1011,9 @@ const load = async () => {
 
     const id = profileRow.value.id
     stats.value = await fetchProfileStats(id)
+
+    // Public, so this runs for a visitor as well as the owner.
+    await loadReviews(id)
 
     // Visitors only ever see active and sold listings; RLS filters out the
     // seller's drafts and items still in review.
@@ -914,6 +1089,7 @@ const orderCards = computed(() =>
       // orderId is the human-readable GA-… number; the receipt route needs the uuid.
       orderUuid: o.id,
       orderId: o.orderId,
+      sellerId: o.sellerId,
       paymentStatus: o.paymentStatus,
       paymentLabel: paymentStatusLabel(o.paymentStatus),
       name: item.name,
@@ -922,6 +1098,7 @@ const orderCards = computed(() =>
       image: item.image,
       date: o.date,
       status: item.status,
+      myReview: myReviews.value[o.id] ?? null,
     })),
   ),
 )

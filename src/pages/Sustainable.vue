@@ -15,7 +15,6 @@
       <ImpactStats />
       <SustainabilityProblem />
       <CircularFashion />
-      <SustainablePractices />
       <ImpactSection />
       <CareGuide />
       <SellerSustainabilityCTA />
@@ -39,5 +38,4 @@ import SellerSustainabilityCTA from '../components/sustainable/SellerSustainabil
 import SustainabilityProblem from '../components/sustainable/SustainabilityProblem.vue'
 import SustainableFinalCTA from '../components/sustainable/SustainableFinalCTA.vue'
 import SustainableHero from '../components/sustainable/SustainableHero.vue'
-import SustainablePractices from '../components/sustainable/SustainablePractices.vue'
 </script>

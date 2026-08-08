@@ -6,7 +6,7 @@
       <div class="text-center mb-14">
         <p class="reveal text-xs tracking-widest uppercase mb-4" style="color: #C9A96E;">The Difference Resale Makes</p>
         <h2 class="reveal text-3xl sm:text-4xl font-light text-gray-800 leading-snug"
-          style="font-family: 'Georgia', serif; --reveal-delay: 100ms;">
+          style="font-family: var(--font-display); --reveal-delay: 100ms;">
           Every Piece Has More Life
         </h2>
       </div>
@@ -29,7 +29,7 @@
           @focus="focused = stat.key" @blur="focused = null">
 
           <p class="text-5xl sm:text-6xl font-light mb-2 transition-colors duration-500 tabular-nums"
-            style="font-family: 'Georgia', serif;"
+            style="font-family: var(--font-display);"
             :style="{ color: isOpen(stat.key) ? '#C9A96E' : '#1B3A2D' }">
             {{ stat.display.value }}<span class="text-3xl sm:text-4xl">{{ stat.suffix }}</span>
           </p>

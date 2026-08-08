@@ -9,7 +9,7 @@
     <div class="hero-field page-top pb-16 text-center" style="color: white;">
       <div class="page-container">
         <p class="text-xs tracking-widest uppercase mb-3" style="color: #C9A96E;">Conscious Support</p>
-        <h1 class="text-4xl font-light leading-tight mb-4" style="font-family: 'Georgia', serif;">
+        <h1 class="text-4xl font-light leading-tight mb-4" style="font-family: var(--font-display);">
           How Can We Assist You?
         </h1>
         <p class="text-xs text-gray-300 max-w-md mx-auto leading-relaxed">
@@ -24,7 +24,7 @@
       
       <!-- Left Column: Contact Form (7 cols) -->
       <div class="md:col-span-7 bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
-        <h2 class="text-lg font-semibold text-gray-800 mb-2">Send Us a Message</h2>
+        <h2 id="contact-form" class="text-lg font-semibold text-gray-800 mb-2 scroll-mt-32">Send Us a Message</h2>
         <p class="text-xs text-gray-400 mb-6">Fill out the form below and our team will get back to you within 24 hours.</p>
 
         <form @submit.prevent="handleSubmit" class="space-y-5">
@@ -173,213 +173,13 @@
         <!-- FAQ Title -->
         <div class="text-center mb-16">
           <p class="text-xs tracking-widest uppercase mb-3" style="color: #C9A96E;">Find Answers</p>
-          <h2 class="text-3xl font-light text-gray-800" style="font-family: 'Georgia', serif;">
+          <h2 class="text-3xl font-light text-gray-800" style="font-family: var(--font-display);">
             Frequently Asked Questions
           </h2>
           <div class="w-16 h-0.5 mx-auto mt-4" style="background-color: #C9A96E;"></div>
         </div>
 
-        <!-- FAQ Layout with Sidebar Navigation -->
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-10 items-start">
-          
-          <!-- Left Sidebar Tabs (4 cols) -->
-          <div class="md:col-span-4 space-y-2">
-            <button 
-              v-for="tab in faqTabs" 
-              :key="tab.id"
-              @click="activeFaqTab = tab.id"
-              class="w-full text-left px-5 py-4 text-xs font-semibold uppercase tracking-wider rounded-xl transition duration-300 flex items-center justify-between border cursor-pointer"
-              :class="activeFaqTab === tab.id 
-                ? 'border-gray-800 text-gray-800 bg-gray-50/50' 
-                : 'border-transparent text-gray-400 hover:text-gray-600 hover:bg-gray-50/20'"
-              :style="activeFaqTab === tab.id ? 'border-left: 4px solid #C9A96E;' : ''"
-            >
-              {{ tab.title }}
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-gray-400 transition" :class="activeFaqTab === tab.id ? 'translate-x-1 text-gray-700' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-              </svg>
-            </button>
-          </div>
-
-          <!-- Right Content Display (8 cols) -->
-          <div class="md:col-span-8 bg-gray-50/40 border border-gray-100 rounded-2xl p-8 min-h-[320px] transition-all duration-300">
-            
-            <!-- Tab: How Selling Works -->
-            <div v-if="activeFaqTab === 'selling'" class="space-y-6">
-              <div class="flex items-center gap-3">
-                <Icon name="bag" size="md" style="color: #C9A96E;" />
-                <h3 class="text-sm font-semibold text-gray-800 uppercase tracking-wider">How Selling Works</h3>
-              </div>
-              <p class="text-xs text-gray-500 leading-relaxed">
-                Green Atelier makes it simple and secure to list your authenticated pre-loved luxury pieces and turn them into circular rewards. Here is the step-by-step path:
-              </p>
-              
-              <div class="relative pl-6 border-l border-gray-200 space-y-6">
-                <!-- Step 1 -->
-                <div class="relative">
-                  <div class="absolute -left-[31px] top-0 w-5 h-5 rounded-full bg-white border-2 flex items-center justify-center text-[10px] font-bold text-gray-700" style="border-color: #C9A96E;">
-                    1
-                  </div>
-                  <h4 class="text-xs font-semibold text-gray-800 mb-1">Create Your Listing</h4>
-                  <p class="text-xs text-gray-400 leading-relaxed">Upload clear photos of the front, back, interior, and logos of your luxury item. Input details such as condition, brand, and your desired listing price. Note if you have the serial numbers or certificates.</p>
-                </div>
-                <!-- Step 2 -->
-                <div class="relative">
-                  <div class="absolute -left-[31px] top-0 w-5 h-5 rounded-full bg-white border-2 flex items-center justify-center text-[10px] font-bold text-gray-700" style="border-color: #C9A96E;">
-                    2
-                  </div>
-                  <h4 class="text-xs font-semibold text-gray-800 mb-1">Digital Pre-Screening</h4>
-                  <p class="text-xs text-gray-400 leading-relaxed">Our curation team performs a fast digital review of your images, invoices, and certificates within 24 hours before approving the listing live to the marketplace.</p>
-                </div>
-                <!-- Step 3 -->
-                <div class="relative">
-                  <div class="absolute -left-[31px] top-0 w-5 h-5 rounded-full bg-white border-2 flex items-center justify-center text-[10px] font-bold text-gray-700" style="border-color: #C9A96E;">
-                    3
-                  </div>
-                  <h4 class="text-xs font-semibold text-gray-800 mb-1">Ship to Green Atelier</h4>
-                  <p class="text-xs text-gray-400 leading-relaxed">Once a buyer purchases your item, we provide you a shipping label to send the product to our HQ Studio in Kuala Lumpur for in-hand authentication check.</p>
-                </div>
-                <!-- Step 4 -->
-                <div class="relative">
-                  <div class="absolute -left-[31px] top-0 w-5 h-5 rounded-full bg-white border-2 flex items-center justify-center text-[10px] font-bold text-gray-700" style="border-color: #C9A96E;">
-                    4
-                  </div>
-                  <h4 class="text-xs font-semibold text-gray-800 mb-1">Get Paid</h4>
-                  <p class="text-xs text-gray-400 leading-relaxed">After our physical experts verify authenticity and quality (matching the listing details), we pack it securely, ship to the buyer, and transfer the payout to your bank account.</p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Tab: Authentication Process -->
-            <div v-if="activeFaqTab === 'authentication'" class="space-y-6">
-              <div class="flex items-center gap-3">
-                <Icon name="search" size="md" style="color: #C9A96E;" />
-                <h3 class="text-sm font-semibold text-gray-800 uppercase tracking-wider">Authentication Process</h3>
-              </div>
-              <p class="text-xs text-gray-500 leading-relaxed">
-                Zero tolerance for counterfeit items is the cornerstone of Green Atelier. Every item on our platform is evaluated through a strict two-stage verification process:
-              </p>
-
-              <div class="space-y-4">
-                <div class="bg-white rounded-xl p-4 border border-gray-100">
-                  <h4 class="text-xs font-semibold text-gray-800 mb-1.5 flex items-center gap-1.5">
-                    <span class="w-1.5 h-1.5 rounded-full animate-ping" style="background-color: #C9A96E;"></span>
-                    Stage 1: Digital Pre-Screening
-                  </h4>
-                  <p class="text-xs text-gray-400 leading-relaxed">
-                    Sellers must submit detailed macro photos showing serial numbers, date codes, holographic brand stickers, stampings, authenticity certificates, and the original store invoices/receipts. Our team digitally reviews and verifies these credentials before allowing the product online.
-                  </p>
-                </div>
-
-                <div class="bg-white rounded-xl p-4 border border-gray-100">
-                  <h4 class="text-xs font-semibold text-gray-800 mb-1.5 flex items-center gap-1.5">
-                    <span class="w-1.5 h-1.5 rounded-full" style="background-color: #C9A96E;"></span>
-                    Stage 2: Physical Inspection
-                  </h4>
-                  <p class="text-xs text-gray-400 leading-relaxed">
-                    When purchased, the item is sent directly to our Kuala Lumpur Studio. Our physical authenticators check the physical attributes: stitching thread tension, metallic hardware engravings, zipper slide weights, leather touch, internal lining codes, and packaging items. We only dispatch verified authentic items.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Tab: Refunds -->
-            <div v-if="activeFaqTab === 'refunds'" class="space-y-6">
-              <div class="flex items-center gap-3">
-                <Icon name="shield" size="md" style="color: #C9A96E;" />
-                <h3 class="text-sm font-semibold text-gray-800 uppercase tracking-wider">Refund Policy</h3>
-              </div>
-              <p class="text-xs text-gray-500 leading-relaxed">
-                Every order is covered by buyer protection. The two cases below are when a refund applies.
-              </p>
-
-              <div class="space-y-4">
-                <div class="p-4 rounded-xl border border-red-100 bg-red-50/20">
-                  <h4 class="text-xs font-semibold text-red-700 mb-1 flex items-center gap-1">
-                    Failed Verification Refund
-                  </h4>
-                  <p class="text-xs text-gray-500 leading-relaxed">
-                    If an item fails our Stage 2 physical authentication, or is found to not match the seller's condition descriptions (e.g. undisclosed damages), the order is immediately cancelled. The buyer receives a **100% full refund** of the item price, shipping fees, and service charges.
-                  </p>
-                </div>
-                
-                <div class="p-4 rounded-xl border border-gray-200 bg-white">
-                  <h4 class="text-xs font-semibold text-gray-700 mb-1">
-                    Peer-to-Peer Resale Restrictions
-                  </h4>
-                  <p class="text-xs text-gray-400 leading-relaxed">
-                    Because we represent a circular peer-to-peer resale platform, once an item is physically authenticated and delivered successfully to the buyer, we cannot offer refunds or cancellations for change-of-mind. Please review all details and measurements carefully before purchase.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Tab: Shipping -->
-            <div v-if="activeFaqTab === 'shipping'" class="space-y-6">
-              <div class="flex items-center gap-3">
-                <Icon name="box" size="md" style="color: #C9A96E;" />
-                <h3 class="text-sm font-semibold text-gray-800 uppercase tracking-wider">Shipping Policy</h3>
-              </div>
-              
-              <div class="space-y-4">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div class="bg-white p-4 rounded-xl border border-gray-100">
-                    <p class="text-[10px] uppercase text-gray-400 tracking-wider font-semibold mb-1">Shipping Fee</p>
-                    <p class="text-lg font-light" style="color: #C9A96E; font-family: 'Georgia', serif;">RM 15.00</p>
-                    <p class="text-xs text-gray-400 mt-1">Flat shipping rate applicable across Peninsular and East Malaysia.</p>
-                  </div>
-                  <div class="bg-white p-4 rounded-xl border border-gray-100">
-                    <p class="text-[10px] uppercase text-gray-400 tracking-wider font-semibold mb-1">Delivery Timeframe</p>
-                    <p class="text-lg font-light" style="color: #C9A96E; font-family: 'Georgia', serif;">5 to 7 Business Days</p>
-                    <p class="text-xs text-gray-400 mt-1">Covers transit to our studio, checking the piece, and shipping it on to you.</p>
-                  </div>
-                </div>
-
-                <div class="bg-white p-4 rounded-xl border border-gray-100">
-                  <h4 class="text-xs font-semibold text-gray-800 mb-1">How is secure transit handled?</h4>
-                  <p class="text-xs text-gray-400 leading-relaxed">
-                    All deliveries are fully insured. Once authenticated, items are wrapped in Green Atelier signature circular-kraft packaging and delivered using tracked express local couriers. Signature validation is required upon receipt.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Tab: Returns -->
-            <div v-if="activeFaqTab === 'returns'" class="space-y-6">
-              <div class="flex items-center gap-3">
-                <Icon name="refresh" size="md" style="color: #C9A96E;" />
-                <h3 class="text-sm font-semibold text-gray-800 uppercase tracking-wider">Returns Policy</h3>
-              </div>
-              <p class="text-xs text-gray-500 leading-relaxed">
-                As a circular resale marketplace, our return policies are designed to balance buyer security and seller protection fairly:
-              </p>
-
-              <div class="space-y-4">
-                <div class="bg-white p-4 rounded-xl border border-gray-100">
-                  <h4 class="text-xs font-semibold text-gray-800 mb-1 flex items-center gap-1.5">
-                    <span class="w-1.5 h-1.5 rounded-full" style="background-color: #C9A96E;"></span>
-                    Under what conditions can I open a return claim?
-                  </h4>
-                  <p class="text-xs text-gray-400 leading-relaxed">
-                    Returns are accepted only in cases where the item has undisclosed structural defects or differs drastically from the listing description (e.g. wrong size tag, completely different colour).
-                  </p>
-                </div>
-
-                <div class="bg-white p-4 rounded-xl border border-gray-100">
-                  <h4 class="text-xs font-semibold text-gray-800 mb-1.5 flex items-center gap-1.5">
-                    <span class="w-1.5 h-1.5 rounded-full" style="background-color: #C9A96E;"></span>
-                    Claim Window
-                  </h4>
-                  <p class="text-xs text-gray-400 leading-relaxed">
-                    All return claims must be submitted to <a href="mailto:support@greenatelier.com" class="underline">support@greenatelier.com</a> within **3 days** of verified package delivery. You must include photo evidence showing the security tag remains attached.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-          </div>
-
-        </div>
+        <FaqAccordion />
 
       </div>
     </div>
@@ -412,6 +212,7 @@
 
 <script setup>
 import Icon from '../components/Icon.vue'
+import FaqAccordion from '../components/FaqAccordion.vue'
 import { onMounted, ref } from 'vue'
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
@@ -432,15 +233,7 @@ onMounted(() => {
 })
 
 const showSuccess = ref(false)
-const activeFaqTab = ref('selling')
 
-const faqTabs = [
-  { id: 'selling', title: 'How Selling Works' },
-  { id: 'authentication', title: 'Authentication Process' },
-  { id: 'refunds', title: 'Refund Policy' },
-  { id: 'shipping', title: 'Shipping Policy' },
-  { id: 'returns', title: 'Returns Policy' }
-]
 
 const submitting = ref(false)
 const errorMsg = ref('')

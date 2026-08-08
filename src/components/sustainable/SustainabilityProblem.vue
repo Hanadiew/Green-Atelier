@@ -6,7 +6,7 @@
       <div class="max-w-xl mb-14">
         <p class="reveal text-xs tracking-widest uppercase mb-4" style="color: #C9A96E;">The Problem</p>
         <h2 class="reveal text-3xl sm:text-4xl font-light text-white leading-snug mb-5"
-          style="font-family: 'Georgia', serif; --reveal-delay: 100ms;">
+          style="font-family: var(--font-display); --reveal-delay: 100ms;">
           What We Leave Behind Matters
         </h2>
         <p class="reveal text-sm text-gray-400 leading-relaxed" style="--reveal-delay: 200ms;">
@@ -29,7 +29,7 @@
 
           <p class="text-xs mb-5 tracking-widest" style="color: #C9A96E;">0{{ i + 1 }}</p>
 
-          <h3 class="text-base text-white mb-3" style="font-family: 'Georgia', serif;">{{ card.title }}</h3>
+          <h3 class="text-base text-white mb-3" style="font-family: var(--font-display);">{{ card.title }}</h3>
 
           <p class="text-xs text-gray-400 leading-relaxed">{{ card.summary }}</p>
 

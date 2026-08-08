@@ -49,7 +49,8 @@
           <div class="mt-5 pt-5 border-t border-gray-200">
             <p class="text-gray-500 text-xs mb-1">Description</p>
             <p class="text-sm text-gray-900 whitespace-pre-wrap leading-relaxed">
-              {{ listing.description || 'The seller did not add a description.' }}
+              <span v-if="!listing.description">The seller did not add a description.</span>
+              <span v-else class="rich-text" v-html="sanitiseHtml(listing.description)"></span>
             </p>
           </div>
         </div>
@@ -178,6 +179,7 @@
 </template>
 
 <script setup>
+import { sanitiseHtml } from '../../lib/sanitiseHtml.js'
 import Icon from '../../components/Icon.vue'
 import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'

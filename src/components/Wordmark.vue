@@ -31,7 +31,7 @@ defineProps({
   /* Delayed to sit behind the wipe: the letters only darken once the reel has
      cleared past them, so they never sit grey against the remaining footage. */
   transition: color 0.5s ease 0.3s, text-shadow 0.5s ease 0.3s;
-  font-family: 'Georgia', serif;
+  font-family: var(--font-display);
   font-weight: 400;
   font-size: clamp(2.75rem, 15.5vw, 15rem);
   line-height: 0.86;

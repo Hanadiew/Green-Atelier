@@ -11,7 +11,7 @@
         Secure Checkout
       </div>
       <RouterLink to="/home">
-        <span class="tracking-widest text-sm font-light" style="color: #C9A96E; font-family: 'Georgia', serif; letter-spacing: 0.2em;">
+        <span class="tracking-widest text-sm font-light" style="color: #C9A96E; font-family: var(--font-display); letter-spacing: 0.2em;">
           GREEN ATELIER
         </span>
       </RouterLink>

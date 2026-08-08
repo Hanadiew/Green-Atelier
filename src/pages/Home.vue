@@ -37,6 +37,38 @@
 
 
 
+<!-- ========== FEATURED BRANDS ================================================================================================================================== -->
+<section class="page-container py-16">
+
+  <!-- Header -->
+  <div class="text-center mb-10">
+    <h2 class="text-sm tracking-widest uppercase font-light text-gray-800" style="font-family: var(--font-display);">Featured Brands</h2>
+    <p class="text-xs text-gray-400 mt-1">Houses We Cherish</p>
+  </div>
+
+  <!-- Auto-scroll wrapper -->
+  <div class="overflow-hidden relative">
+    <div class="flex items-center animate-scroll" style="width: max-content;">
+
+      <!-- Repeat 4 times for seamless loop -->
+      <template v-for="n in 4" :key="n">
+        <div class="flex items-center gap-20 px-10">
+          <img src="../assets/brands/chanel.png" alt="Chanel" class="h-7 object-contain grayscale hover:grayscale-0 transition duration-300" />
+          <img src="../assets/brands/dior.png" alt="Dior" class="h-7 object-contain grayscale hover:grayscale-0 transition duration-300" />
+          <img src="../assets/brands/lacoste.png" alt="Lacoste" class="h-7 object-contain grayscale hover:grayscale-0 transition duration-300" />
+          <img src="../assets/brands/coach.png" alt="Coach" class="h-7 object-contain grayscale hover:grayscale-0 transition duration-300" />
+          <img src="../assets/brands/gucci.png" alt="Gucci" class="h-7 object-contain grayscale hover:grayscale-0 transition duration-300" />
+          <img src="../assets/brands/prada.png" alt="Prada" class="h-7 object-contain grayscale hover:grayscale-0 transition duration-300" />
+        </div>
+      </template>
+
+    </div>
+  </div>
+
+</section>
+
+
+
     <!-- ========== COLLECTIONS ================================================================================================================================== -->
     <!-- Tiles are links now, not divs with `cursor-pointer` that did nothing:
          the whole grid was decoration a shopper could click at without ever
@@ -65,24 +97,23 @@
       </div>
 
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        <!-- rounded-sm, matching the product tiles on Shop and the New In rail.
+             These were rounded-2xl, so the same photographs were cut to a
+             different shape depending on which page you were on. -->
         <RouterLink v-for="edit in collections" :key="edit.label"
           :to="{ path: '/shop', query: { category: edit.category } }"
-          class="group focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-4 focus-visible:ring-[#C9A96E] rounded-2xl">
+          class="group block relative overflow-hidden rounded-sm aspect-[4/5] bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-4 focus-visible:ring-[#C9A96E]">
 
-          <div class="relative overflow-hidden rounded-2xl aspect-[4/5] bg-gray-100">
-            <img :src="edit.image" :alt="edit.label" loading="lazy"
-              class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]" />
-            <!-- A gentle wash from the foot of the tile, always on, so the tiles
-                 sit as a set rather than four unrelated photographs. -->
-            <div class="absolute inset-0 pointer-events-none"
-              style="background: linear-gradient(to top, rgba(27,58,45,0.28), rgba(27,58,45,0) 45%);"></div>
-          </div>
+          <img :src="edit.image" :alt="edit.label" loading="lazy"
+            class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]" />
 
-          <div class="flex items-baseline justify-between gap-3 mt-4">
-            <span class="text-base text-gray-900" style="font-family: 'Georgia', serif;">{{ edit.label }}</span>
-            <span class="text-xs text-gray-400 transition-colors duration-300 group-hover:text-[#C9A96E]">
-              {{ edit.count }}
-            </span>
+          <!-- The name arrives over the photograph on hover rather than sitting
+               under it. focus-within as well as hover, so a keyboard user
+               reaching the tile sees the same thing a pointer does. -->
+          <div
+            class="absolute inset-0 flex flex-col items-center justify-center gap-1 text-center px-4 opacity-0 transition-opacity duration-300 bg-black/55 backdrop-blur-sm group-hover:opacity-100 group-focus-within:opacity-100">
+            <span class="text-white text-sm tracking-widest uppercase">{{ edit.label }}</span>
+            <span class="text-white/60 text-xs">{{ edit.count }}</span>
           </div>
         </RouterLink>
       </div>
@@ -93,38 +124,6 @@
       </RouterLink>
 
     </section>
-
-
-
-<!-- ========== FEATURED BRANDS ================================================================================================================================== -->
-<section class="page-container py-16">
-
-  <!-- Header -->
-  <div class="text-center mb-10">
-    <h2 class="text-sm tracking-widest uppercase font-light text-gray-800" style="font-family: 'Georgia', serif;">Featured Brands</h2>
-    <p class="text-xs text-gray-400 mt-1">Houses We Cherish</p>
-  </div>
-
-  <!-- Auto-scroll wrapper -->
-  <div class="overflow-hidden relative">
-    <div class="flex items-center animate-scroll" style="width: max-content;">
-
-      <!-- Repeat 4 times for seamless loop -->
-      <template v-for="n in 4" :key="n">
-        <div class="flex items-center gap-20 px-10">
-          <img src="../assets/brands/chanel.png" alt="Chanel" class="h-7 object-contain grayscale hover:grayscale-0 transition duration-300" />
-          <img src="../assets/brands/dior.png" alt="Dior" class="h-7 object-contain grayscale hover:grayscale-0 transition duration-300" />
-          <img src="../assets/brands/lacoste.png" alt="Lacoste" class="h-7 object-contain grayscale hover:grayscale-0 transition duration-300" />
-          <img src="../assets/brands/coach.png" alt="Coach" class="h-7 object-contain grayscale hover:grayscale-0 transition duration-300" />
-          <img src="../assets/brands/gucci.png" alt="Gucci" class="h-7 object-contain grayscale hover:grayscale-0 transition duration-300" />
-          <img src="../assets/brands/prada.png" alt="Prada" class="h-7 object-contain grayscale hover:grayscale-0 transition duration-300" />
-        </div>
-      </template>
-
-    </div>
-  </div>
-
-</section>
 
 
 
@@ -141,7 +140,7 @@
        h2, a text link against its button, 280px tiles against 220px, an extra
        bag icon, and white shadowed discs for arrows. -->
   <div class="flex items-center justify-between mb-6">
-    <h2 class="text-2xl font-light text-gray-800" style="font-family: 'Georgia', serif;">New In</h2>
+    <h2 class="text-2xl font-light text-gray-800" style="font-family: var(--font-display);">New In</h2>
     <RouterLink to="/shop"
       class="inline-flex items-center gap-2 px-5 py-2.5 text-xs tracking-widest uppercase rounded-lg btn-outline-green">
       View Listings
@@ -175,7 +174,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
               :fill="wishlistIds.has(product.id) ? 'currentColor' : 'none'"
               viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 010-6.364z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/>
             </svg>
           </button>
         </div>
@@ -208,7 +207,7 @@
   <!-- Left: Text -->
   <div class="flex-1">
     <p class="text-xs tracking-widest uppercase mb-3" style="color: #C9A96E;">Our Mission</p>
-    <h2 class="text-3xl font-light text-white leading-snug" style="font-family: 'Georgia', serif;">
+    <h2 class="text-3xl font-light text-white leading-snug" style="font-family: var(--font-display);">
       Fashion that gives back<br />to earth
     </h2>
     <p class="text-sm text-gray-400 mt-4 leading-relaxed max-w-sm">
@@ -222,9 +221,12 @@
        authenticated, 500+ resellers) and two of them contradicted the rest of
        the site: nothing on the platform is authenticated, only reviewed. A row
        that has nothing true to say says nothing. -->
-  <div v-if="missionStats.length" class="grid grid-cols-1 sm:grid-cols-3 gap-8 flex-1">
+  <div v-if="missionStats.length" ref="missionRoot" :class="{ 'is-visible': missionVisible }"
+    class="grid grid-cols-1 sm:grid-cols-3 gap-8 flex-1">
     <div v-for="stat in missionStats" :key="stat.label">
-      <p class="display text-4xl mb-2" style="color: #C9A96E;">{{ stat.value }}</p>
+      <p class="display text-4xl mb-2 tabular-nums" style="color: #C9A96E;">
+        {{ stat.display }}<span v-if="stat.suffix">{{ stat.suffix }}</span>
+      </p>
       <p class="text-sm text-white/50 leading-relaxed">{{ stat.label }}</p>
     </div>
   </div>
@@ -247,73 +249,7 @@
 
 
 <!-- ========== WHAT CUSTOMERS SAY ========================================================================================== -->
-<!-- One review at a time, not a marquee of four cards looped three times. The
-     old belt put twelve shadowed cards on screen sliding past faster than any
-     of them could be read, so none of them were. Here the quote is the section
-     and the faces underneath are the control. -->
-<section class="page-container py-16">
-  <div class="max-w-5xl mx-auto rounded-[2rem] px-8 py-16 sm:px-16 sm:py-20" style="background-color: #F2F0EB;">
-
-    <div class="max-w-xl mb-14">
-      <p class="eyebrow mb-5">What Customers Say</p>
-      <h2 class="display text-3xl sm:text-4xl lg:text-5xl text-gray-900">
-        Bought, sold,<br /><span class="display-soft">and said so afterwards</span>
-      </h2>
-    </div>
-
-    <!-- Pausing on hover and on focus, so reading a quote never races the
-         timer, and a keyboard user is never moved mid-sentence. -->
-    <div @mouseenter="pauseReviews" @mouseleave="resumeReviews"
-      @focusin="pauseReviews" @focusout="resumeReviews">
-
-      <div class="min-h-[11rem] sm:min-h-[9rem]" aria-live="polite">
-        <Transition name="review" mode="out-in">
-          <blockquote :key="activeReview">
-            <p class="display text-xl sm:text-2xl lg:text-3xl text-gray-800 mb-6">
-              &ldquo;{{ reviews[activeReview].quote }}&rdquo;
-            </p>
-            <footer class="flex items-center gap-2">
-              <span class="text-sm text-gray-900">{{ reviews[activeReview].name }}</span>
-              <span class="text-gray-300" aria-hidden="true">/</span>
-              <span class="text-sm text-gray-500">{{ reviews[activeReview].role }}</span>
-            </footer>
-          </blockquote>
-        </Transition>
-      </div>
-
-      <!-- The faces are the selector. Each carries its own timer bar, so the
-           row doubles as the progress indicator without a second control. -->
-      <div class="flex gap-3 sm:gap-4 mt-10 pt-10 border-t border-gray-300">
-        <button v-for="(review, i) in reviews" :key="review.name" type="button"
-          class="group flex-1 max-w-[7rem] text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-4 focus-visible:ring-[#C9A96E] rounded-lg"
-          style="--tw-ring-offset-color: #F2F0EB;"
-          :aria-pressed="activeReview === i"
-          :aria-label="`Read the review from ${review.name}`"
-          @click="selectReview(i)">
-
-          <img :src="review.avatar" alt="" loading="lazy"
-            class="w-11 h-11 rounded-full object-cover transition-all duration-300"
-            :style="{
-              opacity: activeReview === i ? 1 : 0.4,
-              filter: activeReview === i ? 'none' : 'grayscale(1)',
-            }" />
-
-          <span class="block mt-3 h-px bg-gray-300 relative overflow-hidden">
-            <span class="absolute inset-y-0 left-0 transition-[width] duration-300 ease-out"
-              style="background-color: #C9A96E;"
-              :style="{ width: activeReview === i ? '100%' : '0%' }"></span>
-          </span>
-
-          <span class="block mt-3 text-xs transition-colors duration-300"
-            :class="activeReview === i ? 'text-gray-900' : 'text-gray-400 group-hover:text-gray-600'">
-            {{ review.name }}
-          </span>
-        </button>
-      </div>
-    </div>
-
-  </div>
-</section>
+<TestimonialRail />
 
 <!-- ========== CLOSING CTA ================================================================================================= -->
 <!-- Built on SustainableFinalCTA: the same frame, photograph, gradient and slow
@@ -383,51 +319,22 @@ import WastePreloader from '../components/WastePreloader.vue'
 import Wordmark from '../components/Wordmark.vue'
 import SustainableSpotlight from '../components/SustainableSpotlight.vue'
 import HowItWorks from '../components/HowItWorks.vue'
+import TestimonialRail from '../components/TestimonialRail.vue'
 import { fetchNewestListings, fetchPlatformImpact } from '../lib/listings.js'
 import { toggleWishlist, wishlistIds } from '../lib/wishlist.js'
-import collection1 from '../assets/collection/collection1.jpg'
+import tops from '../assets/collection/tops.jpg'
 import collection2 from '../assets/collection/collection2.jpeg'
 import collection3 from '../assets/collection/collection3.jpg'
 import collection4 from '../assets/collection/collection4.jpeg'
-import { prefersReducedMotion } from '../lib/motion.js'
-import avatar1 from '../assets/avatar/avatar1.png'
-import avatar2 from '../assets/avatar/avatar2.png'
-import avatar3 from '../assets/avatar/avatar3.png'
+import { prefersReducedMotion, useCountUp, useReveal } from '../lib/motion.js'
 
-// --- Reviews ----------------------------------------------------------------
-const reviews = [
-  {
-    name: 'Diana Ali',
-    role: 'Buyer',
-    avatar: avatar1,
-    quote: 'The bag arrived exactly as described, down to the wear on the strap. That is the part I was nervous about, and it is the part they got right.',
-  },
-  {
-    name: 'Elizabeth Vair',
-    role: 'Buyer',
-    avatar: avatar2,
-    quote: 'I found a Gucci dress for an event at a price I could actually justify. Ordering took two minutes and it turned up on time.',
-  },
-  {
-    name: 'Sofia Hamsworth',
-    role: 'Seller',
-    avatar: avatar3,
-    quote: 'Listing the pieces I had stopped wearing was easier than I expected, and I could see exactly where each sale had got to.',
-  },
-  {
-    name: 'Laila Hamsworth',
-    role: 'Buyer and seller',
-    avatar: avatar1,
-    quote: 'Buying something that already exists, instead of having one made, is the whole reason I am here. It happens to be cheaper too.',
-  },
-]
 
 // The same three-step story the Sell page tells, from the buyer's side.
 // The catalogue's own categories, each tile linking to that filter. `count` is
 // filled in from the live listings once they load, so a tile never promises a
 // section that has nothing in it.
 const collections = computed(() => [
-  { label: 'Tops', category: 'Tops', image: collection1, count: countIn('Tops') },
+  { label: 'Tops', category: 'Tops', image: tops, count: countIn('Tops') },
   { label: 'Bags', category: 'Bags', image: collection3, count: countIn('Bags') },
   { label: 'Shoes', category: 'Shoes', image: collection4, count: countIn('Shoes') },
   { label: 'Accessories', category: 'Accessories', image: collection2, count: countIn('Accessories') },
@@ -470,47 +377,42 @@ const howSteps = [
 
 const platformImpact = ref(null)
 
+// One counter per figure, started when the row scrolls into view. The number
+// itself is the point of this row, and a figure that lands already finished is
+// just a number; watching it climb is what makes it read as a count of real
+// sales rather than a design element.
+const { root: missionRoot, visible: missionVisible } = useReveal({ threshold: 0.3 })
+
+const rehomedCount = useCountUp(0)
+const co2Count = useCountUp(0)
+const listedCount = useCountUp(0)
+
 const missionStats = computed(() => {
   if (!platformImpact.value) return []
 
   const { itemsRehomed, co2SavedKg, activeListings } = platformImpact.value
   const rows = []
 
-  if (itemsRehomed > 0) rows.push({ value: String(itemsRehomed), label: 'Pieces rehomed through Green Atelier' })
-  if (co2SavedKg > 0) rows.push({ value: `${Math.round(co2SavedKg)}kg`, label: 'CO₂ avoided, totalled across those sales' })
-  if (activeListings > 0) rows.push({ value: String(activeListings), label: 'Pieces looking for a new owner' })
+  if (itemsRehomed > 0) rows.push({ display: rehomedCount.display, suffix: '', label: 'Pieces rehomed through Green Atelier' })
+  if (co2SavedKg > 0) rows.push({ display: co2Count.display, suffix: 'kg', label: 'CO₂ avoided, totalled across those sales' })
+  if (activeListings > 0) rows.push({ display: listedCount.display, suffix: '', label: 'Pieces looking for a new owner' })
   return rows
 })
 
-const activeReview = ref(0)
-let reviewTimer = null
+// Both have to be true: the row on screen, and the numbers fetched. Either can
+// happen first, so this watches the pair rather than chaining one to the other.
+watch([missionVisible, platformImpact], ([onScreen, data]) => {
+  if (!onScreen || !data) return
+  rehomedCount.start(data.itemsRehomed)
+  co2Count.start(Math.round(data.co2SavedKg))
+  listedCount.start(data.activeListings)
+})
 
-// Long enough to read a three-line quote without hurrying. The marquee this
-// replaced moved continuously, which meant no quote was ever still long enough
-// to finish.
-const REVIEW_INTERVAL = 7000
 
-const startReviews = () => {
-  if (prefersReducedMotion() || reviewTimer) return
-  reviewTimer = setInterval(() => {
-    activeReview.value = (activeReview.value + 1) % reviews.length
-  }, REVIEW_INTERVAL)
-}
 
-const pauseReviews = () => {
-  clearInterval(reviewTimer)
-  reviewTimer = null
-}
 
-const resumeReviews = () => startReviews()
 
-// A deliberate choice restarts the clock, so the quote you picked gets a full
-// interval rather than whatever was left of the previous one.
-const selectReview = (i) => {
-  activeReview.value = i
-  pauseReviews()
-  startReviews()
-}
+
 
 // Module scope, deliberately: the flag outlives the component so routing back to
 // / from the shop doesn't replay the intro, but it dies with the page, so every
@@ -550,12 +452,7 @@ watch(
   { immediate: true },
 )
 
-onUnmounted(() => {
-  removeScrollWatch()
-  pauseReviews()
-})
-
-onMounted(startReviews)
+onUnmounted(removeScrollWatch)
 
 onMounted(async () => {
   try {
@@ -594,23 +491,8 @@ const scrollRight = () => {
 }
 </script>
 <style scoped>
-/* The quote crossfades in place. `mode="out-in"` plus a reserved min-height on
-   the wrapper means the block below never jumps as a longer quote replaces a
-   shorter one. */
-.review-enter-active,
-.review-leave-active {
-  transition: opacity 0.35s ease, transform 0.35s ease;
-}
 
-.review-enter-from { opacity: 0; transform: translateY(0.75rem); }
-.review-leave-to { opacity: 0; transform: translateY(-0.75rem); }
 
-@media (prefers-reduced-motion: reduce) {
-  .review-enter-active,
-  .review-leave-active {
-    transition: none;
-  }
-}
 
 /* Collections. The fixed 520px two-row grid only works once three columns fit;
    below that the tiles keep a ratio of their own so they never squash. */

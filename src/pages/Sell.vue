@@ -111,6 +111,13 @@
     <section class="page-container py-16">
       <div class="max-w-5xl mx-auto">
 
+      <div class="max-w-xl mb-12">
+        <p class="eyebrow mb-5">Why This Matters</p>
+        <h2 class="display text-3xl sm:text-4xl text-gray-900">
+          The numbers behind<br /><span class="display-soft">every piece you resell</span>
+        </h2>
+      </div>
+
       <!-- Row 1: Image left + Stat 01 right -->
       <div class="flex flex-col lg:flex-row gap-6 mb-6">
 
@@ -119,13 +126,20 @@
           <img src="../assets/sell.jpg" alt="Sustainability" class="w-full h-full object-cover" />
         </div>
 
-        <!-- Stat 01 -->
+        <!-- Stat 01. The ghost numeral sat at gray-100 on a near-white page,
+             which is a shape you can only see if you already know it is there;
+             at 0.55 it reads as a marker without competing with the figure. The
+             copy moves from gray-400 to gray-500 for the same reason: 400 on
+             #FAFAF8 is under 3:1. -->
         <div class="flex-1 flex flex-col justify-end pb-4 relative">
-          <p class="absolute top-0 right-0 font-light text-gray-100 select-none" style="font-size: 8rem; line-height: 1; font-family: 'Georgia', serif;">01</p>
-          <h3 class="text-2xl font-light text-gray-800 mb-2 relative z-10" style="font-family: 'Georgia', serif;">
-            100 Billion<br />Garments
+          <p class="absolute -top-2 right-0 select-none pointer-events-none tabular-nums"
+            style="font-size: 8rem; line-height: 1; font-family: var(--font-display); font-weight: 500; color: #E5E0D5; opacity: 0.55;"
+            aria-hidden="true">01</p>
+          <p class="text-xs uppercase mb-3 relative z-10" style="color: #C9A96E; letter-spacing: 0.2em;">The Problem</p>
+          <h3 class="display text-3xl text-gray-900 mb-3 relative z-10">
+            100 Billion<br /><span class="display-soft">Garments</span>
           </h3>
-          <p class="text-xs text-gray-400 leading-relaxed relative z-10 max-w-xs">
+          <p class="text-sm text-gray-500 leading-relaxed relative z-10 max-w-xs">
             Produced annually, with 85% ending up in landfills by the year's end.
           </p>
         </div>
@@ -136,27 +150,40 @@
       <div class="flex flex-col lg:flex-row gap-6">
 
         <!-- Stat 02 -->
-        <div class="rounded-2xl flex flex-col justify-end pb-6 px-6 pt-4 relative w-full lg:w-[220px]" style="background-color: #F2F0EB;">
-          <p class="absolute top-2 right-4 font-light text-gray-200 select-none" style="font-size: 7rem; line-height: 1; font-family: 'Georgia', serif;">02</p>
-          <h3 class="text-xl font-light text-gray-800 mb-2 relative z-10" style="font-family: 'Georgia', serif;">
-            1500 Million<br />Tonnes
+        <div class="rounded-2xl flex flex-col justify-end pb-7 px-7 pt-5 relative w-full lg:w-[240px] overflow-hidden"
+          style="background-color: #F2F0EB;">
+          <p class="absolute -top-1 right-3 select-none pointer-events-none tabular-nums"
+            style="font-size: 7rem; line-height: 1; font-family: var(--font-display); font-weight: 500; color: #DCD6C7; opacity: 0.7;"
+            aria-hidden="true">02</p>
+          <h3 class="display text-2xl text-gray-900 mb-3 relative z-10">
+            1500 Million<br /><span class="display-soft">Tonnes</span>
           </h3>
-          <p class="text-xs text-gray-400 leading-relaxed relative z-10">
+          <p class="text-sm text-gray-500 leading-relaxed relative z-10">
             Projected textile waste annually by 2025 without circular practices.
           </p>
         </div>
 
         <!-- Green CTA card -->
-        <div class="flex-1 rounded-2xl flex flex-col justify-center px-10 py-10 surface-brand">
-          <h3 class="text-2xl font-light text-white mb-3" style="font-family: 'Georgia', serif;">
-            Redefining The Luxury Standards
+        <!-- The CTA was a <button> that did nothing: it looked like a link,
+             read like a link, and went nowhere. It is a RouterLink to the
+             Sustainable page now, and a real button rather than bare text with
+             an arrow character — the arrow is an SVG so it can move on hover
+             without the layout shifting, which `gap-2 hover:gap-3` did. -->
+        <div class="flex-1 on-dark rounded-2xl flex flex-col justify-center px-10 py-11 surface-brand">
+          <h3 class="display text-2xl sm:text-3xl text-white mb-3">
+            Redefining the<br /><span class="display-soft">luxury standard</span>
           </h3>
-          <p class="text-sm text-gray-300 leading-relaxed mb-6 max-w-sm">
+          <p class="text-sm text-white/60 leading-relaxed mb-7 max-w-sm">
             Luxury shouldn't cost the earth. We invite you to step away from the cycle of waste.
           </p>
-          <button class="text-xs text-white flex items-center gap-2 hover:gap-3 transition-all">
-            Join Our Circular Movement →
-          </button>
+          <RouterLink to="/sustainable"
+            class="group inline-flex items-center gap-2 self-start px-6 py-3 text-xs tracking-widest uppercase rounded-lg btn-gold">
+            Join Our Circular Movement
+            <svg class="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1"
+              fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          </RouterLink>
         </div>
 
       </div>
@@ -189,7 +216,7 @@
           </button>
 
           <p class="text-xs tracking-widest uppercase mb-3" style="color: #C9A96E;">One more step</p>
-          <h3 id="sell-gate-title" class="text-xl mb-3" style="font-family: 'Georgia', serif; color: #1B3A2D;">
+          <h3 id="sell-gate-title" class="text-xl mb-3" style="font-family: var(--font-display); color: #1B3A2D;">
             Sign up to list your item
           </h3>
           <p class="text-xs text-gray-400 leading-relaxed mb-7">

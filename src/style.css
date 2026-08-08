@@ -29,6 +29,14 @@
    Line heights are carried up with the sizes; leaving them at the defaults would
    tighten every paragraph as the text grew. */
 @theme {
+  /* Two families for the whole product: Cormorant Garamond sets every heading
+     and display figure, DM Sans sets everything else. Declared here so the
+     Tailwind `font-sans` / `font-serif` utilities resolve to the same pair, and
+     mirrored as --font-body / --font-display below for the hand-written rules
+     and the inline `font-family` on components. */
+  --font-sans: 'DM Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+
   --text-xs: 0.8125rem;      /* 13px, was 12 */
   --text-xs--line-height: 1.125rem;
   --text-sm: 0.9375rem;      /* 15px, was 14 */
@@ -60,6 +68,33 @@
   --color-emerald-700: #1B3A2D;
   --color-emerald-800: #142C22;
   --color-emerald-900: #0E1F18;
+}
+
+:root {
+  --font-body: 'DM Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+}
+
+/* Set on <body> rather than a utility class so it reaches every page, dialog
+   and teleported panel without each one opting in. */
+body {
+  font-family: var(--font-body);
+}
+
+/* --- Horizontal overflow guard -----------------------------------------------
+   The cart drawer parks itself off the right edge when closed
+   (`translateX(calc(100% + 2rem))`), and a transform does not remove an element
+   from the scrollable area: the document grew ~45px wider than the viewport on
+   every page. On a phone that was visible as the whole page sliding sideways,
+   and it stretched the navbar with it — the bar is `fixed left-0 right-0`, so
+   it sizes to the initial containing block, which the overflow had widened.
+
+   `clip` rather than `hidden`: hidden would turn the root into a scroll
+   container, which breaks `position: sticky` and takes scrolling away from
+   Lenis. `clip` just stops the overflow being reachable. */
+html,
+body {
+  overflow-x: clip;
 }
 
 @keyframes scroll {
@@ -598,16 +633,16 @@ html.preloader-open body {
    Tracking has to go negative as the size goes up: Georgia's default spacing is
    built for body copy and looks loose at 48px and above. */
 .display {
-  font-family: 'Georgia', serif;
-  font-weight: 400;
-  letter-spacing: -0.03em;
-  line-height: 1.1;
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 1.08;
 }
 
 /* The second line. Lighter and dropped in contrast rather than a different
    colour, so it works on the cream page and the green panel alike. */
 .display-soft {
-  font-weight: 300;
+  font-weight: 400;
   opacity: 0.45;
 }
 
@@ -636,3 +671,34 @@ html.preloader-open body {
   background-color: #1B3A2D;
   color: #fff;
 }
+
+/* --- Select control ----------------------------------------------------------
+   The native arrow sits wherever the platform puts it, which on Windows Chrome
+   is hard against the right edge with no padding — the form's own fields have
+   1rem there, so every select looked misaligned beside them.
+
+   `appearance: none` removes it and the chevron below replaces it as a
+   background image, positioned in the same 1rem gutter the inputs use. Encoded
+   as a data URI rather than an element so it works on every plain <select> in
+   the app without touching the markup.
+
+   `.form-select-none` opts out, for the two selects that draw their own. */
+select:not([multiple]):not([size]):not(.form-select-none) {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 2.5rem;
+}
+
+
+/* --- Rich text ---------------------------------------------------------------
+   Listing descriptions are authored in RichTextEditor and rendered here.
+   Tailwind's preflight strips list markers, so they have to be put back for the
+   bullets and numbering a seller typed to survive the round trip. */
+.rich-text ul { list-style: disc; padding-left: 1.25rem; margin: 0.5rem 0; }
+.rich-text ol { list-style: decimal; padding-left: 1.25rem; margin: 0.5rem 0; }
+.rich-text li { margin: 0.125rem 0; }
+.rich-text b, .rich-text strong { font-weight: 600; }
+.rich-text i, .rich-text em { font-style: italic; }

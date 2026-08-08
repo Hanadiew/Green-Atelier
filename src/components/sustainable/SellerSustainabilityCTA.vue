@@ -26,7 +26,7 @@
       <div class="order-1 lg:order-2">
         <p class="reveal text-xs tracking-widest uppercase mb-4" style="color: #C9A96E;">For Sellers</p>
         <h2 class="reveal text-3xl sm:text-4xl font-light text-gray-800 leading-snug mb-6"
-          style="font-family: 'Georgia', serif; --reveal-delay: 100ms;">
+          style="font-family: var(--font-display); --reveal-delay: 100ms;">
           Your Closet Can Continue the Story
         </h2>
         <p class="reveal text-sm text-gray-500 leading-relaxed mb-8 max-w-md" style="--reveal-delay: 200ms;">

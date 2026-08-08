@@ -54,7 +54,8 @@ export async function fetchOrders(userId) {
       `id, order_number, subtotal, shipping_fee, service_fee, discount, total,
        status, payment_status, payment_method, placed_at,
        items:order_items(id, listing_id, title_snapshot, brand_snapshot,
-                         image_snapshot, price_paid, status)`,
+                         image_snapshot, price_paid, status,
+                         listing:listings(seller_id))`,
     )
     .eq('buyer_id', userId)
     .order('placed_at', { ascending: false })
@@ -80,9 +81,14 @@ export async function fetchOrders(userId) {
       month: 'short',
       year: 'numeric',
     }),
+    // Who to review. Every item in one order comes from one seller today, so
+    // the first item's seller is the order's seller; taken per item anyway so
+    // this does not quietly break if that ever stops being true.
+    sellerId: o.items?.[0]?.listing?.seller_id ?? null,
     items: (o.items ?? []).map((i) => ({
       id: i.id,
       listingId: i.listing_id,
+      sellerId: i.listing?.seller_id ?? null,
       name: i.title_snapshot,
       brand: i.brand_snapshot,
       image: i.image_snapshot || '/demo/bag1.png',
@@ -102,7 +108,8 @@ export async function fetchOrderById(orderId) {
        shipping_address:addresses(first_name, surname, street_address, apartment,
                                   city, state, postcode, country, phone_code, phone),
        items:order_items(id, listing_id, title_snapshot, brand_snapshot,
-                         image_snapshot, price_paid, status)`,
+                         image_snapshot, price_paid, status,
+                         listing:listings(seller_id))`,
     )
     .eq('id', orderId)
     .maybeSingle()

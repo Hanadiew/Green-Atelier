@@ -6,7 +6,30 @@
 
       <!-- ===== LEFT SIDEBAR ===== -->
       <div class="w-full lg:w-[200px] lg:flex-shrink-0">
-        <nav class="flex flex-col">
+
+        <!-- Below lg the five sections became five stacked rows that pushed the
+             settings themselves off the first screen: you arrived at Account
+             Settings and saw only the table of contents. A select collapses
+             that to one row and uses the platform's own picker, which on a
+             phone is a full-height sheet with rows already at touch size. -->
+        <label for="account-section" class="lg:hidden block text-xs uppercase tracking-widest text-gray-500 mb-2">
+          Settings section
+        </label>
+        <div class="lg:hidden relative mb-8">
+          <select id="account-section" v-model="activeSection"
+            class="w-full appearance-none border rounded-xl pl-4 pr-11 py-3 text-sm text-gray-900 bg-white outline-none focus:border-[#C9A96E] transition-colors"
+            style="border-color: #E5E0D5;">
+            <option v-for="item in sidebarItems" :key="item.key" :value="item.key">{{ item.label }}</option>
+          </select>
+          <!-- The chevron is ours because `appearance: none` removes the
+               platform one; pointer-events-none keeps the whole field tappable. -->
+          <svg class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+            fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+
+        <nav class="hidden lg:flex flex-col">
           <button v-for="item in sidebarItems" :key="item.key"
             @click="activeSection = item.key"
             class="text-left px-4 py-3 text-sm rounded-md transition"

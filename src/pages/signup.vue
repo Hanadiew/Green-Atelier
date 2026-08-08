@@ -2,7 +2,7 @@
   <div class="min-h-screen flex flex-col items-center justify-center" style="background-color: #FBF8F4;">
 
     <!-- Logo -->
-    <h1 class="tracking-widest text-sm mb-8 font-light" style="color: #C9A96E; font-family: 'Georgia', serif; letter-spacing: 0.25em;">
+    <h1 class="tracking-widest text-sm mb-8 font-light" style="color: #C9A96E; font-family: var(--font-display); letter-spacing: 0.25em;">
       GREEN ATELIER
     </h1>
 

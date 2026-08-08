@@ -13,7 +13,7 @@
         </button>
 
         <p class="text-xs tracking-widest uppercase mb-3" style="color: #C9A96E;">Welcome to Green Atelier</p>
-        <h3 class="text-xl mb-2" style="font-family: 'Georgia', serif; color: #1B3A2D;">
+        <h3 class="text-xl mb-2" style="font-family: var(--font-display); color: #1B3A2D;">
           {{ promo.headline }} your first order
         </h3>
         <p class="text-xs text-gray-400 leading-relaxed mb-5">

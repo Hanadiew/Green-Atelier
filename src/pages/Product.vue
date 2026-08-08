@@ -11,7 +11,7 @@
       <!-- Not found / error -->
       <div v-else-if="!product" class="flex flex-col items-center justify-center py-32 text-center">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-200 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M2.048 18.566A2 2 0 0 0 4 21h16a2 2 0 0 0 1.952-2.434l-2-9A2 2 0 0 0 18 8H6a2 2 0 0 0-1.952 1.566z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M8 11V6a4 4 0 0 1 8 0v5"/>
         </svg>
         <p class="text-sm font-medium text-gray-500 mb-1">{{ errorMsg || 'Listing not found' }}</p>
         <p class="text-xs text-gray-400 mb-6">It may have sold or been withdrawn.</p>
@@ -66,7 +66,7 @@
         <!-- Product Info -->
         <div class="w-full lg:flex-1 lg:min-w-0">
           <p class="text-xs tracking-widest uppercase text-gray-400 mb-1">{{ product.brand }}</p>
-          <h1 class="text-3xl font-light text-gray-900 mb-1" style="font-family: 'Georgia', serif;">{{ product.name }}</h1>
+          <h1 class="text-3xl font-light text-gray-900 mb-1" style="font-family: var(--font-display);">{{ product.name }}</h1>
           <p class="text-lg text-gray-700 mb-6">RM {{ product.price.toLocaleString() }}.00</p>
 
           <!-- Add to Bag + Wishlist -->
@@ -86,7 +86,7 @@
               style="border-color: #C9A96E;">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" style="color: #C9A96E;"
                 :fill="isSaved ? 'currentColor' : 'none'" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 010-6.364z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/>
               </svg>
             </button>
 
@@ -240,7 +240,11 @@
               <div class="grid transition-all duration-300 ease-out"
                 :class="accordion.open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'">
                 <div class="overflow-hidden">
-                  <p class="pb-4 text-xs text-gray-500 leading-relaxed">{{ accordion.content }}</p>
+                  <!-- v-html because the seller's description carries formatting, but only
+                       ever after sanitiseHtml(): a listing description is untrusted
+                       input, and rendering it raw would be a stored-XSS hole. -->
+                  <div class="pb-4 text-xs text-gray-500 leading-relaxed rich-text"
+                    v-html="sanitiseHtml(accordion.content)"></div>
                 </div>
               </div>
             </div>
@@ -254,7 +258,7 @@
 
         <!-- Seller -->
         <div class="w-full lg:w-[200px] lg:flex-shrink-0">
-          <h2 class="text-2xl font-light text-gray-800 mb-4" style="font-family: 'Georgia', serif;">Seller</h2>
+          <h2 class="text-2xl font-light text-gray-800 mb-4" style="font-family: var(--font-display);">Seller</h2>
           <div class="bg-white rounded-xl p-5">
             <div class="flex items-center gap-3 mb-3">
               <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center flex-shrink-0">
@@ -287,7 +291,7 @@
 
         <!-- More About Product -->
         <div class="flex-1">
-          <h2 class="text-2xl font-light text-gray-800 mb-4" style="font-family: 'Georgia', serif;">More About The Product</h2>
+          <h2 class="text-2xl font-light text-gray-800 mb-4" style="font-family: var(--font-display);">More About The Product</h2>
           <!-- Green Atelier TrustCheck -->
           <div v-if="trustCheck" class="mb-4">
             <TrustCheckCard :assessment="trustCheck" />
@@ -327,7 +331,7 @@
       <!-- ===== NEW IN ====================================================================================================================================================================================================================================== -->
       <div v-if="relatedProducts.length" class="mt-16">
         <div class="flex items-center justify-between mb-6">
-          <h2 class="text-2xl font-light text-gray-800" style="font-family: 'Georgia', serif;">New In</h2>
+          <h2 class="text-2xl font-light text-gray-800" style="font-family: var(--font-display);">New In</h2>
           <RouterLink to="/shop"
             class="inline-flex items-center gap-2 px-5 py-2.5 text-xs tracking-widest uppercase rounded-lg btn-outline-green">
             View Listings
@@ -363,7 +367,7 @@
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
                     :fill="wishlistIds.has(p.id) ? 'currentColor' : 'none'"
                     viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 010-6.364z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/>
                   </svg>
                 </button>
               </div>
@@ -406,7 +410,7 @@
         <div class="bg-white rounded-xl w-full max-w-sm" @click.stop>
 
           <div class="px-6 py-4 border-b border-gray-100">
-            <h3 class="text-base text-gray-900" style="font-family: 'Georgia', serif;">Make an Offer</h3>
+            <h3 class="text-base text-gray-900" style="font-family: var(--font-display);">Make an Offer</h3>
             <p class="text-xs text-gray-400 mt-1">
               {{ product.name }} · listed at RM {{ product.price.toLocaleString() }}.00
             </p>
@@ -452,6 +456,7 @@ import { addToCart, cartItems } from '../cart.js'
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
 import LoadingPanel from '../components/LoadingPanel.vue'
+import { sanitiseHtml } from '../lib/sanitiseHtml.js'
 import { holdFor } from '../lib/loading.js'
 import TrustCheckCard from '../components/TrustCheckCard.vue'
 import ReportDialog from '../components/ReportDialog.vue'

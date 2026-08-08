@@ -75,9 +75,12 @@
 
       <!-- The numbers, as their own row. Serif and large, so they carry the
            section rather than annotating it. -->
-      <div v-if="stats.length" class="max-w-5xl mx-auto grid gap-10 sm:grid-cols-3 mt-20 pt-16 border-t border-gray-100">
+      <div v-if="stats.length" ref="statsRoot" :class="{ 'is-visible': statsVisible }"
+        class="max-w-5xl mx-auto grid gap-10 sm:grid-cols-3 mt-20 pt-16 border-t border-gray-100">
         <div v-for="stat in stats" :key="stat.label">
-          <p class="display text-4xl sm:text-5xl text-gray-900 mb-3">{{ stat.value }}</p>
+          <p class="display text-4xl sm:text-5xl text-gray-900 mb-3 tabular-nums">
+            {{ stat.display }}<span v-if="stat.suffix">{{ stat.suffix }}</span>
+          </p>
           <p class="text-sm text-gray-500 leading-relaxed">{{ stat.label }}</p>
         </div>
       </div>
@@ -103,7 +106,7 @@
 
         <div class="grid gap-x-12 gap-y-10 sm:grid-cols-3">
           <div v-for="pillar in pillars" :key="pillar.title">
-            <h3 class="text-base text-white mb-3" style="font-family: 'Georgia', serif;">{{ pillar.title }}</h3>
+            <h3 class="text-base text-white mb-3" style="font-family: var(--font-display);">{{ pillar.title }}</h3>
             <p class="text-sm text-white/50 leading-relaxed">{{ pillar.desc }}</p>
           </div>
         </div>
@@ -135,7 +138,10 @@
     <!-- The container is a wrapper here rather than the frame itself: its inline
          padding would otherwise inset the image inside the rounded corners. -->
     <section class="page-container mb-24">
-      <div class="relative overflow-hidden rounded-3xl h-[300px] sm:h-[480px]">
+      <!-- min-height, not height: at a fixed 300px the copy and buttons had to
+           fit whatever was left after the padding, and on a narrow phone they
+           did not. The frame can grow; the photograph still covers it. -->
+      <div class="relative overflow-hidden rounded-3xl min-h-[26rem] sm:min-h-[30rem]">
 
       <!-- A pile of knitwear, close in. Object-center rather than object-top:
            the frame is all texture, so there is no subject a top crop would
@@ -143,21 +149,26 @@
       <img src="../assets/cta-about.jpg" alt="" loading="lazy"
         class="w-full h-full object-cover object-center" />
 
-      <!-- Overlay -->
-      <div class="absolute inset-0 flex flex-col items-center justify-center text-center"
+      <!-- Overlay.
+           The contents had no horizontal padding of their own, so on a phone the
+           headline and both buttons ran to the frame's edges and the line breaks
+           landed wherever they fell. Padding, a capped measure and a wrapping
+           button row fix that; the buttons go full width below sm, where two
+           side by side leave neither enough room to be a comfortable target. -->
+      <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-6 sm:px-10 py-12"
         style="background: linear-gradient(to bottom, rgba(27,58,45,0.6), rgba(27,58,45,0.9));">
-        <p class="eyebrow mb-5">Shop Consciously</p>
-        <h2 class="display on-dark text-3xl sm:text-4xl lg:text-5xl text-white mb-5">
+        <p class="eyebrow mb-4 sm:mb-5">Shop Consciously</p>
+        <h2 class="display on-dark text-2xl sm:text-4xl lg:text-5xl text-white mb-4 sm:mb-5 max-w-2xl">
           Every piece has a story.<br /><span class="display-soft">Be part of its next chapter.</span>
         </h2>
-        <p class="text-sm text-gray-300 max-w-md leading-relaxed mb-8">
+        <p class="text-sm text-gray-300 max-w-md leading-relaxed mb-7 sm:mb-8">
           Reviewed luxury fashion that has been worn before and is ready to be worn again.
         </p>
-        <div class="flex items-center gap-4">
-          <RouterLink to="/shop" class="px-8 py-3 text-sm rounded-md btn-gold">
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 w-full max-w-xs sm:max-w-none">
+          <RouterLink to="/shop" class="px-8 py-3 text-sm rounded-md text-center btn-gold">
             Shop Now
           </RouterLink>
-          <RouterLink to="/sell" class="px-8 py-3 text-sm rounded-md btn-outline-light">
+          <RouterLink to="/sell" class="px-8 py-3 text-sm rounded-md text-center btn-outline-light">
             Start Selling
           </RouterLink>
         </div>
@@ -181,7 +192,7 @@
              column is what groups them, so the values read as a set. -->
         <div class="grid gap-x-10 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
           <div v-for="value in values" :key="value.title" class="border-t border-gray-200 pt-6">
-            <h3 class="text-base text-gray-900 mb-3" style="font-family: 'Georgia', serif;">{{ value.title }}</h3>
+            <h3 class="text-base text-gray-900 mb-3" style="font-family: var(--font-display);">{{ value.title }}</h3>
             <p class="text-sm text-gray-500 leading-relaxed">{{ value.desc }}</p>
           </div>
         </div>
@@ -221,7 +232,8 @@
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
 import CircularFashion from '../components/sustainable/CircularFashion.vue'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useCountUp, useReveal } from '../lib/motion.js'
 import { fetchPlatformImpact } from '../lib/listings.js'
 // Sits beside the story text, so it has to be the concrete half of the pitch:
 // what actually happens to a piece, in order.
@@ -244,15 +256,29 @@ const stats = computed(() => {
   const rows = []
 
   if (itemsRehomed > 0) {
-    rows.push({ value: String(itemsRehomed), label: 'Pieces rehomed through Green Atelier' })
+    rows.push({ display: rehomedCount.display, suffix: '', label: 'Pieces rehomed through Green Atelier' })
   }
   if (co2SavedKg > 0) {
-    rows.push({ value: `${Math.round(co2SavedKg)}kg`, label: 'CO₂ avoided, totalled across those sales' })
+    rows.push({ display: co2Count.display, suffix: 'kg', label: 'CO₂ avoided, totalled across those sales' })
   }
   if (activeListings > 0) {
-    rows.push({ value: String(activeListings), label: 'Pieces looking for a new owner' })
+    rows.push({ display: listedCount.display, suffix: '', label: 'Pieces looking for a new owner' })
   }
   return rows
+})
+
+// Counters, started when the row reaches the viewport.
+const { root: statsRoot, visible: statsVisible } = useReveal({ threshold: 0.3 })
+
+const rehomedCount = useCountUp(0)
+const co2Count = useCountUp(0)
+const listedCount = useCountUp(0)
+
+watch([statsVisible, platformImpact], ([onScreen, data]) => {
+  if (!onScreen || !data) return
+  rehomedCount.start(data.itemsRehomed)
+  co2Count.start(Math.round(data.co2SavedKg))
+  listedCount.start(data.activeListings)
 })
 
 onMounted(async () => {
