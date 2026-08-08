@@ -5,8 +5,15 @@
 -- order. The review then shows on the seller's public profile.
 --
 -- The "actually received" part is the whole point, and it is enforced here
--- rather than in the browser: a review is only insertable when the row's own
--- order is delivered and belongs to the person writing it. Client-side checks
+-- rather than in the browser: a review is only insertable when an item on the
+-- row's own order has been delivered and that order belongs to the person
+-- writing it.
+--
+-- Gated on order_items.status rather than orders.status. Delivery is tracked
+-- per item — orders sit at 'processing' while their items move through
+-- shipped/delivered — and the Orders tab draws one card per item and shows the
+-- item's status. Checking the order here refused every review the interface
+-- offered. Client-side checks
 -- decide what the UI offers; this decides what the database accepts.
 --
 -- One review per order, not per seller: a buyer who has bought three times has
@@ -64,7 +71,7 @@ create policy seller_reviews_insert
       join public.listings l on l.id = oi.listing_id
       where o.id = seller_reviews.order_id
         and o.buyer_id = auth.uid()
-        and o.status = 'delivered'
+        and oi.status = 'delivered'
         and l.seller_id = seller_reviews.seller_id
     )
   );
