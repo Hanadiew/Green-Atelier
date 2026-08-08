@@ -36,8 +36,23 @@ function writeGuestCart(items) {
   }
 }
 
+// The seller comes along with the listing because checkout shows who the buyer
+// is actually buying from — it used to print a hardcoded "Green Atelier Seller"
+// for everyone, which is wrong on a marketplace where every listing has an owner.
 const CART_LISTING_FIELDS =
-  'id, title, brand, listing_price, images, status'
+  'id, title, brand, listing_price, images, status, seller_id, ' +
+  'seller:profiles!listings_seller_id_fkey(id, username, full_name, first_name, last_name, avatar_url, is_trusted_seller)'
+
+/** Display name for a seller profile, matching how the product page reads it. */
+export function sellerDisplayName(seller) {
+  if (!seller) return 'Green Atelier Seller'
+  return (
+    seller.full_name ||
+    [seller.first_name, seller.last_name].filter(Boolean).join(' ') ||
+    seller.username ||
+    'Green Atelier Seller'
+  )
+}
 
 function toCartItem(listing) {
   return {
@@ -46,6 +61,8 @@ function toCartItem(listing) {
     brand: listing.brand,
     price: Number(listing.listing_price),
     image: listing.images?.[0] || '/demo/bag1.png',
+    sellerId: listing.seller_id ?? listing.seller?.id ?? null,
+    seller: listing.seller ?? null,
   }
 }
 
@@ -144,6 +161,11 @@ export async function addToCart(product) {
     brand: product.brand,
     price: Number(product.price),
     image: product.image,
+    // Optional: a guest cart is rendered straight from this object, so whatever
+    // the caller knows about the seller is worth keeping. Signed-in carts reload
+    // from the database on the next sync and get the full profile regardless.
+    sellerId: product.sellerId ?? product.seller?.id ?? null,
+    seller: product.seller ?? null,
   }
   cartItems.value = [...cartItems.value, item]
 

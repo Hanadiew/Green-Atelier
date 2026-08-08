@@ -15,6 +15,28 @@ export function statusLabel(status) {
 }
 
 /**
+ * An order's fulfilment status, worked out from its items.
+ *
+ * order_items.status is the source of truth — that is the level a seller ships
+ * at — and orders.status is a derived copy maintained by the
+ * order_items_sync_order_status trigger. Deriving it here as well means every
+ * screen shows the same answer even if that copy is momentarily behind, which
+ * is what made the order list and the detail modal disagree: the list read the
+ * items, the modal read the stale column.
+ *
+ * Same rule as the trigger: an order is only as far along as its least-advanced
+ * live item, and cancelled items are ignored unless they are all cancelled.
+ */
+export function deriveOrderStatus(itemStatuses, fallback = 'processing') {
+  if (!itemStatuses?.length) return fallback
+  const live = itemStatuses.filter((s) => s !== 'cancelled')
+  if (!live.length) return 'cancelled'
+  if (live.includes('processing')) return 'processing'
+  if (live.includes('shipped')) return 'shipped'
+  return 'delivered'
+}
+
+/**
  * Places an order for everything in the caller's cart.
  *
  * All pricing happens inside the place_order database function, reading stored
@@ -62,40 +84,43 @@ export async function fetchOrders(userId) {
 
   if (error) throw error
 
-  return (data ?? []).map((o) => ({
-    id: o.id,
-    orderId: o.order_number,
-    total: Number(o.total),
-    subtotal: Number(o.subtotal),
-    shippingFee: Number(o.shipping_fee),
-    serviceFee: Number(o.service_fee),
-    discount: Number(o.discount),
-    status: statusLabel(o.status),
-    rawStatus: o.status,
-    paymentStatus: o.payment_status,
-    paymentMethod: o.payment_method,
-    // Raw timestamp alongside the formatted one, so callers can sort.
-    placedAt: o.placed_at,
-    date: new Date(o.placed_at).toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    }),
-    // Who to review. Every item in one order comes from one seller today, so
-    // the first item's seller is the order's seller; taken per item anyway so
-    // this does not quietly break if that ever stops being true.
-    sellerId: o.items?.[0]?.listing?.seller_id ?? null,
-    items: (o.items ?? []).map((i) => ({
-      id: i.id,
-      listingId: i.listing_id,
-      sellerId: i.listing?.seller_id ?? null,
-      name: i.title_snapshot,
-      brand: i.brand_snapshot,
-      image: i.image_snapshot || '/demo/bag1.png',
-      price: Number(i.price_paid),
-      status: statusLabel(i.status),
-    })),
-  }))
+  return (data ?? []).map((o) => {
+    const derived = deriveOrderStatus((o.items ?? []).map((i) => i.status), o.status)
+    return {
+      id: o.id,
+      orderId: o.order_number,
+      total: Number(o.total),
+      subtotal: Number(o.subtotal),
+      shippingFee: Number(o.shipping_fee),
+      serviceFee: Number(o.service_fee),
+      discount: Number(o.discount),
+      status: statusLabel(derived),
+      rawStatus: derived,
+      paymentStatus: o.payment_status,
+      paymentMethod: o.payment_method,
+      // Raw timestamp alongside the formatted one, so callers can sort.
+      placedAt: o.placed_at,
+      date: new Date(o.placed_at).toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      }),
+      // Who to review. Every item in one order comes from one seller today, so
+      // the first item's seller is the order's seller; taken per item anyway so
+      // this does not quietly break if that ever stops being true.
+      sellerId: o.items?.[0]?.listing?.seller_id ?? null,
+      items: (o.items ?? []).map((i) => ({
+        id: i.id,
+        listingId: i.listing_id,
+        sellerId: i.listing?.seller_id ?? null,
+        name: i.title_snapshot,
+        brand: i.brand_snapshot,
+        image: i.image_snapshot || '/demo/bag1.png',
+        price: Number(i.price_paid),
+        status: statusLabel(i.status),
+      })),
+    }
+  })
 }
 
 /** Full detail for one order — used by the receipt page. */
@@ -117,6 +142,8 @@ export async function fetchOrderById(orderId) {
   if (error) throw error
   if (!data) return null
 
+  const derived = deriveOrderStatus((data.items ?? []).map((i) => i.status), data.status)
+
   return {
     id: data.id,
     orderId: data.order_number,
@@ -125,8 +152,8 @@ export async function fetchOrderById(orderId) {
     serviceFee: Number(data.service_fee),
     discount: Number(data.discount),
     total: Number(data.total),
-    status: statusLabel(data.status),
-    rawStatus: data.status,
+    status: statusLabel(derived),
+    rawStatus: derived,
     paymentStatus: data.payment_status,
     paymentMethod: data.payment_method,
     promoCode: data.promo_code,

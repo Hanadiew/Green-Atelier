@@ -46,7 +46,7 @@ GAFS/
 │   │   ├── Profile.vue       # Public profile: listings, wishlist, orders, reports
 │   │   ├── Account.vue       # Settings: profile, preferences, addresses, payout, cards
 │   │   ├── Checkout.vue      # Bag → shipping → payment, then off to Stripe
-│   │   ├── PaymentSuccess.vue    # Stripe success_url — polls for the webhook
+│   │   ├── PaymentSuccess.vue    # Stripe success_url — confirms, then polls
 │   │   ├── PaymentCancelled.vue  # Stripe cancel_url — releases the reservation
 │   │   ├── SalesOrders.vue   # Seller's incoming sales and fulfilment status
 │   │   ├── Wallet.vue        # Seller earnings and payout history
@@ -74,7 +74,8 @@ GAFS/
 │   ├── migrations/           # Versioned schema, RLS and Storage definitions
 │   ├── functions/            # Edge Functions (Deno) — anything needing a secret
 │   │   ├── create-checkout-session/  # Prices the order, opens Stripe Checkout
-│   │   ├── stripe-webhook/           # The ONLY thing that marks an order paid
+│   │   ├── confirm-checkout-session/ # Settles on return, by asking Stripe
+│   │   ├── stripe-webhook/           # Settles on Stripe's own signed callback
 │   │   ├── attach-test-card/         # Saves a Stripe test card to a user
 │   │   ├── list-payment-methods/     # Reads/removes saved cards
 │   │   └── admin-manage-user/        # Suspend / restore / delete an account
@@ -191,14 +192,15 @@ see *Payouts* below for exactly what that does and does not mean.
 Cart → Checkout → create_pending_order()      order: pending / payment: pending
                                               listings: reserved
      → Stripe Checkout (hosted by Stripe)
-     → stripe-webhook verifies the signature
+     → stripe-webhook verifies the signature          ─┐ whichever arrives first;
+     → confirm-checkout-session reads the session     ─┘ both are idempotent
      → finalize_paid_order()                  order: processing / payment: paid
                                               listings: sold, carts cleared
 ```
 
 Two properties worth knowing:
 
-- **The success page is not authoritative.** `/payment-success` only *reads* the order and polls until the webhook lands. Refreshing it, sharing it, or visiting it directly changes nothing.
+- **The browser is not authoritative.** `/payment-success` only *reads* the order, and asks `confirm-checkout-session` to look the Stripe session up server-side. That function applies the same checks as the webhook — session belongs to the order, amount matches, Stripe says `paid` — before calling the same `finalize_paid_order()`. Nothing a buyer sends decides anything, and refreshing or sharing the URL changes nothing. Without it the buyer, who usually beats the webhook home, would sit on a spinner; with no webhook forwarding at all (the normal local setup) the page would never resolve.
 - **Payment survives a dead browser.** If the buyer's connection drops on the way back from Stripe, the webhook still settles the order.
 
 Listings sit in a `reserved` state while a buyer is mid-payment, so a second buyer cannot reach Stripe for the same one-of-a-kind item — nobody gets charged for something they can't receive. Cancelling releases the hold immediately; abandoning it releases via Stripe's `checkout.session.expired` after 30 minutes.
@@ -240,6 +242,7 @@ npx supabase secrets set SITE_URL=http://localhost:5173
 
 ```sh
 npx supabase functions deploy create-checkout-session
+npx supabase functions deploy confirm-checkout-session
 npx supabase functions deploy stripe-webhook --no-verify-jwt
 ```
 

@@ -58,24 +58,32 @@
             <div v-else class="space-y-6">
               <div v-for="item in cartItems" :key="item.id">
 
-                <!-- Seller row -->
+                <!-- Seller row. The real owner of the listing, not a house name:
+                     the buyer is buying from a person and pays that person. -->
                 <div class="flex items-center justify-between mb-4">
                   <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div class="w-8 h-8 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center flex-shrink-0">
+                      <img v-if="item.seller?.avatar_url" :src="item.seller.avatar_url"
+                        :alt="sellerDisplayName(item.seller)" class="w-full h-full object-cover" />
+                      <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5.121 17.804A8.966 8.966 0 0112 15c2.21 0 4.232.797 5.879 2.11M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                       </svg>
                     </div>
-                    <div>
-                      <p class="text-xs font-medium text-gray-700">Green Atelier Seller</p>
-                      <p class="text-xs flex items-center gap-1" style="color: #C9A96E;">
+                    <div class="min-w-0">
+                      <p class="text-xs font-medium text-gray-700 truncate">{{ sellerDisplayName(item.seller) }}</p>
+                      <p v-if="item.seller?.is_trusted_seller" class="text-xs flex items-center gap-1" style="color: #C9A96E;">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
                         </svg>
                         Trusted Seller
                       </p>
+                      <p v-else-if="item.seller?.username" class="text-xs text-gray-400 truncate">@{{ item.seller.username }}</p>
                     </div>
                   </div>
+                  <RouterLink v-if="item.seller?.username" :to="`/profile/${item.seller.username}`"
+                    class="text-xs text-gray-400 hover:text-gray-600 transition flex-shrink-0">
+                    View seller →
+                  </RouterLink>
                 </div>
 
                 <!-- Item row -->
@@ -379,7 +387,7 @@
 import Icon from '../components/Icon.vue'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { cartItems, cartSubtotal, removeFromCart } from '../cart.js'
+import { cartItems, cartSubtotal, removeFromCart, sellerDisplayName } from '../cart.js'
 import { userId } from '../lib/auth.js'
 import { createAddress, fetchAddresses, toDisplay } from '../lib/addresses.js'
 import { validatePromoCode } from '../lib/orders.js'

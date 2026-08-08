@@ -57,6 +57,33 @@ export async function fetchPaymentState(orderId) {
 }
 
 /**
+ * Asks the server to check with Stripe what happened to this order and settle it
+ * if the money cleared.
+ *
+ * This does not make the browser authoritative — it only triggers a server-side
+ * read of the Stripe session, and the Edge Function runs the same checks the
+ * webhook does before marking anything paid. It exists because the buyer beats
+ * the webhook back from Stripe more often than not, and in local development the
+ * webhook may never arrive at all.
+ *
+ * Never throws: the success page keeps polling regardless, and the webhook
+ * remains the path that settles payment if this one is unavailable.
+ */
+export async function confirmCheckoutSession(orderId) {
+  if (!orderId) return null
+  try {
+    const { data, error } = await supabase.functions.invoke('confirm-checkout-session', {
+      body: { orderId },
+    })
+    if (error) throw await invokeError(error)
+    return data
+  } catch (error) {
+    console.warn('Could not confirm payment with Stripe:', error.message)
+    return null
+  }
+}
+
+/**
  * Releases the listings a cancelled checkout was holding so the buyer can retry
  * straight away. Safe to call more than once, and it can only ever affect the
  * caller's own unpaid order.

@@ -346,24 +346,11 @@
 
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <!-- Payment and fulfilment are separate facts and are shown as such. -->
+              <!-- Fulfilment only. Payment state belongs to the whole order and
+                   is shown in the detail modal; carrying it here as well put two
+                   badges side by side that answer different questions. -->
               <span class="inline-block px-3 py-0.5 rounded-full text-xs font-medium"
-                :class="{
-                  'bg-green-50 text-green-600': order.paymentStatus === 'paid',
-                  'bg-yellow-50 text-yellow-600': order.paymentStatus === 'pending',
-                  'bg-red-50 text-red-400': order.paymentStatus === 'failed',
-                  'bg-gray-100 text-gray-500': order.paymentStatus === 'refunded',
-                }">
-                {{ order.paymentLabel }}
-              </span>
-              <span class="inline-block px-3 py-0.5 rounded-full text-xs font-medium"
-                :class="{
-                  'bg-yellow-50 text-yellow-600': order.status === 'Processing',
-                  'bg-blue-50 text-blue-600': order.status === 'Shipped',
-                  'bg-green-50 text-green-600': order.status === 'Delivered',
-                  'bg-red-50 text-red-400': order.status === 'Cancelled',
-                  'bg-gray-100 text-gray-500': order.status === 'Pending',
-                }">
+                :style="statusStyle(order.status)">
                 {{ order.status }}
               </span>
             </div>
@@ -569,7 +556,7 @@
               {{ orderDetail.status }}
             </span>
             <span class="px-3 py-0.5 rounded-full text-xs font-medium" :style="paymentStyle(orderDetail.paymentStatus)">
-              Payment {{ orderDetail.paymentStatus }}
+              {{ paymentStatusLabel(orderDetail.paymentStatus) }}
             </span>
             <span v-if="orderDetail.paymentMethod" class="text-xs text-gray-400">
               Via {{ orderDetail.paymentMethod }}
@@ -1090,14 +1077,15 @@ const orderCards = computed(() =>
       orderUuid: o.id,
       orderId: o.orderId,
       sellerId: o.sellerId,
-      paymentStatus: o.paymentStatus,
-      paymentLabel: paymentStatusLabel(o.paymentStatus),
       name: item.name,
       brand: item.brand,
       price: item.price,
       image: item.image,
       date: o.date,
-      status: item.status,
+      // Order-level status, the same value the detail modal shows. Using the
+      // item's own status here is what let a card read Delivered while the
+      // modal it opened read Shipped.
+      status: o.status,
       myReview: myReviews.value[o.id] ?? null,
     })),
   ),

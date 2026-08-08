@@ -125,7 +125,7 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import Footer from '../components/Footer.vue'
-import { fetchPaymentState } from '../lib/payments.js'
+import { confirmCheckoutSession, fetchPaymentState } from '../lib/payments.js'
 import { statusLabel } from '../lib/orders.js'
 import { syncCart } from '../cart.js'
 
@@ -138,14 +138,21 @@ const errorMsg = ref('')
 
 const orderStatusLabel = computed(() => statusLabel(order.value?.orderStatus ?? 'processing'))
 
-// Poll rather than trust the redirect. Stripe's webhook normally arrives within a
-// second or two, but the buyer can land here first — and refreshing this page must
-// never itself change anything, which is why it only ever reads.
+// Poll rather than trust the redirect. This page never decides anything itself:
+// it reads the order, and asks the server to check with Stripe. Refreshing it or
+// sharing the URL still changes nothing a buyer could exploit.
 const POLL_INTERVAL_MS = 1500
 const POLL_TIMEOUT_MS = 30_000
+// How often to re-ask Stripe while waiting. The first ask happens immediately;
+// after that every fourth tick (~6s), because each one is a Stripe round trip
+// and the webhook may well settle it in between.
+const CONFIRM_EVERY_TICKS = 4
 
 let timer = null
 let startedAt = 0
+let ticks = 0
+
+const orderIdParam = () => route.params.orderId ?? route.query.order
 
 const stop = () => {
   if (timer) clearTimeout(timer)
@@ -154,7 +161,7 @@ const stop = () => {
 
 const poll = async () => {
   try {
-    const result = await fetchPaymentState(route.params.orderId ?? route.query.order)
+    const result = await fetchPaymentState(orderIdParam())
     if (!result) {
       state.value = 'missing'
       return
@@ -163,7 +170,7 @@ const poll = async () => {
 
     if (result.isPaid) {
       state.value = 'paid'
-      // The webhook cleared the purchased rows from the cart server-side; pull the
+      // Settlement cleared the purchased rows from the cart server-side; pull the
       // local copy back in line so the bag icon is correct.
       await syncCart().catch(() => {})
       return
@@ -177,6 +184,14 @@ const poll = async () => {
       state.value = 'timeout'
       return
     }
+
+    // Still pending. Nudge the server to look at Stripe again — without this the
+    // page just waits for a webhook that, in local development, never comes.
+    ticks += 1
+    if (ticks % CONFIRM_EVERY_TICKS === 0) {
+      await confirmCheckoutSession(orderIdParam())
+    }
+
     timer = setTimeout(poll, POLL_INTERVAL_MS)
   } catch (error) {
     errorMsg.value = error.message
@@ -184,8 +199,12 @@ const poll = async () => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   startedAt = Date.now()
+  // Ask Stripe first. The buyer almost always arrives here before the webhook,
+  // so this is what turns the redirect into a confirmed "Payment Successful"
+  // straight away instead of several seconds of spinner.
+  await confirmCheckoutSession(orderIdParam())
   poll()
 })
 

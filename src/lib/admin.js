@@ -1,5 +1,6 @@
 import { supabase } from '../supabase.js'
 import { userId } from './auth.js'
+import { deriveOrderStatus } from './orders.js'
 
 /**
  * A profile's display name. full_name is nullable and first/last are too, so
@@ -660,7 +661,9 @@ function formatOrderForAdmin(order) {
     serviceFee: Number(order.service_fee),
     discount: Number(order.discount),
     total: Number(order.total),
-    status: order.status,
+    // Derived from the lines, exactly as the buyer's Orders tab does it, so
+    // staff and buyer never read different fulfilment states for one order.
+    status: deriveOrderStatus((order.items ?? []).map((i) => i.status), order.status),
     paymentStatus: order.payment_status,
     placedAt: order.placed_at,
     items: (order.items ?? []).map((item) => ({

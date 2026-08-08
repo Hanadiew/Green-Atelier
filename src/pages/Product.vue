@@ -669,6 +669,8 @@ const handleAddToCart = async () => {
       brand: product.value.brand,
       price: product.value.price,
       image: product.value.images[0],
+      sellerId: product.value.sellerId,
+      seller: product.value.seller,
     })
     addedToCart.value = true
     setTimeout(() => (addedToCart.value = false), 2000)
