@@ -251,7 +251,7 @@
       confirm-label="Suspend" variant="danger" :loading="busy === 'suspend'" @confirm="suspend" />
 
     <AdminConfirmDialog v-model="showDelete" title="Delete permanently?"
-      message="This cannot be undone. It removes the account and everything belonging to it. Accounts with orders or sales are refused; suspend those instead."
+      message="This cannot be undone. It removes the account and everything belonging to it: listings, wishlist, cart, addresses, and their own orders and payment records. Buyers who bought from this seller keep their order history."
       confirm-label="Delete" variant="danger" :loading="busy === 'delete'" @confirm="remove" />
   </div>
 </template>

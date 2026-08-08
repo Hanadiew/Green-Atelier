@@ -546,9 +546,13 @@ export function reactivateUser(userId) {
 }
 
 /**
- * Permanent, and destructive well beyond the user themselves: order_items.seller_id
- * cascades, so deleting a seller removes their items from other people's order
- * history. The Edge Function refuses when that would happen — suspend instead.
+ * Permanent. Removes the account's own data: listings, wishlist, cart,
+ * addresses, and their own orders and payment records.
+ *
+ * Other people's records survive. order_items.seller_id and .listing_id are
+ * ON DELETE SET NULL as of migration 20260808000300, and each line snapshots
+ * the title, brand, image and price paid, so a buyer keeps their history even
+ * once the seller and the listing are gone.
  */
 export function deleteUser(userId) {
   return manageUser('delete', userId)
@@ -617,20 +621,27 @@ export async function getAdminOrder(orderId) {
 }
 
 /**
- * Moves an order to a new fulfilment status and stamps the matching timestamp.
- * The orders RLS policy lets is_admin() past the buyer-only restriction.
+ * Cancels every line on an order.
+ *
+ * Cancellation is the only fulfilment change staff make. Shipped and delivered
+ * belong to the seller, who is the one who actually posts the parcel and is the
+ * only person who can honestly assert either.
+ *
+ * Writes to order_items, not to orders. Fulfilment is tracked per line — that
+ * is the level a seller ships at, and what the buyer's Orders tab displays —
+ * and orders.status follows via the order_items_sync_order_status trigger,
+ * which also stamps cancelled_at.
+ *
+ * This used to write orders.status directly, which is why a staff change never
+ * reached the buyer: the buyer was reading a column nobody had touched.
  */
-export async function updateOrderStatus(orderId, status) {
-  const stamps = {
-    shipped: 'shipped_at',
-    delivered: 'delivered_at',
-    cancelled: 'cancelled_at',
-  }
+export async function cancelOrderAsAdmin(orderId) {
+  const { error } = await supabase
+    .from('order_items')
+    .update({ status: 'cancelled' })
+    .eq('order_id', orderId)
+    .neq('status', 'cancelled')
 
-  const updates = { status }
-  if (stamps[status]) updates[stamps[status]] = new Date().toISOString()
-
-  const { error } = await supabase.from('orders').update(updates).eq('id', orderId)
   if (error) throw error
 }
 

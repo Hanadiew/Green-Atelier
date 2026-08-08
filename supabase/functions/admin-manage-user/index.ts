@@ -103,48 +103,20 @@ serve(async (req) => {
     }
 
     if (action === 'delete') {
-      // order_items.seller_id is ON DELETE CASCADE, so deleting a seller who has
-      // ever sold anything would also delete those items out of the BUYERS' order
-      // history — destroying records belonging to people who did nothing wrong.
-      // Refused outright; suspending achieves the intent without the collateral.
-      const { count: soldCount, error: soldError } = await supabaseAdmin
-        .from('order_items')
-        .select('id', { count: 'exact', head: true })
-        .eq('seller_id', userId)
+      // Deletion is no longer refused for accounts with history.
+      //
+      // It used to be, because order_items.seller_id and .listing_id cascaded:
+      // removing a seller took their lines out of other buyers' order history.
+      // Migration 20260808000300 changed both to ON DELETE SET NULL, and the
+      // line already snapshots title, brand, image and price at checkout — so a
+      // buyer's record now survives the seller being removed, showing the piece
+      // exactly as it was bought.
+      //
+      // What deletion still removes is the account's own data: their listings,
+      // wishlist, cart, addresses, and — if they were a buyer — their own orders
+      // and payment records. That is the intent of the action, and it is
+      // irreversible, so the interface confirms before calling this.
 
-      if (soldError) throw soldError
-
-      if ((soldCount ?? 0) > 0) {
-        return json(
-          {
-            error:
-              `This account has ${soldCount} sold item(s). Deleting it would also erase ` +
-              `those items from the buyers' order history. Suspend the account instead.`,
-          },
-          409,
-        )
-      }
-
-      const { count: boughtCount, error: boughtError } = await supabaseAdmin
-        .from('orders')
-        .select('id', { count: 'exact', head: true })
-        .eq('buyer_id', userId)
-
-      if (boughtError) throw boughtError
-
-      if ((boughtCount ?? 0) > 0) {
-        return json(
-          {
-            error:
-              `This account has ${boughtCount} order(s). Deleting it would erase that ` +
-              `purchase history and its payment records. Suspend the account instead.`,
-          },
-          409,
-        )
-      }
-
-      // Deleting the auth user cascades to profiles and from there to the
-      // account's own rows — wishlist, cart, addresses, listings.
       const { error } = await supabaseAdmin.auth.admin.deleteUser(userId)
       if (error) throw error
       return json({ ok: true, action: 'delete' })

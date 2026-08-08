@@ -102,25 +102,23 @@
         </div>
 
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 class="font-bold text-gray-900 mb-4">Update status</h3>
-          <div v-if="nextStatuses.length" class="space-y-2">
-            <button
-              v-for="next in nextStatuses"
-              :key="next.value"
-              @click="promptStatus(next)"
-              :disabled="saving"
-              :class="[
-                'w-full px-4 py-2 text-white rounded transition disabled:opacity-50',
-                next.value === 'cancelled'
-                  ? 'bg-red-600 hover:bg-red-700'
-                  : 'bg-emerald-600 hover:bg-emerald-700',
-              ]"
-            >
-              Mark as {{ next.label }}
-            </button>
-          </div>
+          <h3 class="font-bold text-gray-900 mb-4">Order actions</h3>
+
+          <p class="text-gray-600 text-sm mb-4">
+            Fulfilment is the seller's to record. They mark this order shipped and
+            delivered from their Sales Orders page as it moves.
+          </p>
+
+          <button
+            v-if="canCancel"
+            @click="promptStatus({ value: 'cancelled', label: 'Cancelled' })"
+            :disabled="saving"
+            class="w-full px-4 py-2 text-white rounded transition disabled:opacity-50 bg-red-600 hover:bg-red-700"
+          >
+            Cancel this order
+          </button>
           <p v-else class="text-gray-600 text-sm">
-            This order is {{ titleCase(order.status).toLowerCase() }}, so no further changes are possible.
+            This order is {{ titleCase(order.status).toLowerCase() }}, so it can no longer be cancelled.
           </p>
         </div>
       </div>
@@ -128,10 +126,10 @@
 
     <AdminConfirmDialog
       v-model="showConfirm"
-      :title="`Mark as ${pendingStatus?.label ?? ''}?`"
-      :message="`This sets the order status to ${pendingStatus?.label ?? ''} and stamps the time.`"
-      :confirm-label="`Mark as ${pendingStatus?.label ?? ''}`"
-      :variant="pendingStatus?.value === 'cancelled' ? 'danger' : 'primary'"
+      title="Cancel this order?"
+      message="This cancels every item on the order and cannot be undone. The seller will see it as cancelled on their Sales Orders page."
+      confirm-label="Cancel order"
+      variant="danger"
       :loading="saving"
       @confirm="applyStatus"
     />
@@ -143,7 +141,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import AdminBadge from '../../components/admin/AdminBadge.vue'
 import AdminConfirmDialog from '../../components/admin/AdminConfirmDialog.vue'
-import { getAdminOrder, updateOrderStatus } from '../../lib/admin.js'
+import { cancelOrderAsAdmin, getAdminOrder } from '../../lib/admin.js'
 import {
   formatDateTime,
   formatMoney,
@@ -162,17 +160,16 @@ const showConfirm = ref(false)
 const pendingStatus = ref(null)
 
 // Fulfilment only moves forwards; delivered and cancelled are terminal.
-const TRANSITIONS = {
-  processing: [
-    { value: 'shipped', label: 'Shipped' },
-    { value: 'cancelled', label: 'Cancelled' },
-  ],
-  shipped: [{ value: 'delivered', label: 'Delivered' }],
-  delivered: [],
-  cancelled: [],
-}
+// Cancellation only. Moving an order through shipped and delivered is the
+// seller's job — they are the one who actually packs and posts it, and they do
+// it from Sales Orders. Staff marking an order shipped from here would be
+// asserting something only the seller can know.
+//
+// Cancelling is different: it is an intervention, which is exactly what staff
+// are for, and it is terminal so it cannot contradict a seller mid-flow.
+const CAN_CANCEL = ['processing', 'shipped']
 
-const nextStatuses = computed(() => TRANSITIONS[order.value?.status] ?? [])
+const canCancel = computed(() => CAN_CANCEL.includes(order.value?.status))
 
 onMounted(async () => {
   try {
@@ -196,7 +193,7 @@ async function applyStatus() {
   error.value = null
 
   try {
-    await updateOrderStatus(order.value.id, pendingStatus.value.value)
+    await cancelOrderAsAdmin(order.value.id)
     order.value.status = pendingStatus.value.value
     showConfirm.value = false
   } catch (err) {
