@@ -31,7 +31,7 @@
         <label class="text-xs text-gray-400 mb-1 block">Model</label>
         <select v-model="selectedModel" :disabled="!selectedBrand"
           class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white disabled:bg-gray-50 disabled:text-gray-300">
-          <option value="">{{ selectedBrand ? 'Choose a model' : '—' }}</option>
+          <option value="">{{ selectedBrand ? 'Choose a model' : 'Choose a brand first' }}</option>
           <option v-for="m in availableModels" :key="m.slug" :value="m.model">{{ m.model }}</option>
         </select>
       </div>
@@ -47,8 +47,8 @@
           {{ selectedBrand ? 'Choose a model to continue' : 'TrustCheck is not available for this item yet' }}
         </p>
         <p class="text-xs text-gray-400 leading-relaxed">
-          Version 1 covers six models. If yours is not listed you can publish without an
-          assessment — buyers simply will not see a TrustCheck score.
+          Version 1 covers six models. If yours is not listed you can still publish. Your
+          listing simply will not show a TrustCheck score.
         </p>
       </div>
     </div>
@@ -82,8 +82,8 @@
       <div>
         <p class="text-sm font-semibold text-gray-800 mb-1">Supporting documents</p>
         <p class="text-xs text-gray-400 mb-3">
-          Optional, but each one raises your Evidence Score. Kept private — buyers see only
-          that a document exists, never its contents.
+          Optional, but each one raises your Evidence Score. These stay private: buyers see
+          that a document exists, never what is in it.
         </p>
 
         <div class="space-y-3">
@@ -129,9 +129,8 @@
       <!-- Analyze -->
       <div class="pt-1">
         <button @click="analyze" :disabled="analyzing || !canAnalyze"
-          class="w-full py-3 text-sm text-white rounded-md transition hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
-          style="background-color: #1B3A2D;">
-          {{ analyzing ? progressText || 'Analysing…' : result ? 'Re-run Analysis' : 'Analyze Authenticity' }}
+          class="w-full py-3 text-sm  rounded-md transition disabled:opacity-50 disabled:cursor-not-allowed btn-solid">
+          {{ analyzing ? 'Analysing…' : result ? 'Re-run Analysis' : 'Analyze Authenticity' }}
         </button>
         <p v-if="!canAnalyze" class="text-xs text-center mt-2" style="color: #C9A96E;">
           Upload front, back and interior photos in the Media step first.
@@ -243,9 +242,19 @@ const props = defineProps({
   listingImages: { type: Array, default: () => [] },
   /** An assessment restored when the seller navigates back to this step. */
   modelValue: { type: Object, default: null },
+  /**
+   * The serial the seller typed in the field above this panel. It replaces the
+   * old "Serial Number Image" upload slot, which asked for the same fact twice —
+   * but the 15 evidence points still have to be reachable, so the flag is
+   * derived from this instead of from a file.
+   */
+  serialNumber: { type: String, default: '' },
 })
 
-const emit = defineEmits(['update:modelValue'])
+// `update:files` is emitted whenever a slot changes, independently of the
+// assessment: the parent has to be able to store evidence the seller attached
+// but never scored.
+const emit = defineEmits(['update:modelValue', 'update:files', 'update:covered'])
 
 const selectedBrand = ref(matchBrand(props.initialBrand) ?? '')
 const selectedModel = ref('')
@@ -267,12 +276,16 @@ if (props.modelValue?.reference) {
 
 const documentSlots = [
   { key: 'receipt', label: 'Receipt / Invoice', hint: 'Proof of purchase', points: EVIDENCE_WEIGHTS.has_receipt },
-  { key: 'serialImage', label: 'Serial Number Image', hint: 'Photo of the code or date stamp', points: EVIDENCE_WEIGHTS.has_serial },
   { key: 'certificate', label: 'Authentication Certificate', hint: 'From a third-party authenticator', points: EVIDENCE_WEIGHTS.has_certificate },
 ]
 
 const availableModels = computed(() => modelsForBrand(selectedBrand.value))
 const reference = computed(() => findReference(selectedBrand.value, selectedModel.value))
+
+// The parent gates on this rather than on the listing's brand alone: a Gucci bag
+// that is not the Marmont Small has a matching brand but no reference, and the
+// seller was being told to run a check the panel cannot offer.
+watch(reference, (ref_) => emit('update:covered', Boolean(ref_)), { immediate: true })
 
 const requiredRows = computed(() => [
   { key: 'has_front', label: 'Front Image', points: EVIDENCE_WEIGHTS.has_front, present: Boolean(props.listingImages[0]) },
@@ -334,12 +347,14 @@ const onFileChosen = (event) => {
   }
 
   files.value = { ...files.value, [pendingSlot.value]: file }
+  emit('update:files', { ...files.value })
   pendingSlot.value = null
   clearResult()
 }
 
 const clearFile = (slot) => {
   files.value = { ...files.value, [slot]: null }
+  emit('update:files', { ...files.value })
   clearResult()
 }
 
@@ -352,8 +367,8 @@ const analyze = async () => {
       reference: reference.value,
       listingImages: props.listingImages,
       receipt: files.value.receipt,
-      serialImage: files.value.serialImage,
       certificate: files.value.certificate,
+      serialNumber: props.serialNumber,
       onProgress: (text) => (progressText.value = text),
     })
     result.value = assessment

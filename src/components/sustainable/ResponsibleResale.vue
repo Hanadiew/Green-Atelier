@@ -2,16 +2,23 @@
   <section ref="root" :class="{ 'is-visible': visible }" class="py-20 sm:py-28">
     <div class="page-container">
 
-      <div class="max-w-xl mb-14">
-        <p class="reveal text-xs tracking-widest uppercase mb-4" style="color: #C9A96E;">Responsible Resale</p>
-        <h2 class="reveal text-3xl sm:text-4xl font-light text-gray-800 leading-snug mb-5"
-          style="font-family: 'Georgia', serif; --reveal-delay: 100ms;">
-          Sustainability Needs Trust
-        </h2>
-        <p class="reveal text-sm text-gray-500 leading-relaxed" style="--reveal-delay: 180ms;">
-          Resale only keeps pieces in circulation if buyers can make an informed decision
-          about what they are buying. That means showing what is known about a piece —
-          and being clear about what is not.
+      <!-- Heading left, description right. The sentence used to sit directly
+           under the headline in the same narrow column, which read as a third
+           line of the title; across the measure and right-aligned it reads as a
+           note about the section. Stacks back to one column below lg, where
+           there is no width to place it against. -->
+      <div class="mb-14 grid gap-6 lg:grid-cols-2 lg:gap-16 lg:items-end">
+        <div>
+          <p class="reveal eyebrow mb-5">Green Atelier TrustCheck</p>
+          <h2 class="reveal display text-3xl sm:text-4xl lg:text-5xl text-gray-900"
+            style="--reveal-delay: 100ms;">
+            What the score<br /><span class="display-soft">on a listing means</span>
+          </h2>
+        </div>
+
+        <p class="reveal text-sm text-gray-500 leading-relaxed lg:text-right lg:pb-2" style="--reveal-delay: 180ms;">
+          TrustCheck rates how complete a seller's evidence is, out of 100. It is not a
+          verdict on whether a piece is genuine, and the difference matters.
         </p>
       </div>
 
@@ -43,17 +50,15 @@
           <div>
             <h3 class="text-sm font-semibold text-gray-800 mb-3">What Green Atelier TrustCheck™ is</h3>
             <p class="text-xs text-gray-500 leading-relaxed mb-3">
-              TrustCheck is an evidence-completeness check. It looks at what a seller has
-              submitted about a piece — photographs of the front, back and interior, a
-              receipt or invoice, a serial number, an authenticity certificate — and
-              reports how complete and internally consistent that evidence is, as a score
-              out of 100 shown on the listing.
+              TrustCheck scores how complete a seller's evidence is. It looks at what was
+              submitted with a piece: photographs of the front, back and interior, a receipt
+              or invoice, a serial number, an authenticity certificate. It then reports how
+              complete and consistent that evidence is, out of 100, on the listing.
             </p>
             <p class="text-xs text-gray-500 leading-relaxed mb-4">
-              It is not an authentication service. A TrustCheck score does not determine
-              whether an item is genuine or counterfeit, and no score should be read as a
-              guarantee either way. It tells you how much supporting evidence exists, so
-              that you can weigh it yourself.
+              It is not an authentication service. The score does not tell you whether a
+              piece is genuine or counterfeit, and it is not a guarantee either way. It
+              tells you how much supporting evidence exists, so you can weigh it up.
             </p>
             <RouterLink to="/shop"
               class="inline-flex items-center gap-1.5 text-xs font-medium transition hover:opacity-70"
@@ -84,12 +89,12 @@ const pillars = [
   },
   {
     title: 'Evidence-Based Checks',
-    body: 'Where a seller has supplied supporting evidence, TrustCheck reports how complete and consistent it is — a summary of what was provided, not a verdict on the item.',
+    body: 'Where a seller has supplied evidence, TrustCheck reports how complete and consistent it is. It summarises what was provided. It does not pass a verdict on the item.',
     icon: 'M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z',
   },
   {
     title: 'Informed Decisions',
-    body: 'Photographs, evidence and seller history sit together on the listing page. You review what is available and decide whether to buy — or to ask the seller first.',
+    body: 'Photographs, evidence and seller history sit together on the listing page. Read what is there, then decide whether to buy or to ask the seller first.',
     icon: 'M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z',
   },
 ]

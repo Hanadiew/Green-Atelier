@@ -1,6 +1,7 @@
 <template>
   <div class="page-shell">
-    <Navbar />
+    <!-- dark: full-height deep-green hero, so the bar inverts to light text until it is scrolled. -->
+    <Navbar dark />
 
     <!-- The narrative order is the point: the problem, then that existing pieces
          still have value, then how the platform makes passing them on easy, then
@@ -14,7 +15,6 @@
       <ImpactStats />
       <SustainabilityProblem />
       <CircularFashion />
-      <SustainablePractices />
       <ImpactSection />
       <CareGuide />
       <SellerSustainabilityCTA />
@@ -38,5 +38,4 @@ import SellerSustainabilityCTA from '../components/sustainable/SellerSustainabil
 import SustainabilityProblem from '../components/sustainable/SustainabilityProblem.vue'
 import SustainableFinalCTA from '../components/sustainable/SustainableFinalCTA.vue'
 import SustainableHero from '../components/sustainable/SustainableHero.vue'
-import SustainablePractices from '../components/sustainable/SustainablePractices.vue'
 </script>

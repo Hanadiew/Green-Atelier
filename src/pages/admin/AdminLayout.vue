@@ -1,7 +1,13 @@
 <template>
   <!-- Cream shell with a gutter, so the sidebar and content read as floating
-       panels the way the storefront's navbar pill does. -->
-  <div class="flex h-screen overflow-hidden gap-4 p-4" style="background-color: #F7F5F0;">
+       panels the way the storefront's navbar pill does.
+
+       `fixed inset-0` rather than `h-screen`: the portal is an app shell that
+       owns the viewport, and its own <main> is the only thing that scrolls. As a
+       normal block it still contributed to document height, so the window grew
+       its own scrollbar alongside main's — two bars, and the page drifting out
+       from under the header. Taken out of flow it cannot. -->
+  <div class="fixed inset-0 flex overflow-hidden gap-4 p-4" style="background-color: #F7F5F0;">
     <AdminSidebar
       :collapsed="collapsed"
       :mobile-open="mobileOpen"

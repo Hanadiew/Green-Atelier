@@ -8,6 +8,8 @@ import { isAdmin } from './lib/admin.js'
 import { initCart } from './cart.js'
 import { scrollToElement, scrollToTop } from './lib/smoothScroll.js'
 import { beginRouteLoading, endRouteLoading } from './lib/loading.js'
+import { initOriginButtons } from './lib/originButton.js'
+import { initHeroField } from './lib/heroField.js'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -153,3 +155,9 @@ app.mount('#app')
 
 // Loads the database cart (or the guest cart) and keeps it in step with sign-in.
 initCart()
+
+// Tracks where the pointer meets a branded button, for the hover fill.
+initOriginButtons()
+
+// Moves the hero gradient's warm wash with the pointer.
+initHeroField()

@@ -13,7 +13,7 @@
         </button>
 
         <p class="text-xs tracking-widest uppercase mb-3" style="color: #C9A96E;">Welcome to Green Atelier</p>
-        <h3 class="text-xl mb-2" style="font-family: 'Georgia', serif; color: #1B3A2D;">
+        <h3 class="text-xl mb-2" style="font-family: var(--font-display); color: #1B3A2D;">
           {{ promo.headline }} your first order
         </h3>
         <p class="text-xs text-gray-400 leading-relaxed mb-5">
@@ -23,15 +23,14 @@
         <button @click="copy"
           class="w-full font-mono text-sm tracking-widest py-3 rounded-lg border-2 border-dashed transition hover:bg-gray-50 mb-2"
           style="border-color: #C9A96E; color: #1B3A2D;">
-          {{ copied ? 'Copied ✓' : promo.code }}
+          {{ copied ? 'Copied' : promo.code }}
         </button>
         <p class="text-xs text-gray-400 mb-6">
-          Nothing to remember — we apply it at checkout once your bag qualifies.
+          Nothing to remember. We apply it at checkout once your bag qualifies.
         </p>
 
         <RouterLink to="/shop" @click="dismiss"
-          class="block w-full py-3 text-sm text-white rounded-md transition hover:opacity-90"
-          style="background-color: #1B3A2D;">
+          class="block w-full py-3 text-sm  rounded-md transition btn-solid">
           Start shopping
         </RouterLink>
       </div>
@@ -40,6 +39,7 @@
 </template>
 
 <script setup>
+import Icon from '../components/Icon.vue'
 import { ref, watch } from 'vue'
 import { isAuthenticated, userId } from '../lib/auth.js'
 import { fetchLivePromos, isFirstTimeBuyer, livePromos, welcomePromo } from '../lib/promos.js'

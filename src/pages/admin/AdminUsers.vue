@@ -35,21 +35,22 @@
       :per-page="perPage"
       :total="total"
       @update:page="page = $event"
+    @update:per-page="perPage = $event; page = 1"
     >
       <table class="w-full">
-        <thead class="bg-gray-50 border-b border-gray-200">
+        <thead>
           <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">User</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Email</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Location</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Trusted</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Joined</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Actions</th>
+            <th>User</th>
+            <th>Email</th>
+            <th>Location</th>
+            <th>Trusted</th>
+            <th>Joined</th>
+            <th>Actions</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-gray-200">
-          <tr v-for="user in users" :key="user.id" class="hover:bg-gray-50">
-            <td class="px-6 py-4">
+        <tbody>
+          <tr v-for="user in users" :key="user.id">
+            <td>
               <div class="flex items-center gap-3">
                 <img
                   v-if="user.avatar"
@@ -64,26 +65,26 @@
                   {{ (user.username || '?').charAt(0).toUpperCase() }}
                 </div>
                 <div class="min-w-0">
-                  <p class="font-medium text-gray-900 truncate">{{ user.fullName || '—' }}</p>
+                  <p class="font-medium text-gray-900 truncate">{{ user.fullName || '-' }}</p>
                   <p class="text-sm text-gray-500 truncate">@{{ user.username }}</p>
                 </div>
               </div>
             </td>
-            <td class="px-6 py-4"><p class="text-sm text-gray-600">{{ user.email }}</p></td>
-            <td class="px-6 py-4"><p class="text-sm text-gray-600">{{ user.location || '—' }}</p></td>
-            <td class="px-6 py-4">
+            <td><p class="text-sm text-gray-600">{{ user.email }}</p></td>
+            <td><p class="text-sm text-gray-600">{{ user.location || '-' }}</p></td>
+            <td>
               <AdminBadge
                 v-if="user.isTrustedSeller"
                 label="Trusted Seller"
                 variant="success"
                 size="sm"
               />
-              <span v-else class="text-sm text-gray-400">—</span>
+              <span v-else class="text-sm text-gray-400">-</span>
             </td>
-            <td class="px-6 py-4">
+            <td>
               <p class="text-sm text-gray-600">{{ formatDate(user.createdAt) }}</p>
             </td>
-            <td class="px-6 py-4">
+            <td>
               <router-link
                 :to="`/admin/users/${user.id}`"
                 class="text-emerald-600 hover:text-emerald-700 text-sm font-medium"
@@ -111,9 +112,9 @@ const error = ref(null)
 const search = ref('')
 const page = ref(1)
 const total = ref(0)
-const perPage = 20
+const perPage = ref(20)
 
-watch(page, fetchUsers)
+watch([page, perPage], fetchUsers)
 onMounted(fetchUsers)
 
 function runSearch() {
@@ -127,7 +128,7 @@ async function fetchUsers() {
   error.value = null
 
   try {
-    const result = await getAdminUsers({ search: search.value, page: page.value, perPage })
+    const result = await getAdminUsers({ search: search.value, page: page.value, perPage: perPage.value })
     users.value = result.users
     total.value = result.total
   } catch (err) {

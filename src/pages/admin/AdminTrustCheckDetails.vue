@@ -62,7 +62,8 @@
                   assessment.evidence[signal.key] ? 'bg-green-500' : 'bg-gray-300',
                 ]"
               >
-                {{ assessment.evidence[signal.key] ? '✓' : '·' }}
+                <Icon v-if="assessment.evidence[signal.key]" name="check" size="sm" />
+            <span v-else class="text-gray-300">-</span>
               </span>
               <span :class="assessment.evidence[signal.key] ? 'text-gray-900' : 'text-gray-500'">
                 {{ signal.label }}
@@ -74,7 +75,7 @@
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <h3 class="font-bold text-gray-900 mb-2">OCR text</h3>
           <p class="text-xs text-gray-500 mb-3">
-            Private — receipts can carry the original price and the buyer's name.
+            Private. Receipts can carry the original price and the buyer's name.
           </p>
           <pre
             v-if="assessment.verification.ocrText"
@@ -116,6 +117,7 @@
 </template>
 
 <script setup>
+import Icon from '../../components/Icon.vue'
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import AdminBadge from '../../components/admin/AdminBadge.vue'

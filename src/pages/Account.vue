@@ -6,7 +6,30 @@
 
       <!-- ===== LEFT SIDEBAR ===== -->
       <div class="w-full lg:w-[200px] lg:flex-shrink-0">
-        <nav class="flex flex-col">
+
+        <!-- Below lg the five sections became five stacked rows that pushed the
+             settings themselves off the first screen: you arrived at Account
+             Settings and saw only the table of contents. A select collapses
+             that to one row and uses the platform's own picker, which on a
+             phone is a full-height sheet with rows already at touch size. -->
+        <label for="account-section" class="lg:hidden block text-xs uppercase tracking-widest text-gray-500 mb-2">
+          Settings section
+        </label>
+        <div class="lg:hidden relative mb-8">
+          <select id="account-section" v-model="activeSection"
+            class="w-full appearance-none border rounded-xl pl-4 pr-11 py-3 text-sm text-gray-900 bg-white outline-none focus:border-[#C9A96E] transition-colors"
+            style="border-color: #E5E0D5;">
+            <option v-for="item in sidebarItems" :key="item.key" :value="item.key">{{ item.label }}</option>
+          </select>
+          <!-- The chevron is ours because `appearance: none` removes the
+               platform one; pointer-events-none keeps the whole field tappable. -->
+          <svg class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+            fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+
+        <nav class="hidden lg:flex flex-col">
           <button v-for="item in sidebarItems" :key="item.key"
             @click="activeSection = item.key"
             class="text-left px-4 py-3 text-sm rounded-md transition"
@@ -102,8 +125,7 @@
               </div>
               <div class="flex gap-3">
                 <button @click="savePersonal" :disabled="saving"
-                  class="px-6 py-2 text-xs text-white rounded-md disabled:opacity-60"
-                  style="background-color: #1B3A2D;">
+                  class="px-6 py-2 text-xs  rounded-md disabled:opacity-60 btn-solid">
                   {{ saving ? 'Saving…' : 'Save' }}
                 </button>
                 <button @click="cancelPersonal" class="px-6 py-2 text-xs text-gray-500 hover:text-gray-700 transition">
@@ -151,8 +173,7 @@
               </div>
               <div class="flex gap-3">
                 <button @click="saveAccount" :disabled="saving"
-                  class="px-6 py-2 text-xs text-white rounded-md disabled:opacity-60"
-                  style="background-color: #1B3A2D;">
+                  class="px-6 py-2 text-xs  rounded-md disabled:opacity-60 btn-solid">
                   {{ saving ? 'Saving…' : 'Save' }}
                 </button>
                 <button @click="cancelAccount" class="px-6 py-2 text-xs text-gray-500 hover:text-gray-700 transition">
@@ -227,8 +248,8 @@
         <div v-if="activeSection === 'payout'">
           <h2 class="text-base font-semibold text-gray-800 mb-2">Payout Information</h2>
           <p class="text-xs text-gray-400 mb-6 leading-relaxed">
-            Earnings from your sales are paid directly to this bank account once an order is
-            delivered. Green Atelier does not hold your funds — this is only where a payout is sent.
+            Earnings from your sales are paid to this bank account once an order is delivered.
+            Green Atelier does not hold your funds. This is only where a payout is sent.
           </p>
 
           <!-- Existing account, view mode -->
@@ -253,8 +274,7 @@
             <p class="text-xs text-gray-400 mb-1">No bank account has been configured.</p>
             <p class="text-xs text-gray-300 mb-4">Add a bank account to receive earnings from your sales.</p>
             <button @click="openAddPayout"
-              class="px-5 py-2 text-xs text-white rounded-md"
-              style="background-color: #1B3A2D;">
+              class="px-5 py-2 text-xs  rounded-md btn-solid">
               Add Bank Account
             </button>
           </div>
@@ -281,8 +301,7 @@
             </div>
             <div class="flex gap-3 pt-1">
               <button @click="savePayout" :disabled="saving"
-                class="px-6 py-2 text-xs text-white rounded-md disabled:opacity-60"
-                style="background-color: #1B3A2D;">
+                class="px-6 py-2 text-xs  rounded-md disabled:opacity-60 btn-solid">
                 {{ saving ? 'Saving…' : 'Save' }}
               </button>
               <button @click="cancelPayout" class="px-6 py-2 text-xs text-gray-500 hover:text-gray-700 transition">
@@ -296,8 +315,8 @@
         <div v-if="activeSection === 'payment'">
           <h2 class="text-base font-semibold text-gray-800 mb-1">Payment methods</h2>
           <p class="text-xs text-gray-400 mb-6 leading-relaxed max-w-lg">
-            Cards are held securely by Stripe — Green Atelier never stores your card
-            number. A saved card appears ready to use on the payment page.
+            Stripe holds your card details. Green Atelier never stores your card number.
+            A saved card is ready to use on the payment page.
           </p>
 
           <div v-if="cardsLoading" class="py-12 text-center">
@@ -343,9 +362,8 @@
             <div class="rounded-xl px-5 py-4" style="background-color: #F7F5F0;">
               <p class="text-sm text-gray-700 mb-1">Save a test card</p>
               <p class="text-xs text-gray-400 mb-3 leading-relaxed">
-                Green Atelier runs on Stripe test mode, so these are Stripe's own test
-                cards — no real money is ever charged. Saving one means the payment page
-                already has a card and you can pay in a click.
+                Green Atelier runs in Stripe test mode, so these are Stripe's own test cards
+                and no real money is charged. Save one and the payment page is ready to go.
               </p>
               <div class="flex flex-wrap gap-2">
                 <button v-for="choice in TEST_CARD_CHOICES" :key="choice.key"

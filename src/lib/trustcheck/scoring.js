@@ -53,7 +53,7 @@ export const CHECKLIST_ITEMS = Object.freeze([
   { key: 'has_back', label: 'Back Image', required: true },
   { key: 'has_interior', label: 'Interior Image', required: true },
   { key: 'has_receipt', label: 'Receipt / Invoice', required: false },
-  { key: 'has_serial', label: 'Serial Number Image', required: false },
+  { key: 'has_serial', label: 'Serial Number', required: false },
   { key: 'ocr_origin_match', label: 'Origin Text Detected', required: false },
   { key: 'has_certificate', label: 'Authentication Certificate', required: false },
 ])

@@ -62,7 +62,7 @@ export function useReveal({ threshold = 0.15, rootMargin = '0px 0px -10% 0px' } 
  * database needs: the section can become visible before the query resolves, so
  * the caller waits for both and passes the number in.
  */
-export function useCountUp(target = 0, { duration = 1500, decimals = 0 } = {}) {
+export function useCountUp(target = 0, { duration = 2400, decimals = 0 } = {}) {
   const value = ref(0)
   let frame = null
   let running = false

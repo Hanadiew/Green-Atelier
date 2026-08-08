@@ -53,11 +53,11 @@
             </div>
             <div>
               <dt class="text-sm text-gray-600">Phone</dt>
-              <dd class="font-medium text-gray-900">{{ user.phone || '—' }}</dd>
+              <dd class="font-medium text-gray-900">{{ user.phone || '-' }}</dd>
             </div>
             <div>
               <dt class="text-sm text-gray-600">Location</dt>
-              <dd class="font-medium text-gray-900">{{ user.location || '—' }}</dd>
+              <dd class="font-medium text-gray-900">{{ user.location || '-' }}</dd>
             </div>
             <div>
               <dt class="text-sm text-gray-600">Joined</dt>
@@ -114,7 +114,7 @@
           </p>
 
           <p v-if="!user.bankAccounts.length" class="text-sm text-gray-500 mb-4">
-            No bank account on file — payouts for this seller cannot be settled until
+            No bank account on file, so payouts for this seller cannot be settled until
             they add one under Account → Payout Information.
           </p>
           <div v-else class="space-y-3 mb-4">
@@ -251,7 +251,7 @@
       confirm-label="Suspend" variant="danger" :loading="busy === 'suspend'" @confirm="suspend" />
 
     <AdminConfirmDialog v-model="showDelete" title="Delete permanently?"
-      message="This cannot be undone. It removes the account and everything belonging to it. Accounts with orders or sales are refused — suspend those instead."
+      message="This cannot be undone. It removes the account and everything belonging to it. Accounts with orders or sales are refused; suspend those instead."
       confirm-label="Delete" variant="danger" :loading="busy === 'delete'" @confirm="remove" />
   </div>
 </template>

@@ -25,21 +25,22 @@
       :per-page="perPage"
       :total="total"
       @update:page="page = $event"
+    @update:per-page="perPage = $event; page = 1"
     >
       <table class="w-full">
-        <thead class="bg-gray-50 border-b border-gray-200">
+        <thead>
           <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Reported</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Reason</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Reporter</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Status</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Filed</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Actions</th>
+            <th>Reported</th>
+            <th>Reason</th>
+            <th>Reporter</th>
+            <th>Status</th>
+            <th>Filed</th>
+            <th>Actions</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-gray-200">
-          <tr v-for="report in reports" :key="report.id" class="hover:bg-gray-50">
-            <td class="px-6 py-4">
+        <tbody>
+          <tr v-for="report in reports" :key="report.id">
+            <td>
               <div v-if="report.reportedListing" class="flex items-center gap-3">
                 <img
                   :src="report.reportedListing.image"
@@ -55,25 +56,25 @@
                 <p class="font-medium text-gray-900">@{{ report.reportedUser.username }}</p>
                 <p class="text-xs text-gray-500">User</p>
               </div>
-              <p v-else class="text-sm text-gray-400">—</p>
+              <p v-else class="text-sm text-gray-400">-</p>
             </td>
-            <td class="px-6 py-4">
+            <td>
               <p class="text-sm text-gray-600">{{ titleCase(report.reason) }}</p>
             </td>
-            <td class="px-6 py-4">
-              <p class="text-sm text-gray-600">@{{ report.reporter?.username ?? '—' }}</p>
+            <td>
+              <p class="text-sm text-gray-600">@{{ report.reporter?.username ?? '-' }}</p>
             </td>
-            <td class="px-6 py-4">
+            <td>
               <AdminBadge
                 :label="titleCase(report.status)"
                 :variant="REPORT_STATUS_VARIANT[report.status] || 'default'"
                 size="sm"
               />
             </td>
-            <td class="px-6 py-4">
+            <td>
               <p class="text-sm text-gray-600">{{ formatDate(report.createdAt) }}</p>
             </td>
-            <td class="px-6 py-4">
+            <td>
               <router-link
                 :to="`/admin/reports/${report.id}`"
                 class="text-emerald-600 hover:text-emerald-700 text-sm font-medium"
@@ -101,13 +102,13 @@ const error = ref(null)
 const status = ref('')
 const page = ref(1)
 const total = ref(0)
-const perPage = 20
+const perPage = ref(20)
 
 watch(status, () => {
   if (page.value === 1) fetchReports()
   else page.value = 1
 })
-watch(page, fetchReports)
+watch([page, perPage], fetchReports)
 onMounted(fetchReports)
 
 async function fetchReports() {
@@ -118,7 +119,7 @@ async function fetchReports() {
     const result = await getReports({
       status: status.value || null,
       page: page.value,
-      perPage,
+      perPage: perPage.value,
     })
     reports.value = result.reports
     total.value = result.total

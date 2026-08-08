@@ -5,7 +5,7 @@
     <div class="page-top page-container pb-16">
 
       <div class="mb-8">
-        <h1 class="text-2xl font-light text-gray-900" style="font-family: 'Georgia', serif;">Wallet</h1>
+        <h1 class="text-2xl font-light text-gray-900" style="font-family: var(--font-display);">Wallet</h1>
         <p class="text-xs text-gray-400 mt-1">
           Earnings from your sales are paid directly to your bank account. Green Atelier does not
           hold your funds.
@@ -66,8 +66,7 @@
             <p class="text-xs text-gray-400">Add one to receive earnings from your sales.</p>
           </div>
           <RouterLink to="/account?section=payout"
-            class="px-4 py-2 text-xs text-white rounded-md flex-shrink-0"
-            style="background-color: #1B3A2D;">
+            class="px-4 py-2 text-xs  rounded-md flex-shrink-0 btn-solid">
             Add Bank Account
           </RouterLink>
         </div>
@@ -92,13 +91,14 @@
 
         <LoadingPanel v-if="loadingTransactions" :min-height="280" label="Loading transactions" />
 
-        <div v-else-if="filteredTransactions.length === 0" class="bg-white rounded-xl shadow-sm py-12 text-center">
+        <div v-else-if="filteredTransactions.length === 0" class="data-grid-shell py-12 text-center">
           <p class="text-xs text-gray-400">Nothing here yet.</p>
           <p class="text-xs text-gray-300 mt-1">Your purchases, sales and payouts will appear here.</p>
         </div>
 
-        <div v-else class="bg-white rounded-xl shadow-sm divide-y divide-gray-50">
-          <div v-for="t in filteredTransactions" :key="t.id" class="px-5 py-4 flex items-center gap-4">
+        <div v-else class="data-grid-shell overflow-hidden divide-y divide-gray-100">
+          <div v-for="t in filteredTransactions" :key="t.id"
+            class="px-5 sm:px-6 py-4 flex items-center gap-4 transition hover:bg-gray-50">
 
             <div class="w-11 h-11 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
               <img :src="t.image" :alt="t.name" class="w-full h-full object-cover" />

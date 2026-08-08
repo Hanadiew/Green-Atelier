@@ -5,12 +5,12 @@
       <div class="text-center mb-12">
         <p class="reveal text-xs tracking-widest uppercase mb-4" style="color: #C9A96E;">Care Guide</p>
         <h2 class="reveal text-3xl sm:text-4xl font-light text-gray-800 leading-snug mb-4"
-          style="font-family: 'Georgia', serif; --reveal-delay: 100ms;">
+          style="font-family: var(--font-display); --reveal-delay: 100ms;">
           Care for What You Own
         </h2>
         <p class="reveal text-sm text-gray-400 max-w-md mx-auto leading-relaxed" style="--reveal-delay: 180ms;">
-          The longer a piece stays in good condition, the longer it stays worth owning —
-          and the more it is worth to whoever has it next.
+          A piece kept in good condition stays worth owning for longer, and worth more
+          to whoever has it next.
         </p>
       </div>
 
@@ -40,7 +40,7 @@
           <div class="relative overflow-hidden order-1 sm:order-none" style="min-height: 16rem;" aria-hidden="true">
             <Transition name="care-img" mode="out-in">
               <img :key="steps[active].key" :src="steps[active].image" alt="" loading="lazy"
-                class="absolute inset-0 w-full h-full object-contain p-10" />
+                class="absolute inset-0 w-full h-full object-cover" />
             </Transition>
           </div>
 
@@ -48,7 +48,7 @@
             <Transition name="care-copy" mode="out-in">
               <div :key="steps[active].key">
                 <p class="text-xs tabular-nums mb-4" style="color: #C9A96E;">0{{ active + 1 }} / 0{{ steps.length }}</p>
-                <h3 class="text-2xl font-light text-gray-800 mb-4" style="font-family: 'Georgia', serif;">
+                <h3 class="text-2xl font-light text-gray-800 mb-4" style="font-family: var(--font-display);">
                   {{ steps[active].title }}
                 </h3>
                 <p class="text-sm text-gray-500 leading-relaxed mb-6">{{ steps[active].body }}</p>
@@ -71,10 +71,10 @@
 
 <script setup>
 import { ref } from 'vue'
-import bag from '../../assets/bag1.png'
-import shades from '../../assets/shades.png'
-import shirt from '../../assets/shirt.png'
-import shoes from '../../assets/shoes.png'
+import store from '../../assets/care guide/store.jpg'
+import clean from '../../assets/care guide/clean.jpg'
+import repair from '../../assets/care guide/repair.jpg'
+import rehome from '../../assets/care guide/rehome.jpg'
 import { useReveal } from '../../lib/motion.js'
 
 const { root, visible } = useReveal()
@@ -90,9 +90,9 @@ const steps = [
     tips: [
       'Keep leather and structured bags stuffed so they hold their shape.',
       'Use dust bags and padded hangers rather than plastic, which traps moisture.',
-      'Keep pieces out of direct sunlight — fading is not reversible.',
+      'Keep pieces out of direct sunlight. Fading cannot be undone.',
     ],
-    image: bag,
+    image: store,
   },
   {
     key: 'Clean',
@@ -103,18 +103,18 @@ const steps = [
       'Wash cooler, on a gentler cycle, and turn pieces inside out.',
       'Spot-clean marks early rather than washing the whole garment.',
     ],
-    image: shirt,
+    image: clean,
   },
   {
     key: 'Repair',
     title: 'Repair before you replace',
     body: 'A worn heel, a loose seam or a missing button is a repair, not the end of a piece. Quality construction is what makes repair worth doing at all.',
     tips: [
-      'Resole and reheel good shoes — the uppers usually outlive the soles.',
+      'Resole and reheel good shoes. The uppers usually outlive the soles.',
       'Have linings, zips and straps replaced rather than retiring the piece.',
       'Keep spare buttons and care cards; they matter at resale too.',
     ],
-    image: shoes,
+    image: repair,
   },
   {
     key: 'Rehome',
@@ -122,10 +122,10 @@ const steps = [
     body: 'When a piece no longer fits your wardrobe, passing it on keeps it in circulation. That is the last and most useful thing an owner can do for it.',
     tips: [
       'List it while it is still in good condition, not years later.',
-      'Photograph it honestly, wear and all — buyers reward accuracy.',
+      'Photograph it honestly, wear and all. Buyers reward accuracy.',
       'Include the original receipt, box or authenticity card if you kept them.',
     ],
-    image: shades,
+    image: rehome,
   },
 ]
 

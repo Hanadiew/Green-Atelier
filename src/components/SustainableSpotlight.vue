@@ -17,8 +17,8 @@
         </h2>
 
         <p class="reveal lede" style="--reveal-delay: 280ms;">
-          Every piece resold here is a piece that never had to be made. That is the
-          whole of it — no offsets, no pledges, just a garment staying in use.
+          Every piece resold here is a piece that never had to be made. No offsets,
+          no pledges, just a garment staying in use.
         </p>
 
         <div class="stats">
@@ -72,7 +72,6 @@
           loading="lazy"
           decoding="async"
         />
-        <div class="media-fade"></div>
       </div>
 
     </div>
@@ -89,8 +88,8 @@ const hovered = ref(null)
 const focused = ref(null)
 const opened = ref(null)
 
-const life = useCountUp(2.2, { decimals: 1 })
-const footprint = useCountUp(73)
+const life = useCountUp(9)
+const footprint = useCountUp(25)
 
 // The same two figures the Sustainable page states. Nothing invented here, and
 // nothing attributed to a customer.
@@ -98,16 +97,16 @@ const stats = [
   {
     key: 'life',
     ...life,
-    suffix: ' yrs',
-    label: 'Longer active life for a garment that is resold rather than replaced.',
+    suffix: ' months',
+    label: 'Extra active life is enough to cut a garment’s footprint by a fifth.',
     detail:
-      'Keeping a piece in use is the single biggest lever an owner has — bigger than fibre choice, bigger than washing habits.',
+      'Keeping a piece in use is the biggest lever an owner has. It beats fibre choice and washing habits combined.',
   },
   {
     key: 'footprint',
     ...footprint,
     suffix: '%',
-    label: 'Less carbon, waste and water than buying the same piece new.',
+    label: 'Less carbon than buying the same piece new, on average.',
     detail:
       'Most of a garment’s footprint is spent before it is first worn. Buying one that already exists avoids that cost outright.',
   },
@@ -194,7 +193,7 @@ onUnmounted(() => {
 .headline {
   margin: 0;
   color: #26332a;
-  font-family: 'Georgia', serif;
+  font-family: var(--font-display);
   font-weight: 400;
   font-size: clamp(2rem, 5.4vw, 4rem);
   line-height: 1.08;
@@ -259,7 +258,7 @@ onUnmounted(() => {
 .stat-figure {
   display: block;
   color: #1b3a2d;
-  font-family: 'Georgia', serif;
+  font-family: var(--font-display);
   font-size: clamp(2.25rem, 5vw, 3.25rem);
   line-height: 1;
   font-variant-numeric: tabular-nums;
@@ -350,15 +349,15 @@ onUnmounted(() => {
   object-fit: cover;
   object-position: center 60%;
   will-change: transform;
-}
-
-/* Feathers the photograph into the card instead of butting it against the type. */
-.media-fade {
-  position: absolute;
-  inset: 0 0 auto;
-  height: 35%;
-  background: linear-gradient(to bottom, #dbe4d8 0%, rgba(219, 228, 216, 0) 100%);
-  pointer-events: none;
+  /* The photograph fades out at its own top edge rather than having a solid
+     overlay laid over it. The overlay had to be painted in the card's exact
+     colour to disappear, and it was a shade off, which left the image's top
+     edge drawn as a hard line across the panel. A mask has no colour to match:
+     the pixels themselves go transparent and the card shows through, whatever
+     the card happens to be. Slow at first and quicker after, so the top third
+     dissolves rather than wiping. */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.15) 12%, rgba(0, 0, 0, 0.6) 26%, #000 42%);
+  mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.15) 12%, rgba(0, 0, 0, 0.6) 26%, #000 42%);
 }
 
 @media (prefers-reduced-motion: reduce) {

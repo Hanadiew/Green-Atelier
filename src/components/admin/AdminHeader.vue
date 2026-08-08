@@ -16,7 +16,7 @@
         </svg>
       </button>
 
-      <h1 class="text-lg sm:text-2xl truncate" style="color: #1B3A2D; font-family: 'Georgia', serif;">
+      <h1 class="text-lg sm:text-2xl truncate" style="color: #1B3A2D; font-family: var(--font-display);">
         {{ title }}
       </h1>
     </div>

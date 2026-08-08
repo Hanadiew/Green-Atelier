@@ -111,8 +111,15 @@
             ]"
             @click="$emit('close')"
           >
-            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="item.icon" />
+            <!-- Lucide glyphs are several shapes, not one path, so the icon is
+                 a list. A plain string still works — see iconShapes(). -->
+            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <template v-for="(shape, i) in iconShapes(item.icon)" :key="i">
+                <circle v-if="shape.cx !== undefined"
+                  :cx="shape.cx" :cy="shape.cy" :r="shape.r" :fill="shape.fill ?? 'none'" />
+                <path v-else :d="shape.d" />
+              </template>
             </svg>
             <span :class="['text-sm truncate', collapsed ? 'lg:hidden' : '']">{{ item.label }}</span>
           </router-link>
@@ -169,6 +176,15 @@ defineProps({
 defineEmits(['toggle-collapse', 'close'])
 
 const router = useRouter()
+
+/**
+ * Normalises an icon to a list of shapes.
+ *
+ * The Lucide glyphs are multi-shape — Users is three paths and a circle, the tag
+ * carries a filled dot — so `icon` is an array. Entries left as a single `d`
+ * string still render, which keeps the icons not yet swapped working.
+ */
+const iconShapes = (icon) => (typeof icon === 'string' ? [{ d: icon }] : icon)
 const showLogout = ref(false)
 const loggingOut = ref(false)
 
@@ -178,7 +194,10 @@ const NAV = [
       {
         to: '/admin/dashboard',
         label: 'Dashboard',
-        icon: 'M3 12l2-3m0 0l7-4 7 4M5 9v10a1 1 0 001 1h12a1 1 0 001-1V9m-9 11l4-4m0 0l4 4m-4-4v4m0 0H9',
+        icon: [
+          { d: 'M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8' },
+          { d: 'M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z' },
+        ],
       },
     ],
   },
@@ -188,17 +207,27 @@ const NAV = [
       {
         to: '/admin/listings',
         label: 'Listings',
-        icon: 'M9 4H5a2 2 0 00-2 2v14a2 2 0 002 2h4m0-18v18m0-18l10-4h4a2 2 0 012 2v14a2 2 0 01-2 2h-4m-10-4l4 4m-4-4l-4 4',
+        icon: [
+          { d: 'M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z' },
+        ],
       },
       {
         to: '/admin/users',
         label: 'Users',
-        icon: 'M12 4.354a4 4 0 110 5.292M15 12H9m6 0a3 3 0 11-6 0 3 3 0 016 0z',
+        icon: [
+          { d: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2' },
+          { d: 'M16 3.128a4 4 0 0 1 0 7.744' },
+          { d: 'M22 21v-2a4 4 0 0 0-3-3.87' },
+          { cx: 9, cy: 7, r: 4 },
+        ],
       },
       {
         to: '/admin/orders',
         label: 'Orders',
-        icon: 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z',
+        icon: [
+          { d: 'M2.048 18.566A2 2 0 0 0 4 21h16a2 2 0 0 0 1.952-2.434l-2-9A2 2 0 0 0 18 8H6a2 2 0 0 0-1.952 1.566z' },
+          { d: 'M8 11V6a4 4 0 0 1 8 0v5' },
+        ],
       },
     ],
   },
@@ -208,12 +237,20 @@ const NAV = [
       {
         to: '/admin/brands',
         label: 'Brands',
-        icon: 'M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z',
+        icon: [
+          { d: 'M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z' },
+          { cx: 7.5, cy: 7.5, r: 0.5, fill: 'currentColor' },
+        ],
       },
       {
         to: '/admin/promos',
         label: 'Promo Codes',
-        icon: 'M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z',
+        icon: [
+          { d: 'M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z' },
+          { d: 'M13 5v2' },
+          { d: 'M13 17v2' },
+          { d: 'M13 11v2' },
+        ],
       },
     ],
   },

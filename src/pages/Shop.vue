@@ -7,12 +7,18 @@
     <div class="page-top page-container pb-16">
 
       <!-- Page Title -->
-      <h1 class="text-5xl font-light mb-8" style="color: #C9A96E; font-family: 'Georgia', serif;">Shop</h1>
+      <h1 class="text-5xl font-light mb-8" style="color: #C9A96E; font-family: var(--font-display);">Shop</h1>
 
-      <!-- Search + Filter + Sort row -->
-      <div class="flex flex-wrap items-center justify-between gap-3 sm:gap-4 mb-8">
+      <!-- Search + Filter + Sort row.
+           On a phone the search field takes a row of its own and Filters and
+           Sort share the next one. They used to stack three deep: the group
+           holding search and Filters was w-full, so Sort was pushed onto a third
+           line by itself, which read as an orphan control unrelated to Filters.
+           From sm up the arrangement is unchanged — search and Filters left,
+           Sort pushed to the right edge. -->
+      <div class="flex flex-wrap items-center gap-3 sm:gap-4 mb-8">
 
-        <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+        <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto sm:flex-1">
 
           <!-- Search -->
           <div class="flex items-center gap-2 border border-gray-200 rounded-full px-4 py-2 bg-white w-full sm:w-[220px]">
@@ -52,7 +58,7 @@
             </button>
 
             <div v-if="filterOpen"
-              class="absolute top-full left-0 mt-3 z-40 rounded-2xl bg-white/95 backdrop-blur-md shadow-lg shadow-black/5 p-6"
+              class="absolute top-full left-0 mt-5 z-40 rounded-2xl bg-white/95 backdrop-blur-md shadow-lg shadow-black/5 p-6"
               style="width: min(320px, calc(100vw - 3rem));">
 
               <!-- Category -->
@@ -98,22 +104,25 @@
                   Reset
                 </button>
                 <button @click="applyFilters"
-                  class="px-6 py-2 text-xs text-white rounded-md transition hover:opacity-90 mt-4"
-                  style="background-color: #1B3A2D;">
+                  class="px-6 py-2 text-xs  rounded-md transition mt-4 btn-solid">
                   Apply
                 </button>
               </div>
 
             </div>
           </div>
-        </div>
 
-        <!-- Sort -->
-        <select v-model="sortBy" class="text-xs border border-gray-200 rounded-md px-4 py-2 outline-none bg-white text-gray-600">
-          <option value="latest">Sorted by: Latest</option>
-          <option value="price_asc">Price: Low to High</option>
-          <option value="price_desc">Price: High to Low</option>
-        </select>
+          <!-- Sort. Inside the same group as Filters so the two share a row on a
+               phone, and ml-auto pins it to the right-hand end of whichever row
+               it lands on. Pill and height match the Filters button: they are
+               peers and were drawn as a pill and a rectangle. -->
+          <select v-model="sortBy" aria-label="Sort listings"
+            class="ml-auto text-xs border border-gray-200 rounded-full px-4 py-2 outline-none bg-white text-gray-600 hover:border-gray-300 transition">
+            <option value="latest">Sorted by: Latest</option>
+            <option value="price_asc">Price: Low to High</option>
+            <option value="price_desc">Price: High to Low</option>
+          </select>
+        </div>
 
       </div>
 
@@ -132,7 +141,7 @@
           <!-- Empty state -->
           <div v-else-if="products.length === 0" class="flex flex-col items-center justify-center py-24 text-center">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-200 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M2.048 18.566A2 2 0 0 0 4 21h16a2 2 0 0 0 1.952-2.434l-2-9A2 2 0 0 0 18 8H6a2 2 0 0 0-1.952 1.566z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M8 11V6a4 4 0 0 1 8 0v5"/>
             </svg>
             <p class="text-sm font-medium text-gray-500 mb-1">Nothing matches those filters</p>
             <p class="text-xs text-gray-400">Try widening your search or clearing a filter.</p>
@@ -153,7 +162,7 @@
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
                     :fill="wishlistIds.has(product.id) ? 'currentColor' : 'none'"
                     viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 010-6.364z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/>
                   </svg>
                 </button>
               </div>
@@ -197,7 +206,7 @@
 
 <script setup>
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
 import LoadingPanel from '../components/LoadingPanel.vue'
@@ -207,20 +216,28 @@ import { isAuthenticated, userId } from '../lib/auth.js'
 import { toggleWishlist, wishlistIds } from '../lib/wishlist.js'
 
 const router = useRouter()
+const route = useRoute()
+
+// Must match the category and condition CHECK constraints on public.listings.
+const categories = ['Tops', 'Bottoms', 'Bags', 'Shoes', 'Accessories']
+
+// Seeded from ?category=… so the navbar's Collections links land on a filtered
+// catalogue. Without this the query was carried in the URL and ignored, and every
+// category opened the same unfiltered page.
+const initialCategory = categories.includes(route.query.category) ? [route.query.category] : []
 
 const search = ref('')
 const sortBy = ref('latest')
 
 // Applied filters — the only ones load() reads.
 const priceMax = ref(10000)
-const selectedCategories = ref([])
 const selectedConditions = ref([])
 
 // Draft filters — what the popup binds to. Seeded from the applied values each
 // time the panel opens, so closing without pressing Apply changes nothing.
 const filterOpen = ref(false)
 const filterContainer = ref(null)
-const draft = ref({ categories: [], conditions: [], priceMax: 10000 })
+const draft = ref({ categories: [...initialCategory], conditions: [], priceMax: 10000 })
 const currentPage = ref(1)
 const perPage = 12
 
@@ -229,8 +246,7 @@ const total = ref(0)
 const loading = ref(true)
 const errorMsg = ref('')
 
-// Must match the category and condition CHECK constraints on public.listings.
-const categories = ['Tops', 'Blouses', 'Bags', 'Bottoms', 'Accessories', 'Shoes']
+const selectedCategories = ref([...initialCategory])
 const conditions = ['New with tag', 'Good as new', 'Fair']
 
 const PRICE_CEILING = 10000

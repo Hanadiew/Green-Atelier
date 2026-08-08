@@ -2,7 +2,7 @@
   <div class="min-h-screen flex flex-col items-center justify-center" style="background-color: #FBF8F4;">
 
     <!-- Logo -->
-    <h1 class="tracking-widest text-sm mb-8 font-light" style="color: #C9A96E; font-family: 'Georgia', serif; letter-spacing: 0.25em;">
+    <h1 class="tracking-widest text-sm mb-8 font-light" style="color: #C9A96E; font-family: var(--font-display); letter-spacing: 0.25em;">
       GREEN ATELIER
     </h1>
 
@@ -47,7 +47,7 @@
         </button>
 
         <h2 class="text-xl font-bold text-gray-900 mb-6">
-          One last step—<span style="color: #C9A96E;">create your password</span>
+          One last step: <span style="color: #C9A96E;">create your password</span>
         </h2>
 
         <!-- Password -->
@@ -67,10 +67,10 @@
         <!-- Password rules -->
         <div class="mb-5 space-y-1">
           <p class="text-xs flex items-center gap-1" :class="rules.minLength ? 'text-green-500' : 'text-gray-400'">
-            <span>{{ rules.minLength ? '✓' : '✗' }}</span> Minimum of 8 characters
+            <Icon :name="rules.minLength ? 'check' : 'close'" size="sm" /> Minimum of 8 characters
           </p>
           <p class="text-xs flex items-center gap-1" :class="rules.complexity ? 'text-green-500' : 'text-gray-400'">
-            <span>{{ rules.complexity ? '✓' : '✗' }}</span> Uppercase, lowercase letters and one number
+            <Icon :name="rules.complexity ? 'check' : 'close'" size="sm" /> Uppercase, lowercase letters and one number
           </p>
         </div>
 
@@ -130,6 +130,7 @@
 </template>
 
 <script setup>
+import Icon from '../components/Icon.vue'
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { signUpWithPassword } from '../lib/auth.js'

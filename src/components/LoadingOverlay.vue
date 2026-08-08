@@ -4,8 +4,7 @@
       <!-- Solid brand green, not a translucent scrim: while a page is still
            resolving there is nothing behind worth showing through. -->
       <div v-if="show"
-        class="fixed inset-0 z-[200] flex flex-col items-center justify-center gap-6"
-        style="background-color: #1B3A2D;"
+        class="fixed inset-0 z-[200] flex flex-col items-center justify-center gap-6 surface-brand"
         role="alert"
         aria-busy="true">
 

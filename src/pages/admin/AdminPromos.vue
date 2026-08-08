@@ -105,49 +105,50 @@
       :per-page="perPage"
       :total="total"
       @update:page="page = $event"
+    @update:per-page="perPage = $event; page = 1"
     >
       <table class="w-full">
-        <thead class="bg-gray-50 border-b border-gray-200">
+        <thead>
           <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Code</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Discount</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Min spend</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Used</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Valid until</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Status</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Actions</th>
+            <th>Code</th>
+            <th>Discount</th>
+            <th>Min spend</th>
+            <th>Used</th>
+            <th>Valid until</th>
+            <th>Status</th>
+            <th>Actions</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-gray-200">
-          <tr v-for="promo in codes" :key="promo.code" class="hover:bg-gray-50">
-            <td class="px-6 py-4">
+        <tbody>
+          <tr v-for="promo in codes" :key="promo.code">
+            <td>
               <p class="font-mono font-medium text-gray-900">{{ promo.code }}</p>
               <p v-if="promo.description" class="text-xs text-gray-500">{{ promo.description }}</p>
             </td>
-            <td class="px-6 py-4">
+            <td>
               <p class="text-sm text-gray-900">
                 {{ promo.discountType === 'percent' ? `${promo.discountValue}%` : formatMoney(promo.discountValue) }}
               </p>
             </td>
-            <td class="px-6 py-4">
+            <td>
               <p class="text-sm text-gray-600">{{ formatMoney(promo.minSubtotal) }}</p>
             </td>
-            <td class="px-6 py-4">
+            <td>
               <p class="text-sm text-gray-600">
                 {{ promo.timesUsed }}{{ promo.usageLimit ? ` / ${promo.usageLimit}` : '' }}
               </p>
             </td>
-            <td class="px-6 py-4">
+            <td>
               <p class="text-sm text-gray-600">{{ formatDate(promo.validUntil) }}</p>
             </td>
-            <td class="px-6 py-4">
+            <td>
               <AdminBadge
                 :label="promo.isActive ? 'Active' : 'Inactive'"
                 :variant="promo.isActive ? 'success' : 'default'"
                 size="sm"
               />
             </td>
-            <td class="px-6 py-4">
+            <td>
               <button
                 @click="startEdit(promo)"
                 class="text-emerald-600 hover:text-emerald-700 text-sm font-medium mr-4"
@@ -181,7 +182,7 @@ const loading = ref(false)
 const error = ref(null)
 const page = ref(1)
 const total = ref(0)
-const perPage = 20
+const perPage = ref(20)
 
 const showCreate = ref(false)
 // null when creating, the promo's code when editing an existing one.
@@ -232,7 +233,7 @@ function cancelEdit() {
   formError.value = null
 }
 
-watch(page, fetchCodes)
+watch([page, perPage], fetchCodes)
 onMounted(fetchCodes)
 
 async function fetchCodes() {
@@ -240,7 +241,7 @@ async function fetchCodes() {
   error.value = null
 
   try {
-    const result = await getPromoCodes({ page: page.value, perPage })
+    const result = await getPromoCodes({ page: page.value, perPage: perPage.value })
     codes.value = result.codes
     total.value = result.total
   } catch (err) {

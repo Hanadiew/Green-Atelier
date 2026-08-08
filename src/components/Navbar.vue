@@ -37,7 +37,7 @@
          and a row of icons, so they move into the sheet under the bar. -->
     <button
       @click.stop="mobileOpen = !mobileOpen"
-      class="md:hidden text-gray-700 -ml-1 p-1"
+      class="md:hidden -ml-1 p-1" :class="linkClass"
       :aria-expanded="mobileOpen"
       aria-label="Menu"
       aria-controls="mobile-nav">
@@ -54,50 +54,44 @@
           @click="showShop = !showShop"
           :aria-expanded="showShop"
           aria-haspopup="true"
-          class="text-sm text-gray-700 hover:text-black"
+          class="text-sm" :class="navLinkClass('/shop')"
         >
           Shop
         </button>
         <!-- Click to open, click anywhere (including a link) to close.
 
-             Two columns, not three. The third used to be an overflow column with
-             a &nbsp; heading holding it level, and because the panel was a fixed
-             w-72 its links spilled out past the white edge. Collections now holds
-             every catalogue category in one list and the panel sizes to fit.
+             Stacked rather than two columns: with New In gone, Shop held a single
+             link and sat as a mostly empty column beside Collections. The groups
+             now run down the panel, separated by a rule.
 
-             Frosted like the navbar itself — same bg-white/85 and backdrop-blur
-             as the scrolled pill, and the same rounding and shadow, so the two
-             read as one surface. -->
+             Each category carries the filter it names, so the menu lands the
+             shopper on that catalogue rather than on an untouched Shop page —
+             these were dead `href="#"` anchors before. -->
         <div
           v-if="showShop"
           @click="showShop = false"
-          class="absolute top-full left-0 mt-4 z-50 rounded-2xl bg-white border border-gray-100 shadow-lg shadow-black/5 px-7 py-6 flex gap-14"
+          class="absolute top-full left-0 mt-6 z-50 rounded-2xl bg-white border border-gray-100 shadow-lg shadow-black/5 px-7 py-6 w-max"
         >
-          <div>
-            <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Shop</p>
-            <ul class="text-sm text-gray-700 whitespace-nowrap">
-              <li>
-                <RouterLink to="/shop" class="block py-1.5 hover:text-black transition">All</RouterLink>
-              </li>
-              <li>
-                <a href="#" class="block py-1.5 hover:text-black transition">New In</a>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Collections</p>
-            <!-- Two even columns so five categories do not make a tall ragged
-                 list, and the same row padding as the Shop column above. -->
-            <ul class="grid grid-cols-2 gap-x-10 text-sm text-gray-700 whitespace-nowrap">
-              <li v-for="category in shopCategories" :key="category">
-                <a href="#" class="block py-1.5 hover:text-black transition">{{ category }}</a>
-              </li>
-            </ul>
-          </div>
+          <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Shop</p>
+          <RouterLink to="/shop" class="block py-1.5 text-sm text-gray-700 hover:text-black transition">
+            All
+          </RouterLink>
+
+          <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mt-5 mb-3 pt-5 border-t border-gray-100">
+            Collections
+          </p>
+          <ul class="grid grid-cols-2 gap-x-12 text-sm text-gray-700 whitespace-nowrap">
+            <li v-for="category in shopCategories" :key="category">
+              <RouterLink :to="{ path: '/shop', query: { category } }"
+                class="block py-1.5 hover:text-black transition">{{ category }}</RouterLink>
+            </li>
+          </ul>
         </div>
       </div>
-      <RouterLink to="/sell" class="text-sm text-gray-700 hover:text-black">Sell</RouterLink>
-      <RouterLink to="/sustainable" class="text-sm text-gray-700 hover:text-black">Sustainable</RouterLink>
+      <RouterLink to="/sell" class="text-sm" :class="navLinkClass('/sell')"
+        :aria-current="isOn('/sell') ? 'page' : undefined">Sell</RouterLink>
+      <RouterLink to="/sustainable" class="text-sm" :class="navLinkClass('/sustainable')"
+        :aria-current="isOn('/sustainable') ? 'page' : undefined">Sustainable</RouterLink>
     </div>
 
     <!-- Center: Logo. Tighter letter-spacing on a phone, where 0.2em on twelve
@@ -105,7 +99,7 @@
     <div class="absolute left-1/2 -translate-x-1/2">
       <RouterLink to="/home">
         <span class="tracking-widest text-xs sm:text-sm font-light whitespace-nowrap logo-mark"
-          style="color: #C9A96E; font-family: 'Georgia', serif;">
+          style="color: #C9A96E; font-family: var(--font-display);">
           GREEN ATELIER
         </span>
       </RouterLink>
@@ -114,10 +108,14 @@
     <!-- Right: Icons -->
     <div class="flex items-center gap-4 sm:gap-5">
 
-      <!-- Wishlist with count badge -->
-      <RouterLink to="/wishlist" class="relative text-gray-600 hover:text-black">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 010-6.364z"/>
+      <!-- Wishlist with count badge. Hidden below md: three icons plus a burger
+           plus a centred wordmark is more than fits on a 375px bar, and this is
+           the one of the three that is neither the bag nor the account. It moves
+           into the sheet, where it gets a labelled row instead of a bare heart. -->
+      <RouterLink to="/wishlist" class="relative hidden md:inline-flex" :class="iconClass">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5" />
         </svg>
         <span v-if="wishlistCount > 0"
           class="absolute -top-2 -right-2 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center"
@@ -127,9 +125,11 @@
       </RouterLink>
 
       <!-- Bag with count badge -->
-      <button class="relative text-gray-600 hover:text-black" @click="cartOpen = true">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+      <button class="relative" :class="iconClass" @click="cartOpen = true">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2.048 18.566A2 2 0 0 0 4 21h16a2 2 0 0 0 1.952-2.434l-2-9A2 2 0 0 0 18 8H6a2 2 0 0 0-1.952 1.566z" />
+          <path d="M8 11V6a4 4 0 0 1 8 0v5" />
         </svg>
         <span v-if="cartCount > 0"
           class="absolute -top-2 -right-2 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center"
@@ -140,9 +140,11 @@
 
       <!-- Profile with dropdown -->
 <div class="relative" ref="profileContainer">
-  <button @click="showProfile = !showProfile" class="relative text-gray-600 hover:text-black">
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5.121 17.804A8.966 8.966 0 0112 15c2.21 0 4.232.797 5.879 2.11M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+  <button @click="showProfile = !showProfile" class="relative" :class="iconClass">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="8" r="5" />
+      <path d="M20 21a8 8 0 0 0-16 0" />
     </svg>
     <!-- A plain dot, not a count: the number lives on the Listings row inside
          the dropdown, so this only has to say "something is waiting". -->
@@ -155,7 +157,7 @@
   <!-- Dropdown -->
   <div v-if="showProfile"
     @click="showProfile = false"
-    class="absolute right-0 top-full mt-3 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50 w-60 max-w-[calc(100vw-2rem)]">
+    class="absolute right-0 top-full mt-5 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50 w-60 max-w-[calc(100vw-2rem)]">
 
     <!-- Signed out -->
     <template v-if="!isAuthenticated">
@@ -184,8 +186,10 @@
 
     <RouterLink to="/profile"
       class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5.121 17.804A8.966 8.966 0 0112 15c2.21 0 4.232.797 5.879 2.11M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="8" r="5" />
+        <path d="M20 21a8 8 0 0 0-16 0" />
       </svg>
       Profile
     </RouterLink>
@@ -201,7 +205,7 @@
     <RouterLink to="/orders"
       class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.048 18.566A2 2 0 0 0 4 21h16a2 2 0 0 0 1.952-2.434l-2-9A2 2 0 0 0 18 8H6a2 2 0 0 0-1.952 1.566z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 11V6a4 4 0 0 1 8 0v5"/>
       </svg>
       Orders
     </RouterLink>
@@ -282,29 +286,55 @@
            target a thumb needs; the old py-2.5 on text-sm came to 34px and the
            three primary links ran together as one block of text. -->
       <nav class="divide-y divide-gray-100">
-        <RouterLink to="/shop" class="flex items-center justify-between py-3.5 text-[15px] text-gray-900">
+        <RouterLink to="/shop" class="flex items-center justify-between py-3.5 text-[15px] text-gray-900"
+          :class="{ 'nav-current-row': isOn('/shop') }" :aria-current="isOn('/shop') ? 'page' : undefined">
           Shop All
           <svg class="h-4 w-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
           </svg>
         </RouterLink>
-        <RouterLink to="/sell" class="flex items-center justify-between py-3.5 text-[15px] text-gray-900">
+        <RouterLink to="/sell" class="flex items-center justify-between py-3.5 text-[15px] text-gray-900"
+          :class="{ 'nav-current-row': isOn('/sell') }" :aria-current="isOn('/sell') ? 'page' : undefined">
           Sell
           <svg class="h-4 w-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
           </svg>
         </RouterLink>
-        <RouterLink to="/sustainable" class="flex items-center justify-between py-3.5 text-[15px] text-gray-900">
+        <RouterLink to="/sustainable" class="flex items-center justify-between py-3.5 text-[15px] text-gray-900"
+          :class="{ 'nav-current-row': isOn('/sustainable') }" :aria-current="isOn('/sustainable') ? 'page' : undefined">
           Sustainable
           <svg class="h-4 w-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
           </svg>
         </RouterLink>
+
+        <!-- The wishlist, off the bar and in here at this width. The count moves
+             with it, as a number beside the name rather than a badge on a heart:
+             there is room to simply say it. -->
+        <RouterLink to="/wishlist" class="flex items-center justify-between py-3.5 text-[15px] text-gray-900"
+          :class="{ 'nav-current-row': isOn('/wishlist') }" :aria-current="isOn('/wishlist') ? 'page' : undefined">
+          <span class="flex items-center gap-2.5">
+            <svg class="h-4 w-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5" />
+            </svg>
+            Wishlist
+          </span>
+          <span class="flex items-center gap-2">
+            <span v-if="wishlistCount > 0" class="text-xs tabular-nums" style="color: #C9A96E;">
+              {{ wishlistCount }}
+            </span>
+            <svg class="h-4 w-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </span>
+        </RouterLink>
       </nav>
 
       <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.2em] mt-6 mb-2">Collections</p>
       <div class="grid grid-cols-2 gap-x-3 gap-y-1">
-        <RouterLink v-for="category in shopCategories" :key="category" to="/shop"
+        <RouterLink v-for="category in shopCategories" :key="category"
+          :to="{ path: '/shop', query: { category } }"
           class="block py-2.5 text-sm text-gray-600">{{ category }}</RouterLink>
       </div>
     </div>
@@ -325,12 +355,22 @@ import { wishlistCount } from '../lib/wishlist.js'
 import { pendingOfferCount, pendingOffersByListing, refreshPendingOffers } from '../lib/offers.js'
 import CartDrawer from './CartDrawer.vue'
 
+const props = defineProps({
+  /**
+   * Set by pages whose hero is a dark field (About, Sustainable, Contact). At
+   * rest the bar has no background of its own, so its links sit directly on that
+   * hero and default gray-700 text is close to unreadable on deep green. The bar
+   * cannot see what is behind it — the page has to say.
+   */
+  dark: { type: Boolean, default: false },
+})
+
 const router = useRouter()
 const route = useRoute()
 
 // The catalogue's own categories, matching the filter list on Shop.vue —
-// "Blouses" was missing from this menu before.
-const shopCategories = ['Tops', 'Blouses', 'Bottoms', 'Bags', 'Accessories', 'Shoes']
+// The catalogue's five categories, matching the filter list on Shop.vue.
+const shopCategories = ['Tops', 'Bottoms', 'Bags', 'Shoes', 'Accessories']
 
 const showShop = ref(false)
 const mobileOpen = ref(false)
@@ -338,6 +378,29 @@ const mobileOpen = ref(false)
 // The bar earns its opaque panel from either state: scrolled past the top, or
 // holding an open mobile sheet that would otherwise sit on bare page content.
 const surfaced = computed(() => scrolled.value || mobileOpen.value)
+
+// Only while the bar is transparent. Once it has its white panel the dark text
+// is the readable choice again.
+const inverted = computed(() => props.dark && !surfaced.value)
+
+const linkClass = computed(() =>
+  inverted.value ? 'text-white/85 hover:text-white' : 'text-gray-700 hover:text-black',
+)
+
+// Where you are. The bar looked the same on every page, and with three of the
+// storefront's pages opening on the same deep-green field there was nothing at
+// the top of the screen to tell them apart.
+const isOn = (path) => route.path === path || route.path.startsWith(`${path}/`)
+
+// Full opacity plus the gold rule, rather than the muted resting colour — the
+// mark has to survive both the inverted bar and the white one.
+const navLinkClass = (path) => {
+  if (!isOn(path)) return linkClass.value
+  return inverted.value ? 'text-white nav-current' : 'text-gray-900 nav-current'
+}
+const iconClass = computed(() =>
+  inverted.value ? 'text-white/85 hover:text-white' : 'text-gray-600 hover:text-black',
+)
 const scrolled = ref(false)
 const cartOpen = ref(false)
 const showProfile = ref(false)
@@ -417,5 +480,32 @@ onUnmounted(() => {
   .logo-mark {
     letter-spacing: 0.2em;
   }
+}
+
+/* You-are-here. A gold rule under the current link, drawn outside the text box
+   so it cannot change the bar's height or nudge the links either side of it.
+   Colour alone would not carry it — the resting and active links are both
+   white on an inverted bar. */
+.nav-current {
+  position: relative;
+}
+
+.nav-current::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.5rem;
+  height: 1.5px;
+  border-radius: 1px;
+  background-color: #C9A96E;
+}
+
+/* The same mark in the mobile sheet, where the rows are full width and an
+   underline spanning to the chevron would read as a divider. */
+.nav-current-row {
+  border-left: 2px solid #C9A96E;
+  margin-left: -0.75rem;
+  padding-left: 0.625rem;
 }
 </style>

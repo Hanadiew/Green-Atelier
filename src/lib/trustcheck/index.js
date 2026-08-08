@@ -48,6 +48,7 @@ export async function runAssessment({
   receipt = null,
   serialImage = null,
   certificate = null,
+  serialNumber = '',
   onProgress = null,
 }) {
   if (!reference) throw new Error('TrustCheck is not available for this brand and model.')
@@ -64,7 +65,9 @@ export async function runAssessment({
     has_back: Boolean(listingImages[1]),
     has_interior: Boolean(listingImages[2]),
     has_receipt: Boolean(receipt),
-    has_serial: Boolean(serialImage),
+    // A typed serial counts the same as a photo of one. serialImage stays
+    // supported so assessments stored before the slot was removed still score.
+    has_serial: Boolean(serialImage) || Boolean(serialNumber?.trim()),
     has_certificate: Boolean(certificate),
     ocr_origin_match: origin.matched,
   }
@@ -93,10 +96,24 @@ export async function runAssessment({
  * sent here is only a claim about which evidence exists. Private material — the
  * OCR text and the document paths — goes to listing_verification instead.
  */
-export async function saveAssessment(listingId, assessment, sellerId) {
-  if (!listingId) throw new Error('A listing id is required to save an assessment.')
+/**
+ * Stores the seller's evidence against the listing.
+ *
+ * Split out of saveAssessment, which is only reached when an assessment was
+ * actually produced. A seller can attach a receipt to a brand TrustCheck has no
+ * reference for, or attach one and never press Run — in both cases the files
+ * used to be dropped on the floor while the listing saved as normal, so the
+ * moderator opened it to "No receipt, certificate or serial photo was
+ * uploaded." Persisting evidence is not conditional on scoring it.
+ *
+ * Only the columns with a file are written, so a later call cannot blank a path
+ * an earlier one stored.
+ */
+export async function saveVerificationDocs(listingId, files = {}, meta = {}, sellerId) {
+  if (!listingId) throw new Error('A listing id is required to store evidence.')
 
-  const { receipt, serialImage, certificate } = assessment.files ?? {}
+  const { receipt, serialImage, certificate } = files
+  if (!receipt && !serialImage && !certificate && !meta.ocrText) return true
 
   const [receiptPath, serialPath, certificatePath] = await Promise.all([
     receipt ? uploadAuthenticityDoc(receipt, sellerId) : null,
@@ -104,20 +121,35 @@ export async function saveAssessment(listingId, assessment, sellerId) {
     certificate ? uploadAuthenticityDoc(certificate, sellerId) : null,
   ])
 
-  const { error: verificationError } = await supabase.from('listing_verification').upsert(
-    {
-      listing_id: listingId,
-      receipt_path: receiptPath,
-      serial_image_path: serialPath,
-      certificate_path: certificatePath,
-      ocr_text: assessment.ocrText || null,
-      ocr_engine: assessment.ocrEngine,
-    },
-    { onConflict: 'listing_id' },
-  )
-  if (verificationError) {
-    console.error('Could not store TrustCheck documents:', verificationError.message)
+  const row = { listing_id: listingId }
+  if (receiptPath) row.receipt_path = receiptPath
+  if (serialPath) row.serial_image_path = serialPath
+  if (certificatePath) row.certificate_path = certificatePath
+  if (meta.ocrText) row.ocr_text = meta.ocrText
+  if (meta.ocrEngine) row.ocr_engine = meta.ocrEngine
+
+  const { error } = await supabase
+    .from('listing_verification')
+    .upsert(row, { onConflict: 'listing_id' })
+
+  if (error) {
+    console.error('Could not store authenticity documents:', error.message)
+    return false
   }
+  return true
+}
+
+export async function saveAssessment(listingId, assessment, sellerId) {
+  if (!listingId) throw new Error('A listing id is required to save an assessment.')
+
+  // The documents travel with the assessment when there is one; storing them is
+  // the same operation either way.
+  await saveVerificationDocs(
+    listingId,
+    assessment.files ?? {},
+    { ocrText: assessment.ocrText, ocrEngine: assessment.ocrEngine },
+    sellerId,
+  )
 
   const { data, error } = await supabase
     .from('trustcheck_assessments')

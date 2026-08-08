@@ -1,43 +1,46 @@
 <template>
-  <section ref="root" :class="{ 'is-visible': visible }"
-    class="py-20 sm:py-28" style="background-color: #1B3A2D;">
-    <div class="page-container text-center">
+  <!-- An inset panel, like the other bands across the site, rather than a
+       full-bleed stripe. The field inside it is the same pointer-tracked
+       gradient the heroes use, so the numbers sit on something that answers the
+       cursor instead of on flat green. -->
+  <section ref="root" :class="{ 'is-visible': visible }" class="page-container py-16">
+    <div class="hero-field on-dark max-w-5xl mx-auto rounded-[2rem] overflow-hidden px-8 py-16 sm:px-16 sm:py-20 text-center">
 
-      <p class="reveal text-xs tracking-widest uppercase mb-4" style="color: #C9A96E;">Platform Impact</p>
-      <h2 class="reveal text-3xl sm:text-4xl font-light text-white leading-snug mb-4"
-        style="font-family: 'Georgia', serif; --reveal-delay: 100ms;">
-        See the Difference
+      <p class="reveal eyebrow mb-5">Platform Impact</p>
+      <h2 class="reveal display text-3xl sm:text-4xl lg:text-5xl text-white mb-4"
+        style="--reveal-delay: 100ms;">
+        See the difference<br /><span class="display-soft">one piece at a time</span>
       </h2>
-      <p class="reveal text-sm text-gray-400 max-w-md mx-auto leading-relaxed mb-14" style="--reveal-delay: 180ms;">
-        Counted from listings on Green Atelier — not a projection.
+      <p class="reveal text-sm text-white/50 max-w-md mx-auto leading-relaxed mb-14" style="--reveal-delay: 180ms;">
+        Counted from listings on Green Atelier, not projected.
       </p>
 
       <!-- Loading -->
       <div v-if="loading" class="reveal grid gap-5 sm:grid-cols-3" style="--reveal-delay: 240ms;">
-        <div v-for="n in 3" :key="n" class="rounded-2xl p-8 animate-pulse" style="background-color: #24503C;">
-          <div class="h-10 rounded mb-3 mx-auto w-24" style="background-color: #2E5844;"></div>
-          <div class="h-3 rounded mx-auto w-32" style="background-color: #2E5844;"></div>
+        <div v-for="n in 3" :key="n" class="rounded-2xl p-8 animate-pulse" style="background-color: rgba(255,255,255,0.06);">
+          <div class="h-10 rounded mb-3 mx-auto w-24" style="background-color: rgba(255,255,255,0.10);"></div>
+          <div class="h-3 rounded mx-auto w-32" style="background-color: rgba(255,255,255,0.10);"></div>
         </div>
       </div>
 
       <!-- Numbers. Shown only when there is something real to count. -->
       <div v-else-if="metrics.length" class="reveal grid gap-5 sm:grid-cols-3" style="--reveal-delay: 240ms;">
         <div v-for="metric in metrics" :key="metric.label"
-          class="rounded-2xl p-8 transition-transform duration-500 hover:-translate-y-1"
-          style="background-color: #24503C;">
+          class="rounded-2xl p-8 border transition-all duration-500 hover:-translate-y-1"
+          style="background-color: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.10);">
           <p class="text-4xl sm:text-5xl font-light mb-2 tabular-nums"
-            style="color: #C9A96E; font-family: 'Georgia', serif;">
+            style="color: #C9A96E; font-family: var(--font-display);">
             {{ metric.display.value }}<span v-if="metric.suffix" class="text-2xl">{{ metric.suffix }}</span>
           </p>
-          <p class="text-xs text-gray-400 leading-relaxed">{{ metric.label }}</p>
+          <p class="text-sm text-white/50 leading-relaxed">{{ metric.label }}</p>
         </div>
       </div>
 
       <!-- No data yet, or the query failed. Either way: an invitation, never a
            placeholder number. -->
       <div v-else class="reveal rounded-2xl px-8 py-14 max-w-2xl mx-auto"
-        style="background-color: #24503C; --reveal-delay: 240ms;">
-        <h3 class="text-2xl font-light text-white mb-4" style="font-family: 'Georgia', serif;">
+        style="background-color: rgba(255,255,255,0.06); --reveal-delay: 240ms;">
+        <h3 class="text-2xl font-light text-white mb-4" style="font-family: var(--font-display);">
           Your Impact Starts Here
         </h3>
         <p class="text-sm text-gray-400 leading-relaxed max-w-sm mx-auto">
@@ -48,8 +51,7 @@
 
       <div class="reveal mt-12" style="--reveal-delay: 320ms;">
         <RouterLink to="/shop"
-          class="inline-flex items-center gap-2 px-8 py-3 text-sm text-white rounded-md transition hover:opacity-90 group"
-          style="background-color: #C9A96E;">
+          class="inline-flex items-center gap-2 px-8 py-3 text-sm rounded-md group btn-gold">
           Explore Pre-Loved Pieces
           <svg xmlns="http://www.w3.org/2000/svg"
             class="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1"

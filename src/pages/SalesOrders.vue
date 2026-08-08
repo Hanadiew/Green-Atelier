@@ -6,9 +6,26 @@
 
       <div class="flex items-center justify-between mb-8">
         <div>
-          <h1 class="text-2xl font-light text-gray-900" style="font-family: 'Georgia', serif;">Sales Orders</h1>
+          <h1 class="text-2xl font-light text-gray-900" style="font-family: var(--font-display);">Sales Orders</h1>
           <p class="text-xs text-gray-400 mt-1">Orders where you are the seller.</p>
         </div>
+      </div>
+
+      <!-- Active / past. A sale that is delivered or cancelled needs nothing
+           from the seller, so leaving it in the working list buries the ones
+           that do. Past sales stay reachable for records rather than being
+           hidden. -->
+      <div role="tablist" aria-label="Sales orders" class="inline-flex items-center gap-1 p-1 rounded-full mb-8"
+        style="background-color: #F2F0EB;">
+        <button v-for="view in views" :key="view.key" type="button" role="tab"
+          :aria-selected="activeView === view.key"
+          class="flex items-center gap-2 px-5 py-2 rounded-full text-sm whitespace-nowrap transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#C9A96E]"
+          :class="activeView === view.key ? 'bg-white text-gray-900' : 'text-gray-500 hover:text-gray-800'"
+          style="--tw-ring-offset-color: #F2F0EB;"
+          @click="activeView = view.key">
+          {{ view.label }}
+          <span v-if="countFor(view.key)" class="text-xs tabular-nums text-gray-400">{{ countFor(view.key) }}</span>
+        </button>
       </div>
 
       <!-- Feedback -->
@@ -23,21 +40,21 @@
       <LoadingPanel v-if="loading" :min-height="320" label="Loading your sales" />
 
       <!-- Empty state -->
-      <div v-else-if="orders.length === 0" class="flex flex-col items-center justify-center py-24 text-center">
+      <div v-else-if="visibleOrders.length === 0 && activeView === 'active'" class="flex flex-col items-center justify-center py-24 text-center">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-200 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 19v-6a2 2 0 012-2h2a2 2 0 012 2v6m-6 0h6m-6 0H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2"/>
         </svg>
         <p class="text-sm font-medium text-gray-500 mb-1">You don't have any sales yet.</p>
         <p class="text-xs text-gray-400 mb-6">Once someone buys one of your listings, it will show up here.</p>
-        <RouterLink to="/sell" class="px-6 py-2.5 text-xs text-white rounded-md" style="background-color: #1B3A2D;">
+        <RouterLink to="/sell" class="px-6 py-2.5 text-xs  rounded-md btn-solid">
           Start Selling
         </RouterLink>
       </div>
 
       <!-- Sales list -->
       <div v-else class="space-y-4">
-        <div v-for="sale in orders" :key="sale.id"
-          class="bg-white rounded-xl border border-gray-100 p-5 flex flex-wrap items-center gap-5 shadow-sm">
+        <div v-for="sale in visibleOrders" :key="sale.id"
+          class="data-grid-shell p-5 flex flex-wrap items-center gap-5 transition hover:bg-gray-50">
 
           <!-- Image -->
           <div class="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
@@ -78,22 +95,26 @@
               View Details
             </button>
 
-            <!-- The dropdown IS the control now: choosing a status applies it, so
-                 there is no separate Update button to forget to press. It shows the
-                 current status as its value rather than pre-selecting the next one,
-                 which previously made a Shipped order read as "Delivered". -->
-            <select v-if="!isLocked(sale.status)"
-              :value="sale.status"
-              :disabled="updatingId === sale.id"
-              @change="handleStatusChange(sale, $event)"
-              class="w-full border border-gray-200 rounded-md px-2 py-2 text-xs text-gray-600 outline-none bg-white disabled:opacity-60">
-              <option :value="sale.status" disabled>
-                {{ updatingId === sale.id ? 'Updating…' : sale.statusLabel + ' — change to…' }}
-              </option>
-              <option v-for="opt in nextStatusOptions(sale.status)" :key="opt" :value="opt">
-                {{ statusLabel(opt) }}
-              </option>
-            </select>
+            <!-- Buttons, not a select. A select needs its own first row to say
+                 what is currently set — that was the "Shipped (change to…)"
+                 line — and then you had to open it to discover that there was
+                 only ever one real choice. A named action states the outcome up
+                 front and applies it in one tap.
+
+                 The current status is already on the card as a badge, so these
+                 only have to say what happens next. -->
+            <div v-if="!isLocked(sale.status)" class="flex flex-col gap-2">
+              <button v-for="opt in nextStatusOptions(sale.status)" :key="opt"
+                type="button"
+                :disabled="updatingId === sale.id"
+                @click="applyStatus(sale, opt)"
+                class="w-full px-3 py-2.5 text-xs rounded-md transition disabled:opacity-60 disabled:cursor-not-allowed"
+                :class="opt === 'cancelled'
+                  ? 'border border-red-200 text-red-600 hover:bg-red-50'
+                  : 'btn-solid'">
+                {{ updatingId === sale.id ? 'Updating…' : `Mark as ${statusLabel(opt)}` }}
+              </button>
+            </div>
             <p v-else class="text-xs text-gray-300 text-center py-2">No further changes</p>
           </div>
 
@@ -176,8 +197,7 @@
           </div>
 
           <button @click="closeDetails"
-            class="w-full mt-6 py-2.5 text-xs text-white rounded-md"
-            style="background-color: #1B3A2D;">
+            class="w-full mt-6 py-2.5 text-xs  rounded-md btn-solid">
             Close
           </button>
 
@@ -213,6 +233,22 @@ const errorMsg = ref('')
 const flashMsg = ref('')
 const updatingId = ref(null)
 const detailSale = ref(null)
+
+// Delivered and cancelled are terminal, so they are the "past" set.
+const PAST = ['delivered', 'cancelled']
+
+const views = [
+  { key: 'active', label: 'Active' },
+  { key: 'past', label: 'Past sales' },
+]
+
+const activeView = ref('active')
+
+const visibleOrders = computed(() => orders.value.filter((o) =>
+  activeView.value === 'past' ? PAST.includes(o.status) : !PAST.includes(o.status)))
+
+const countFor = (key) => orders.value.filter((o) =>
+  key === 'past' ? PAST.includes(o.status) : !PAST.includes(o.status)).length
 
 const totalPages = computed(() => Math.max(1, Math.ceil(total.value / perPage)))
 
@@ -263,17 +299,13 @@ const closeDetails = () => { detailSale.value = null }
 // database — a cancelled confirmation, or a failed request — leaves the control
 // showing the status the order is actually in. Reassigning event.target.value is
 // what snaps it back, since Vue will not re-render an unchanged binding.
-const handleStatusChange = async (sale, event) => {
-  const next = event.target.value
-  const revert = () => { event.target.value = sale.status }
-
+const applyStatus = async (sale, next) => {
   if (!next || next === sale.status) return
 
   // Cancelling is terminal — isLocked() blocks every transition out of it — so it
   // is the one choice that asks before acting.
   if (next === 'cancelled'
     && !window.confirm(`Cancel order #${sale.orderId}? This cannot be undone.`)) {
-    revert()
     return
   }
 
@@ -287,7 +319,6 @@ const handleStatusChange = async (sale, event) => {
     flash(`Order #${sale.orderId} marked as ${sale.statusLabel}.`)
   } catch (error) {
     errorMsg.value = error.message
-    revert()
   } finally {
     updatingId.value = null
   }

@@ -22,7 +22,7 @@
           </div>
 
           <p v-if="!listing.images.length" class="text-sm text-gray-500">
-            No photos were submitted — this cannot be approved as-is.
+            No photos were submitted, so this cannot be approved as it stands.
           </p>
           <div v-else class="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <a v-for="(img, i) in listing.images" :key="i" :href="img" target="_blank" rel="noopener"
@@ -49,7 +49,8 @@
           <div class="mt-5 pt-5 border-t border-gray-200">
             <p class="text-gray-500 text-xs mb-1">Description</p>
             <p class="text-sm text-gray-900 whitespace-pre-wrap leading-relaxed">
-              {{ listing.description || 'The seller did not add a description.' }}
+              <span v-if="!listing.description">The seller did not add a description.</span>
+              <span v-else class="rich-text" v-html="sanitiseHtml(listing.description)"></span>
             </p>
           </div>
         </div>
@@ -60,7 +61,7 @@
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <h3 class="font-bold text-gray-900 mb-1">Authenticity evidence</h3>
           <p class="text-xs text-gray-500 mb-4">
-            Private to staff — receipts routinely carry the original price and the buyer's name.
+            Private to staff. Receipts often carry the original price and the buyer's name.
           </p>
 
           <div class="mb-4">
@@ -111,7 +112,8 @@
             <li v-for="signal in SIGNALS" :key="signal.key" class="flex items-center gap-2 text-sm">
               <span :class="['w-5 h-5 rounded-full flex items-center justify-center text-xs text-white',
                              listing.trustcheck.evidence[signal.key] ? 'bg-green-500' : 'bg-gray-300']">
-                {{ listing.trustcheck.evidence[signal.key] ? '✓' : '·' }}
+                <Icon v-if="listing.trustcheck.evidence[signal.key]" name="check" size="sm" />
+            <span v-else class="text-gray-300">-</span>
               </span>
               <span :class="listing.trustcheck.evidence[signal.key] ? 'text-gray-900' : 'text-gray-500'">
                 {{ signal.label }}
@@ -123,8 +125,8 @@
         <div v-else class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <h3 class="font-bold text-gray-900 mb-1">TrustCheck</h3>
           <p class="text-sm text-gray-500">
-            No assessment — TrustCheck only covers models we hold a reference for, so
-            its absence is not itself a reason to reject.
+            No assessment. TrustCheck only covers models we hold a reference for, so its
+            absence is not a reason to reject on its own.
           </p>
         </div>
       </div>
@@ -133,8 +135,8 @@
       <div class="space-y-4">
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <p class="text-sm text-gray-600 mb-2">Seller</p>
-          <p class="font-semibold text-gray-900">{{ listing.seller.fullName || '—' }}</p>
-          <p class="text-sm text-gray-500 mb-3">@{{ listing.seller.username ?? '—' }}</p>
+          <p class="font-semibold text-gray-900">{{ listing.seller.fullName || '-' }}</p>
+          <p class="text-sm text-gray-500 mb-3">@{{ listing.seller.username ?? '-' }}</p>
           <router-link v-if="listing.seller.id" :to="`/admin/users/${listing.seller.id}`"
             class="text-emerald-600 hover:text-emerald-700 text-sm font-medium">
             Open profile →
@@ -164,9 +166,9 @@
               class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
           </div>
           <div v-else-if="listing.status === 'sold'" class="text-gray-600 text-sm">
-            Sold — part of order history and no longer editable.
+            Sold. This is part of order history now and can no longer be edited.
           </div>
-          <div v-else class="text-gray-600 text-sm">Live on the shop — no review decision pending.</div>
+          <div v-else class="text-gray-600 text-sm">Live on the shop. No review decision pending.</div>
         </div>
       </div>
     </div>
@@ -177,6 +179,8 @@
 </template>
 
 <script setup>
+import { sanitiseHtml } from '../../lib/sanitiseHtml.js'
+import Icon from '../../components/Icon.vue'
 import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AdminBadge from '../../components/admin/AdminBadge.vue'
@@ -216,7 +220,7 @@ const SIGNALS = [
   { key: 'ocrOriginMatch', label: 'OCR origin match' },
 ]
 
-const dash = (v) => (v === null || v === undefined || v === '' ? '—' : v)
+const dash = (v) => (v === null || v === undefined || v === '' ? '-' : v)
 
 const detailFields = computed(() => {
   const l = listing.value
@@ -229,11 +233,11 @@ const detailFields = computed(() => {
     { label: 'Size', value: dash(l.size) },
     { label: 'Vintage', value: l.isVintage ? 'Yes' : 'No' },
     { label: 'Listing price', value: `RM ${l.price.toFixed(2)}` },
-    { label: 'Original price', value: l.originalPrice ? `RM ${l.originalPrice.toFixed(2)}` : '—' },
+    { label: 'Original price', value: l.originalPrice ? `RM ${l.originalPrice.toFixed(2)}` : '-' },
     { label: 'Accepts offers', value: l.acceptOffers ? 'Yes' : 'No' },
     { label: 'Year purchased', value: dash(l.yearPurchased) },
     { label: 'Origin', value: dash(l.origin) },
-    { label: 'Packaging', value: l.packaging.length ? l.packaging.join(', ') : '—' },
+    { label: 'Packaging', value: l.packaging.length ? l.packaging.join(', ') : '-' },
   ]
 })
 

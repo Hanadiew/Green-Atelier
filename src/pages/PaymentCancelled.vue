@@ -33,8 +33,7 @@
 
         <div class="w-full flex flex-col gap-2">
           <RouterLink to="/checkout"
-            class="w-full py-2.5 text-xs text-white rounded-md text-center transition hover:opacity-90"
-            style="background-color: #1B3A2D;">
+            class="w-full py-2.5 text-xs  rounded-md text-center transition btn-solid">
             Return to Checkout
           </RouterLink>
           <RouterLink to="/shop"

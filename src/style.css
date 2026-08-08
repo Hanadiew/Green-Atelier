@@ -29,6 +29,14 @@
    Line heights are carried up with the sizes; leaving them at the defaults would
    tighten every paragraph as the text grew. */
 @theme {
+  /* Two families for the whole product: Cormorant Garamond sets every heading
+     and display figure, DM Sans sets everything else. Declared here so the
+     Tailwind `font-sans` / `font-serif` utilities resolve to the same pair, and
+     mirrored as --font-body / --font-display below for the hand-written rules
+     and the inline `font-family` on components. */
+  --font-sans: 'DM Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+
   --text-xs: 0.8125rem;      /* 13px, was 12 */
   --text-xs--line-height: 1.125rem;
   --text-sm: 0.9375rem;      /* 15px, was 14 */
@@ -62,6 +70,33 @@
   --color-emerald-900: #0E1F18;
 }
 
+:root {
+  --font-body: 'DM Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+}
+
+/* Set on <body> rather than a utility class so it reaches every page, dialog
+   and teleported panel without each one opting in. */
+body {
+  font-family: var(--font-body);
+}
+
+/* --- Horizontal overflow guard -----------------------------------------------
+   The cart drawer parks itself off the right edge when closed
+   (`translateX(calc(100% + 2rem))`), and a transform does not remove an element
+   from the scrollable area: the document grew ~45px wider than the viewport on
+   every page. On a phone that was visible as the whole page sliding sideways,
+   and it stretched the navbar with it — the bar is `fixed left-0 right-0`, so
+   it sizes to the initial containing block, which the overflow had widened.
+
+   `clip` rather than `hidden`: hidden would turn the root into a scroll
+   container, which breaks `position: sticky` and takes scrolling away from
+   Lenis. `clip` just stops the overflow being reachable. */
+html,
+body {
+  overflow-x: clip;
+}
+
 @keyframes scroll {
   0% { transform: translateX(0); }
   100% { transform: translateX(-25%); }
@@ -72,19 +107,6 @@
 }
 
 .animate-scroll:hover {
-  animation-play-state: paused;
-}
-
-@keyframes scroll-reviews {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-33.33%); }
-}
-
-.animate-scroll-reviews {
-  animation: scroll-reviews 20s linear infinite;
-}
-
-.animate-scroll-reviews:hover {
   animation-play-state: paused;
 }
 
@@ -259,3 +281,424 @@ html.preloader-open body {
   overflow: hidden;
   height: 100%;
 }
+
+/* --- Data grid ---------------------------------------------------------------
+   One table style for the whole platform: the admin queues, the seller's sales
+   orders, the wallet ledger. Written as descendant rules on a `.data-grid`
+   wrapper rather than utility classes on every <th>/<td>, because the same six
+   classes were being repeated down eight admin pages and had already drifted
+   apart between them.
+
+   Pages keep supplying their own <table> markup; this only dresses it. Any cell
+   that needs to differ can still override with a utility class, which wins on
+   specificity for anything it sets. */
+.data-grid-shell {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+}
+
+.data-grid table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-grid thead {
+  background: #f9fafb;
+}
+
+.data-grid thead th {
+  padding: 0.875rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  color: #4b5563;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  text-align: left;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.data-grid tbody tr {
+  border-bottom: 1px solid #f3f4f6;
+  transition: background-color 0.15s ease;
+}
+
+.data-grid tbody tr:last-child {
+  border-bottom: 0;
+}
+
+.data-grid tbody tr:hover {
+  background: #f9fafb;
+}
+
+.data-grid tbody td {
+  padding: 1rem 1.5rem;
+  color: #374151;
+  font-size: 0.875rem;
+  vertical-align: middle;
+}
+
+/* The identity column: avatar, name, and a muted second line beneath it. */
+.data-grid .cell-id {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.data-grid .cell-id__name {
+  color: #111827;
+  font-weight: 500;
+}
+
+.data-grid .cell-id__sub {
+  color: #6b7280;
+  font-size: 0.8125rem;
+}
+
+.data-grid-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-top: 1px solid #e5e7eb;
+  padding: 0.875rem 1.25rem;
+}
+
+.data-grid-page {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  height: 2rem;
+  padding: 0 0.5rem;
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  color: #4b5563;
+  font-size: 0.8125rem;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.data-grid-page:hover:not(:disabled) {
+  background: #f3f4f6;
+}
+
+.data-grid-page:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.data-grid-page--on {
+  border-color: #1B3A2D;
+  background: #1B3A2D;
+  color: #fff;
+}
+
+.data-grid-page--on:hover {
+  background: #142C22;
+}
+
+/* --- Button hover ------------------------------------------------------------
+   Every button answers the pointer. 42 of them had no hover state at all, so
+   they looked identical whether you were over them or not.
+
+   Deliberately inside `@layer base`: Tailwind's utilities sit in a later layer,
+   so any button that declares its own `hover:bg-*` still wins and nothing
+   already designed is overridden. This is only the floor for buttons that
+   specify nothing.
+
+   Inline `style="background-color: …"` beats both — those are handled by giving
+   the branded buttons real hover classes instead (see .btn-solid below). */
+@layer base {
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']) {
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      color 0.2s ease;
+  }
+
+  button:not(:disabled):hover {
+    background-color: rgba(27, 58, 45, 0.08);
+  }
+}
+
+/* --- Branded buttons ---------------------------------------------------------
+   One hover for every button on the storefront: a circle of the opposite brand
+   colour grows from the point where the pointer crossed the edge until it has
+   filled the button, and retracts toward wherever the pointer leaves. The
+   pairing is unchanged — deep green and gold swapping places — what changed is
+   that the colour arrives from somewhere instead of the whole button fading.
+
+   The circle is a ::before at `z-index: -1` under `isolation: isolate`, which
+   puts it above the button's own fill but below its label. That ordering is the
+   reason for the negative index rather than a positive one: inline content
+   paints after negative-index children, so the label stays legible without
+   being wrapped in an element of its own — and almost every one of these
+   buttons is a bare text node inside a <button> or <RouterLink>.
+
+   --origin-x / --origin-y are written by lib/originButton.js on pointer enter
+   and leave. Nothing here depends on that script: with no pointer — keyboard
+   focus, a touch tap, the moment before the module loads — the fallback centres
+   the circle and the hover still reads as intended.
+
+   --origin-size is the diameter as a share of the button's width. It has to
+   clear the diagonal from the far corner, which 300% does for anything up to
+   about square; a button taller than it is wide should raise it. */
+:is(.btn-solid, .btn-gold, .btn-outline-gold, .btn-outline-green, .btn-outline-light) {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  transition: color 0.35s ease, border-color 0.35s ease;
+}
+
+:is(.btn-solid, .btn-gold, .btn-outline-gold, .btn-outline-green, .btn-outline-light)::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  left: var(--origin-x, 50%);
+  top: var(--origin-y, 50%);
+  width: var(--origin-size, 300%);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  /* Slow to leave the origin, then settling rather than stopping — the shape of
+     the spring the Framer original animates the scale with. */
+  transition: transform 0.55s cubic-bezier(0.45, 0, 0.15, 1);
+  pointer-events: none;
+}
+
+:is(.btn-solid, .btn-gold, .btn-outline-gold, .btn-outline-green, .btn-outline-light):not(:disabled):hover::before,
+:is(.btn-solid, .btn-gold, .btn-outline-gold, .btn-outline-green, .btn-outline-light):not(:disabled):focus-visible::before {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.btn-solid {
+  background-color: #1B3A2D;
+  color: #fff;
+}
+
+.btn-solid::before {
+  background-color: #C9A96E;
+}
+
+.btn-gold {
+  background-color: #C9A96E;
+  color: #fff;
+}
+
+.btn-gold::before {
+  background-color: #1B3A2D;
+}
+
+.btn-outline-gold {
+  border: 1px solid #C9A96E;
+  color: #C9A96E;
+  background-color: transparent;
+}
+
+.btn-outline-gold::before {
+  background-color: #C9A96E;
+}
+
+.btn-outline-gold:not(:disabled):hover,
+.btn-outline-gold:not(:disabled):focus-visible {
+  color: #fff;
+}
+
+/* The secondary of the pair — sits beside a .btn-solid and fills to match it. */
+.btn-outline-green {
+  border: 1px solid #1B3A2D;
+  color: #1B3A2D;
+  background-color: transparent;
+}
+
+.btn-outline-green::before {
+  background-color: #1B3A2D;
+}
+
+.btn-outline-green:not(:disabled):hover,
+.btn-outline-green:not(:disabled):focus-visible {
+  color: #fff;
+}
+
+/* For buttons sitting on a photograph, where the only readable resting state is
+   white on the image itself. It fills gold rather than green: green over a dark
+   overlay would barely register as a change. */
+.btn-outline-light {
+  border: 1px solid #fff;
+  color: #fff;
+  background-color: transparent;
+}
+
+.btn-outline-light::before {
+  background-color: #C9A96E;
+}
+
+.btn-outline-light:not(:disabled):hover,
+.btn-outline-light:not(:disabled):focus-visible {
+  border-color: #C9A96E;
+}
+
+/* Reduced motion keeps the colour change — that is the affordance — and drops
+   only the travel. */
+@media (prefers-reduced-motion: reduce) {
+  :is(.btn-solid, .btn-gold, .btn-outline-gold, .btn-outline-green, .btn-outline-light)::before {
+    transition: none;
+  }
+}
+
+/* --- Underlined form field ---------------------------------------------------
+   The listing form's inputs and selects. A rule under the field rather than a
+   boxed input: on a panel that has no shadow, four boxed controls would put
+   five competing rectangles in one card.
+
+   The rule darkens on focus and takes the brand gold, which is a real state
+   change rather than the browser's default outline being suppressed and
+   nothing replacing it. */
+.form-line {
+  border-bottom: 1px solid #E5E0D5;
+  transition: border-color 0.2s ease;
+}
+
+.form-line:hover {
+  border-bottom-color: #CFC7B5;
+}
+
+.form-line:focus {
+  border-bottom-color: #C9A96E;
+  border-bottom-width: 2px;
+  /* Compensate so the field does not shift by a pixel when it takes focus. */
+  padding-bottom: calc(0.625rem - 1px);
+}
+
+/* --- Hero field --------------------------------------------------------------
+   Replaces the flat #1B3A2D that every dark hero used. Three soft radial washes
+   over the base green: one gold, one sage, one deeper green, none of them
+   reaching full opacity. The first is centred on the pointer via --hx/--hy
+   (written by lib/heroField.js), so the light follows the cursor across the
+   field rather than sitting where it was painted.
+
+   The washes live on a ::before at z-index -1 under `isolation: isolate`, which
+   keeps them above the base colour and below the hero's own content without any
+   of that content needing a stacking context of its own.
+
+   Everything degrades: with no pointer the fallback centres the wash high in
+   the frame, and the drift below is the only motion, so the field still reads
+   as a gradient rather than a flat block. */
+.hero-field {
+  position: relative;
+  isolation: isolate;
+  background-color: #1B3A2D;
+}
+
+.hero-field::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(55rem 40rem at var(--hx, 50%) var(--hy, 30%), rgba(201, 169, 110, 0.20), transparent 60%),
+    radial-gradient(45rem 38rem at 12% 88%, rgba(122, 158, 142, 0.22), transparent 62%),
+    radial-gradient(50rem 42rem at 88% 8%, rgba(46, 88, 68, 0.65), transparent 65%);
+}
+
+/* A second, slower layer that moves on its own, so the field is never wholly
+   still on a touch screen where there is no pointer to follow. */
+.hero-field::after {
+  content: '';
+  position: absolute;
+  inset: -20%;
+  z-index: -1;
+  background: radial-gradient(38rem 30rem at 30% 40%, rgba(201, 169, 110, 0.10), transparent 60%);
+  animation: hero-drift 26s ease-in-out infinite alternate;
+}
+
+@keyframes hero-drift {
+  from { transform: translate3d(-6%, -4%, 0) scale(1); }
+  to   { transform: translate3d(8%, 6%, 0) scale(1.15); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-field::after { animation: none; }
+}
+
+/* --- Editorial display type --------------------------------------------------
+   The headline treatment used on the About page: a serif set large with tight
+   negative tracking, split over two lines where the second is lighter and
+   dimmed. The pair reads as one sentence with a stress on the first half, which
+   is what stops a two-line heading from sitting there as two equal statements.
+
+   Tracking has to go negative as the size goes up: Georgia's default spacing is
+   built for body copy and looks loose at 48px and above. */
+.display {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 1.08;
+}
+
+/* The second line. Lighter and dropped in contrast rather than a different
+   colour, so it works on the cream page and the green panel alike. */
+.display-soft {
+  font-weight: 400;
+  opacity: 0.45;
+}
+
+.on-dark .display-soft {
+  opacity: 0.5;
+}
+
+/* Section label. Letterspaced caps in the body sans, not the display serif: set
+   in Georgia at 16px it sat close enough to the headline beneath it to read as
+   a first line of the heading rather than a label above it. Small caps put
+   clear daylight between the two.
+
+   One definition for every section on the site, so the labels cannot drift
+   apart page by page. */
+.eyebrow {
+  font-size: 0.8125rem;
+  line-height: 1.125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: #C9A96E;
+}
+
+/* The same brand fill as .btn-solid, for panels and sections. Separate class on
+   purpose: those are not interactive and must not pick up a hover. */
+.surface-brand {
+  background-color: #1B3A2D;
+  color: #fff;
+}
+
+/* --- Select control ----------------------------------------------------------
+   The native arrow sits wherever the platform puts it, which on Windows Chrome
+   is hard against the right edge with no padding — the form's own fields have
+   1rem there, so every select looked misaligned beside them.
+
+   `appearance: none` removes it and the chevron below replaces it as a
+   background image, positioned in the same 1rem gutter the inputs use. Encoded
+   as a data URI rather than an element so it works on every plain <select> in
+   the app without touching the markup.
+
+   `.form-select-none` opts out, for the two selects that draw their own. */
+select:not([multiple]):not([size]):not(.form-select-none) {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 2.5rem;
+}
+
+
+/* --- Rich text ---------------------------------------------------------------
+   Listing descriptions are authored in RichTextEditor and rendered here.
+   Tailwind's preflight strips list markers, so they have to be put back for the
+   bullets and numbering a seller typed to survive the round trip. */
+.rich-text ul { list-style: disc; padding-left: 1.25rem; margin: 0.5rem 0; }
+.rich-text ol { list-style: decimal; padding-left: 1.25rem; margin: 0.5rem 0; }
+.rich-text li { margin: 0.125rem 0; }
+.rich-text b, .rich-text strong { font-weight: 600; }
+.rich-text i, .rich-text em { font-style: italic; }

@@ -11,7 +11,7 @@
         Secure Checkout
       </div>
       <RouterLink to="/home">
-        <span class="tracking-widest text-sm font-light" style="color: #C9A96E; font-family: 'Georgia', serif; letter-spacing: 0.2em;">
+        <span class="tracking-widest text-sm font-light" style="color: #C9A96E; font-family: var(--font-display); letter-spacing: 0.2em;">
           GREEN ATELIER
         </span>
       </RouterLink>
@@ -199,8 +199,7 @@
               </div>
               <div class="flex gap-3">
                 <button @click="saveShipping"
-                  class="px-5 py-2 text-xs text-white rounded-md"
-                  style="background-color: #1B3A2D;">
+                  class="px-5 py-2 text-xs  rounded-md btn-solid">
                   Save address
                 </button>
                 <button @click="showAddressForm = false" class="text-xs text-gray-400 hover:text-gray-600">Cancel</button>
@@ -234,7 +233,7 @@
                 :class="selectedPayment === method.key ? 'border-gray-800' : 'border-gray-200 hover:border-gray-300'">
                 <input type="radio" v-model="selectedPayment" :value="method.key" class="accent-gray-800 w-3.5 h-3.5" />
                 <div class="flex items-center gap-3">
-                  <span class="text-lg">{{ method.icon }}</span>
+                  <Icon :name="method.icon" size="md" class="text-gray-500" />
                   <span class="text-sm text-gray-700">{{ method.label }}</span>
                 </div>
               </label>
@@ -243,7 +242,7 @@
             <!-- Card details are collected by Stripe on its own hosted page, so
                  GAFS never sees or stores a card number. -->
             <div class="flex items-start gap-3 rounded-lg px-4 py-3" style="background-color: #F7F5F0;">
-              <span class="text-sm leading-none mt-0.5">🔒</span>
+              <Icon name="lock" size="sm" class="mt-0.5" />
               <div class="text-xs text-gray-500 leading-relaxed">
                 <p>
                   You'll be taken to Stripe's secure payment page to complete this order.
@@ -252,22 +251,21 @@
                 <!-- Stripe's test card numbers are fixed on their side and cannot be
                      customised, so the next best thing is making this one copyable. -->
                 <p class="mt-1.5 text-gray-400">
-                  Test mode — pay with
+                  Test mode. Pay with
                   <button @click="copyTestCard"
                     class="font-mono px-1.5 py-0.5 rounded border transition hover:bg-white"
                     style="border-color: #e5e7eb;"
                     :title="testCardCopied ? 'Copied' : 'Click to copy'">
                     {{ TEST_CARD }}
                   </button>
-                  <span v-if="testCardCopied" class="text-green-600">copied ✓</span>
+                  <span v-if="testCardCopied" class="text-green-600">copied</span>
                   <span class="block mt-0.5">Any future expiry date, any 3-digit CVC.</span>
                 </p>
               </div>
             </div>
 
             <button @click="handleProceedToPayment" :disabled="placing"
-              class="w-full py-3 text-sm text-white rounded-md transition hover:opacity-90 mt-2 disabled:opacity-60"
-              style="background-color: #1B3A2D;">
+              class="w-full py-3 text-sm  rounded-md transition mt-2 disabled:opacity-60 btn-solid">
               {{ placing ? 'Redirecting to Stripe…' : 'Proceed to Payment' }}
             </button>
 
@@ -311,9 +309,7 @@
             <div class="flex gap-2">
               <input v-model="promoCode" type="text" placeholder="Enter promo code"
                 class="flex-1 border border-gray-200 rounded-md px-3 py-2 text-xs outline-none bg-white placeholder-gray-300" />
-              <button @click="applyPromo"
-                class="px-3 py-2 text-xs text-white rounded-md"
-                style="background-color: #C9A96E;">
+              <button @click="applyPromo" class="px-3 py-2 text-xs rounded-md btn-gold">
                 Apply
               </button>
             </div>
@@ -346,10 +342,9 @@
 
           <!-- Proceed to Stripe -->
           <button @click="handleProceedToPayment"
-            class="w-full py-3 text-sm text-white rounded-md transition hover:opacity-90"
+            class="w-full py-3 text-sm  rounded-md transition btn-solid"
             :class="cartItems.length === 0 || placing ? 'opacity-40 cursor-not-allowed' : ''"
-            :disabled="cartItems.length === 0 || placing"
-            style="background-color: #1B3A2D;">
+            :disabled="cartItems.length === 0 || placing">
             {{ placing ? 'Redirecting to Stripe…' : 'Proceed to Payment' }}
           </button>
 
@@ -381,6 +376,7 @@
 </template>
 
 <script setup>
+import Icon from '../components/Icon.vue'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { cartItems, cartSubtotal, removeFromCart } from '../cart.js'
@@ -445,9 +441,9 @@ const shippingAddress = computed(
 const newShipping = ref({ firstName: '', lastName: '', street: '', city: '', postcode: '' })
 
 const paymentMethods = [
-  { key: 'card', label: 'Credit / Debit Card', icon: '💳' },
-  { key: 'fpx', label: 'Online Banking (FPX)', icon: '🏦' },
-  { key: 'ewallet', label: 'e-Wallet (Touch \'n Go / GrabPay)', icon: '📱' },
+  { key: 'card', label: 'Credit / Debit Card', icon: 'card' },
+  { key: 'fpx', label: 'Online Banking (FPX)', icon: 'bank' },
+  { key: 'ewallet', label: 'e-Wallet (Touch \'n Go / GrabPay)', icon: 'phone' },
 ]
 
 const loadAddresses = async () => {
@@ -480,7 +476,7 @@ const autoApplyBestPromo = async () => {
     promoCode.value = best.code
     promoValid.value = true
     discount.value = best.discount
-    promoMsg.value = `${best.code} applied — you save RM ${best.discount.toLocaleString()}.`
+    promoMsg.value = `${best.code} applied. You save RM ${best.discount.toLocaleString()}.`
     autoApplied.value = true
   } catch (error) {
     // No discount is a worse outcome than a crash here, but not much worse.

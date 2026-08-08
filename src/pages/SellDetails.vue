@@ -27,39 +27,35 @@
         <!-- ===== STEP 0: OVERVIEW ===== -->
         <div v-if="currentStep === 0" class="space-y-5 mt-6">
           <div>
-            <label class="text-xs text-gray-400 mb-1 block">Title</label>
+            <label class="text-xs text-gray-400 mb-1 block">Title <span class="text-red-400" aria-hidden="true">*</span></label>
             <input v-model="details.title" type="text" placeholder="e.g. Kisslock Frame Bag 27"
               class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white placeholder-gray-300" />
             <p class="text-xs text-gray-400 mt-1">This is the name buyers see in the shop.</p>
           </div>
           <div>
-            <label class="text-xs text-gray-400 mb-1 block">Category</label>
+            <label class="text-xs text-gray-400 mb-1 block">Category <span class="text-red-400" aria-hidden="true">*</span></label>
             <select v-model="details.category" class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white">
               <option v-for="c in CATEGORIES" :key="c" :value="c">{{ c }}</option>
             </select>
           </div>
           <div>
-            <label class="text-xs text-gray-400 mb-1 block">Condition</label>
+            <label class="text-xs text-gray-400 mb-1 block">Condition <span class="text-red-400" aria-hidden="true">*</span></label>
             <select v-model="details.condition" class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white">
               <option v-for="c in CONDITIONS" :key="c" :value="c">{{ c }}</option>
             </select>
           </div>
           <div>
-            <label class="text-xs text-gray-400 mb-1 block">Color</label>
-            <select v-model="details.color" class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white">
-              <option>Brown</option><option>Black</option><option>White</option>
-              <option>Beige</option><option>Navy</option><option>Other</option>
-            </select>
+            <label for="sell-color" class="text-xs text-gray-400 mb-1 block">Color <span class="text-red-400" aria-hidden="true">*</span></label>
+            <input id="sell-color" v-model="details.color" type="text" placeholder="e.g. Tan brown"
+              class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white placeholder-gray-300 focus:border-[#C9A96E] transition-colors" />
           </div>
           <div>
-            <label class="text-xs text-gray-400 mb-1 block">Material</label>
-            <select v-model="details.material" class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white">
-              <option>Leather</option><option>Canvas</option><option>Silk</option>
-              <option>Cotton</option><option>Straw Woven</option><option>Other</option>
-            </select>
+            <label for="sell-material" class="text-xs text-gray-400 mb-1 block">Material <span class="text-gray-400 font-normal">(optional)</span></label>
+            <input id="sell-material" v-model="details.material" type="text" placeholder="e.g. Calfskin leather"
+              class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white placeholder-gray-300 focus:border-[#C9A96E] transition-colors" />
           </div>
           <div>
-            <label class="text-xs text-gray-400 mb-1 block">Size</label>
+            <label class="text-xs text-gray-400 mb-1 block">Size <span class="text-red-400" aria-hidden="true">*</span></label>
             <input v-model="details.size" type="text" placeholder="Input text"
               class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-700 outline-none bg-white placeholder-gray-300" />
           </div>
@@ -80,12 +76,10 @@
   <!-- Description -->
   <div>
     <label class="text-sm text-gray-700 mb-2 block">Description</label>
-    <textarea
+    <RichTextEditor
       v-model="details.description"
-      rows="4"
-      placeholder="Describe your item or reasons to sell"
-      class="w-full border border-gray-200 rounded-md px-4 py-3 text-sm text-gray-700 outline-none bg-white placeholder-gray-300 resize-y"
-    ></textarea>
+      label="Item description"
+      placeholder="Describe your item, its condition, and anything a buyer should know" />
 
     <!-- Hint box -->
     <div class="mt-2 rounded-md px-4 py-3 flex gap-3" style="background-color: #F7F5F0;">
@@ -171,20 +165,43 @@
           <!-- Carries the guidance the three labelled slots used to give, now that
                the photo grid below is the only listing of uploads. -->
           <p class="text-xs text-gray-400 -mt-3">
-            The first three are used for authenticity checks — front, back, then the
-            interior or brand label. Add any flaws too.
+            The first three are used for checks: front, back, then the interior or brand
+            label. Photograph any flaws too.
           </p>
 
-          <!-- Drag & drop zone -->
+          <!-- Drag & drop zone. `dragging` is driven by dragenter/dragleave
+               rather than dragover, and counted rather than toggled: dragging
+               over a child fires dragleave on the parent, so a plain boolean
+               flickers the whole time the pointer is inside. -->
           <div
             @click="triggerMediaUpload"
+            @dragenter.prevent="dragDepth++"
             @dragover.prevent
-            @drop.prevent="handleDrop"
-            class="border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center py-10 cursor-pointer hover:border-gray-300 transition">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            @dragleave.prevent="dragDepth = Math.max(0, dragDepth - 1)"
+            @drop.prevent="onDrop"
+            class="dropzone border-2 border-dashed rounded-xl flex flex-col items-center justify-center py-10 cursor-pointer transition"
+            :class="dragging
+              ? 'dropzone--over border-[#1B3A2D] bg-[#1B3A2D]/5'
+              : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mb-3 transition"
+              :class="dragging ? 'text-[#1B3A2D] scale-110' : 'text-gray-300'"
+              fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
             </svg>
-            <p class="text-xs text-gray-400">Drag & drop up to 10 photos</p>
+
+            <p v-if="dragging" class="text-sm font-medium text-[#1B3A2D]">Drop to upload</p>
+            <template v-else>
+              <p class="text-xs text-gray-400 mb-3">Drag & drop up to 10 photos</p>
+              <!-- The zone was clickable but said so nowhere; on a phone there is
+                   nothing to drag and the whole step looked like a dead end. -->
+              <button type="button" @click.stop="triggerMediaUpload"
+                class="inline-flex items-center gap-2 px-4 py-2 text-xs tracking-widest uppercase rounded-lg btn-outline-green">
+                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 16V4m0 0L8 8m4-4l4 4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
+                </svg>
+                Upload Images
+              </button>
+            </template>
           </div>
           <input ref="mediaInput" type="file" multiple accept="image/*" class="hidden" @change="handleMediaFiles" />
 
@@ -256,6 +273,9 @@
             v-model="trustCheck"
             :initial-brand="form.brand"
             :listing-images="imageFiles"
+            :serial-number="details.serialNumber"
+            @update:files="trustFiles = $event"
+            @update:covered="trustCovered = $event"
           />
 
           <!-- Fallback paperwork upload.
@@ -264,7 +284,7 @@
                twice. It only appears when TrustCheck cannot run — an unsupported
                brand, or an edit — where those slots are hidden and this would
                otherwise be the seller's only way to attach a receipt. -->
-          <div v-if="!trustCheckApplies" class="pt-2">
+          <div v-if="!trustCheckApplies || !trustCovered" class="pt-2">
             <p class="text-sm text-gray-700 mb-0.5">Proof of purchase (Optional)</p>
             <p class="text-xs text-gray-400 mb-2">
               TrustCheck does not cover this item yet, so our team reviews your paperwork
@@ -342,8 +362,7 @@
               earnings. You will come back to this listing afterwards.
             </p>
             <RouterLink to="/account?section=payout"
-              class="inline-block px-6 py-2.5 text-sm text-white rounded-md transition hover:opacity-90"
-              style="background-color: #1B3A2D;">
+              class="inline-block px-6 py-2.5 text-sm  rounded-md transition btn-solid">
               Add payout details
             </RouterLink>
           </div>
@@ -532,8 +551,7 @@
 
       <button
         @click="serviceFeeModal = false"
-        class="w-full py-3 text-sm text-white rounded-md transition hover:opacity-90"
-        style="background-color: #1a1a2e;">
+        class="w-full py-3 text-sm rounded-md btn-solid">
         Got it
       </button>
 
@@ -558,8 +576,7 @@
             class="text-sm text-gray-400 hover:text-gray-600 transition disabled:opacity-50">Reset</button>
           <button @click="handleContinue"
             :disabled="submitting"
-            class="px-8 py-2.5 text-sm text-white rounded-md transition hover:opacity-90 disabled:opacity-60"
-            style="background-color: #7A9E8E;">
+            class="px-8 py-2.5 text-sm rounded-md disabled:opacity-60 btn-solid">
             {{ submitting
             ? (isEditMode ? 'Saving…' : 'Submitting…')
             : isEditMode ? 'Save Changes' : currentStep === steps.length - 1 ? 'Submit Listing' : 'Continue' }}
@@ -586,9 +603,10 @@ import { holdFor } from '../lib/loading.js'
 import TrustCheckPanel from '../components/TrustCheckPanel.vue'
 import { fetchPayoutAccount } from '../lib/payouts.js'
 import ToggleSwitch from '../components/ToggleSwitch.vue'
+import RichTextEditor from '../components/RichTextEditor.vue'
 import { userId } from '../lib/auth.js'
 import { fetchDefaultAddress } from '../lib/addresses.js'
-import { matchBrand, saveAssessment } from '../lib/trustcheck/index.js'
+import { matchBrand, saveAssessment, saveVerificationDocs } from '../lib/trustcheck/index.js'
 import {
   createListing,
   fetchListing,
@@ -645,16 +663,20 @@ const originOptions = [
   'Other',
 ]
 
-const CATEGORIES = ['Blouses', 'Tops', 'Bottoms', 'Bags', 'Accessories', 'Shoes']
+const CATEGORIES = ['Tops', 'Bottoms', 'Bags', 'Shoes', 'Accessories']
 const CONDITIONS = ['New with tag', 'Good as new', 'Fair']
 
 // Carry over whatever the Sell start page already collected.
 const defaultDetails = {
   title: '',
-  category: CATEGORIES.includes(route.query.category) ? route.query.category : 'Blouses',
+  category: CATEGORIES.includes(route.query.category) ? route.query.category : 'Tops',
   condition: CONDITIONS.includes(route.query.condition) ? route.query.condition : 'Good as new',
-  color: 'Brown',
-  material: 'Leather',
+  // Empty, not guessed. These carried 'Brown' and 'Leather', which showed a
+  // seller two fields already answered on a form they had not touched — and
+  // whatever they failed to notice got published as fact. Only the three
+  // answers actually given on the Sell page are carried in.
+  color: '',
+  material: '',
   size: '',
   vintage: false,
   authDoc: null,
@@ -704,6 +726,12 @@ const reloadPayoutAccount = async () => {
 // The TrustCheck result, held in memory until the listing row exists. Assessment
 // runs on the local File objects, so nothing is uploaded for an abandoned draft.
 const trustCheck = ref(null)
+// Held separately from `trustCheck` so paperwork survives the seller never
+// running the assessment — see saveVerificationDocs.
+const trustFiles = ref({})
+// True only once brand AND model resolve to a reference file. `trustCheckApplies`
+// matches on brand alone, which is not enough to demand an assessment.
+const trustCovered = ref(false)
 
 // TrustCheck covers six models. It is required when the seller's brand is one we
 // support, and skipped entirely otherwise.
@@ -817,7 +845,13 @@ const handleMediaFiles = (e) => {
   e.target.value = '' // let the same file be picked again after removal
 }
 
-const handleDrop = (e) => acceptImages(Array.from(e.dataTransfer.files))
+const dragDepth = ref(0)
+const dragging = computed(() => dragDepth.value > 0)
+
+const onDrop = (e) => {
+  dragDepth.value = 0
+  acceptImages(Array.from(e.dataTransfer.files))
+}
 
 const removeImage = (index) => {
   details.value.images.splice(index, 1)
@@ -829,15 +863,23 @@ const removeImage = (index) => {
 const validateStep = (step) => {
   const d = details.value
   if (step === 0) {
-    if (!d.title.trim()) return 'Give your item a title so buyers can find it.'
-    if (d.title.trim().length < 2) return 'That title is too short.'
+    if (!(d.title || '').trim()) return 'Give your item a title so buyers can find it.'
+    if ((d.title || '').trim().length < 2) return 'That title is too short.'
+    if (!d.category) return 'Choose a category.'
+    if (!d.condition) return 'Choose the condition.'
+    // Material is the one optional field here: plenty of pieces have no single
+    // answer, and forcing one would only produce guesses on the listing.
+    if (!(d.color || '').trim()) return 'Add the colour, so buyers searching for it can find your piece.'
+    if (!(d.size || '').trim()) return 'Add the size, even if it is approximate.'
   }
   if (step === 2 && existingImages.value.length + imageFiles.value.length < 3) {
     return 'Please have at least 3 photos total.'
   }
-  // TrustCheck is mandatory for the models it supports, so a listing that could
-  // carry an assessment never reaches buyers without one.
-  if (step === 3 && trustCheckApplies.value && !trustCheck.value) {
+  // Mandatory only for models TrustCheck actually holds a reference for. It used
+  // to gate on the brand alone, which trapped anyone whose item was the right
+  // make but not one of the six covered models: the panel offered them nothing to
+  // run, and Continue refused to move.
+  if (step === 3 && trustCheckApplies.value && trustCovered.value && !trustCheck.value) {
     return 'Run Green Atelier TrustCheck before continuing. Pick your model, then Analyze Authenticity.'
   }
   // No payout account means a sale would have nowhere to pay out to, so this is a
@@ -946,11 +988,22 @@ try {
     serialNumber: details.value.serialNumber,
   })
 
-  if (trustCheck.value && listing?.id) {
-    try {
-      await saveAssessment(listing.id, trustCheck.value, userId.value)
-    } catch (assessmentError) {
-      console.error('TrustCheck assessment not saved:', assessmentError.message)
+  if (listing?.id) {
+    // Evidence first and unconditionally. It used to ride along inside
+    // saveAssessment, so an unscored listing reached the moderator showing no
+    // documents at all even though the seller had attached them.
+    if (trustCheck.value) {
+      try {
+        await saveAssessment(listing.id, trustCheck.value, userId.value)
+      } catch (assessmentError) {
+        console.error('TrustCheck assessment not saved:', assessmentError.message)
+      }
+    } else {
+      try {
+        await saveVerificationDocs(listing.id, trustFiles.value, {}, userId.value)
+      } catch (docError) {
+        console.error('Authenticity documents not saved:', docError.message)
+      }
     }
   }
 
@@ -978,6 +1031,7 @@ const handleReset = () => {
   errorMsg.value = ''
   imageFiles.value = []
   trustCheck.value = null
+  trustFiles.value = {}
   details.value = { ...defaultDetails, packaging: [], images: [] }
 }
 

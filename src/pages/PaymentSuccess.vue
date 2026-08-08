@@ -22,8 +22,8 @@
           </div>
           <h1 class="text-lg font-semibold text-gray-800 mb-2">Confirming your payment…</h1>
           <p class="text-xs text-gray-400 leading-relaxed">
-            Stripe is letting us know the result. This usually takes a few seconds —
-            you can safely leave this page, your order is already recorded.
+            Stripe is sending us the result, which usually takes a few seconds. Your order
+            is already recorded, so you can leave this page.
           </p>
         </div>
 
@@ -60,8 +60,7 @@
 
           <div class="w-full flex flex-col gap-2">
             <RouterLink :to="{ path: '/profile', query: { tab: 'Orders' } }"
-              class="w-full py-2.5 text-xs text-white rounded-md text-center transition hover:opacity-90"
-              style="background-color: #1B3A2D;">
+              class="w-full py-2.5 text-xs  rounded-md text-center transition btn-solid">
               View My Order
             </RouterLink>
             <RouterLink to="/shop"
@@ -85,8 +84,7 @@
             and nothing has been charged.
           </p>
           <RouterLink to="/checkout"
-            class="w-full py-2.5 text-xs text-white rounded-md text-center transition hover:opacity-90"
-            style="background-color: #1B3A2D;">
+            class="w-full py-2.5 text-xs  rounded-md text-center transition btn-solid">
             Try Again
           </RouterLink>
         </div>
@@ -98,12 +96,11 @@
           </div>
           <h1 class="text-lg font-semibold text-gray-800 mb-1">Still confirming</h1>
           <p class="text-xs text-gray-400 leading-relaxed mb-6">
-            Your payment is taking longer than usual to confirm. Nothing is lost —
-            if Stripe took the payment, your order will appear in My Orders shortly.
+            Your payment is taking longer than usual to confirm. Nothing is lost. If Stripe
+            took the payment, your order will appear in My Orders shortly.
           </p>
           <RouterLink :to="{ path: '/profile', query: { tab: 'Orders' } }"
-            class="w-full py-2.5 text-xs text-white rounded-md text-center transition hover:opacity-90"
-            style="background-color: #1B3A2D;">
+            class="w-full py-2.5 text-xs  rounded-md text-center transition btn-solid">
             View My Orders
           </RouterLink>
         </div>
@@ -112,7 +109,7 @@
           <p class="text-sm font-medium text-gray-500 mb-1">{{ errorMsg || 'Order not found' }}</p>
           <p class="text-xs text-gray-400 mb-6">This order does not exist, or is not yours.</p>
           <RouterLink to="/shop"
-            class="px-6 py-2.5 text-xs text-white rounded-md" style="background-color: #1B3A2D;">
+            class="px-6 py-2.5 text-xs  rounded-md btn-solid">
             Back to Shop
           </RouterLink>
         </div>

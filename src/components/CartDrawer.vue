@@ -26,7 +26,7 @@
   >
     <!-- Header -->
     <div class="flex items-center justify-between px-8 py-6 border-b border-gray-100 flex-shrink-0">
-      <h2 class="text-xl font-light text-gray-900" style="font-family: 'Georgia', serif;">
+      <h2 class="text-xl font-light text-gray-900" style="font-family: var(--font-display);">
         Bag ({{ cartCount }})
       </h2>
       <button @click="$emit('close')" class="text-gray-400 hover:text-gray-700 transition">
@@ -42,12 +42,10 @@
       <!-- Empty state -->
       <div v-if="cartItems.length === 0" class="flex flex-col items-center justify-center text-center py-10">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-200 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M2.048 18.566A2 2 0 0 0 4 21h16a2 2 0 0 0 1.952-2.434l-2-9A2 2 0 0 0 18 8H6a2 2 0 0 0-1.952 1.566z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M8 11V6a4 4 0 0 1 8 0v5"/>
         </svg>
         <p class="text-sm text-gray-400 mb-6">Your bag is empty</p>
-        <button @click="$emit('close')"
-          class="px-8 py-3 text-sm text-white rounded-md transition hover:opacity-90"
-          style="background-color: #C9A96E;">
+        <button @click="$emit('close')" class="px-8 py-3 text-sm rounded-md btn-gold">
           Continue Shopping
         </button>
       </div>
@@ -87,8 +85,7 @@
       </div>
       <button
         @click="handleCheckout"
-        class="w-full py-3 text-sm text-white rounded-md transition hover:opacity-90 mb-3"
-        style="background-color: #C9A96E;">
+        class="w-full py-3 text-sm rounded-md mb-3 btn-gold">
         Checkout
       </button>
       <button
