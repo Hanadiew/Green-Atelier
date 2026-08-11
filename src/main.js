@@ -123,33 +123,80 @@ const router = createRouter({
 // bounce a signed-in user to /login on a hard refresh.
 const authInit = initAuth()
 
+// Everything in here is wrapped, because anything thrown inside a global guard
+// aborts the navigation — and an aborted FIRST navigation renders nothing at
+// all. A blank page is the worst possible failure: it tells the user nothing,
+// and it looked to buyers like their payment had vanished.
+//
+// So a guard that cannot decide lets the navigation through. The pages behind
+// it are protected by RLS regardless, so the worst case is an empty screen with
+// its own error state rather than no screen.
 router.beforeEach(async (to) => {
   beginRouteLoading()
-  await authInit
 
-  if (to.meta.requiresAdmin) {
-    if (!isAuthenticated.value) {
-      return { path: '/login', query: { redirect: to.fullPath } }
+  try {
+    await authInit
+
+    if (to.meta.requiresAdmin) {
+      if (!isAuthenticated.value) {
+        return { path: '/login', query: { redirect: to.fullPath } }
+      }
+
+      await supabase.auth.getSession()
+      if (!(await isAdmin())) {
+        return '/home'
+      }
+    } else if (to.meta.requiresAuth && !isAuthenticated.value) {
+      // One retry before giving up. initAuth() clears its cached promise when
+      // the session lookup fails, so calling it again is a genuine second
+      // attempt rather than the same failure replayed.
+      //
+      // This matters most on the Stripe return: a buyer who has just paid and
+      // whose session lookup lost a race with the redirect should land on their
+      // receipt, not on a sign-in form.
+      await initAuth()
+
+      if (!isAuthenticated.value) {
+        return { path: '/login', query: { redirect: to.fullPath } }
+      }
     }
 
-    await supabase.auth.getSession()
-    if (!(await isAdmin())) {
+    if (to.meta.guestOnly && isAuthenticated.value) {
       return '/home'
     }
-  } else if (to.meta.requiresAuth && !isAuthenticated.value) {
-    return { path: '/login', query: { redirect: to.fullPath } }
-  }
+    return true
+  } catch (error) {
+    console.error('Navigation guard failed:', error?.message ?? error)
 
-  if (to.meta.guestOnly && isAuthenticated.value) {
-    return '/home'
+    // An admin route is the one case where failing open is not acceptable, so
+    // that falls back to the sign-in page instead of the destination.
+    if (to.meta.requiresAdmin) {
+      return { path: '/login', query: { redirect: to.fullPath } }
+    }
+    return true
   }
-  return true
 })
 
 router.afterEach(endRouteLoading)
-router.onError(endRouteLoading)
+
+// A router error must clear the loading overlay, or the page is left under a
+// full-screen scrim with nothing behind it — indistinguishable from a blank
+// page to the person looking at it.
+router.onError((error) => {
+  console.error('Router error:', error?.message ?? error)
+  endRouteLoading()
+})
 
 const app = createApp(App)
+
+// Last line of defence. Without this a render error in any component unmounts
+// the tree silently and the user sees white. Logged rather than swallowed so
+// the cause is visible in the console instead of being invisible everywhere.
+app.config.errorHandler = (error, instance, info) => {
+  console.error('Unhandled Vue error:', info, error)
+  endRouteLoading()
+}
+
 app.use(router)
 app.mount('#app')
 

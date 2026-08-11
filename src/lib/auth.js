@@ -41,14 +41,45 @@ let initPromise = null
  * Restores any persisted session and starts listening for auth changes.
  * Safe to call more than once — later calls await the first.
  */
+/**
+ * Restores the persisted session before the first navigation.
+ *
+ * This promise must NEVER reject. The router awaits it in a global guard, and a
+ * rejection there throws inside the guard, which aborts the navigation — on the
+ * very first navigation there is no previous route to fall back to, so Vue
+ * renders nothing at all and the user gets a blank page.
+ *
+ * That is not hypothetical: getSession() is a network call, and the one moment
+ * it is most likely to fail is a cold page load immediately after an external
+ * redirect — which is exactly what coming back from Stripe Checkout is. Buyers
+ * were paying successfully and landing on a blank screen.
+ *
+ * So a failure here is treated as "not signed in" rather than as an error. The
+ * route guard then does the ordinary thing and sends them to sign in, which is
+ * recoverable; a blank page is not.
+ */
 export function initAuth() {
   if (initPromise) return initPromise
 
   initPromise = (async () => {
-    const { data } = await supabase.auth.getSession()
-    session.value = data.session
-    if (session.value) await loadProfile()
-    authReady.value = true
+    try {
+      const { data, error } = await supabase.auth.getSession()
+      if (error) throw error
+
+      session.value = data.session
+      if (session.value) await loadProfile()
+    } catch (error) {
+      // Network blip, cold start, blocked request. Carry on signed out.
+      console.error('Could not restore session:', error?.message ?? error)
+      session.value = null
+      profile.value = null
+
+      // Do not leave a poisoned promise cached: every later call would reuse
+      // this failure and the app would stay broken until a hard reload.
+      initPromise = null
+    } finally {
+      authReady.value = true
+    }
 
     supabase.auth.onAuthStateChange((event, next) => {
       session.value = next
