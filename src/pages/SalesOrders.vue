@@ -219,6 +219,7 @@ import { userId } from '../lib/auth.js'
 import {
   fetchSellerSalesOrders,
   isLocked,
+  markSalesSeen,
   nextStatusOptions,
   statusLabel,
   updateSaleStatus,
@@ -284,9 +285,19 @@ const load = async () => {
   }
 }
 
-onMounted(load)
+// Opening the page is what "seen" means, so the mark is stamped once here
+// rather than inside load() — load() also runs on every pagination click, and
+// the marker only needs writing once per visit.
+onMounted(async () => {
+  await load()
+  await markSalesSeen()
+})
+
 watch(currentPage, load)
-watch(userId, load)
+watch(userId, async () => {
+  await load()
+  await markSalesSeen()
+})
 
 const prevPage = () => { if (currentPage.value > 1) currentPage.value-- }
 const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.value++ }
@@ -305,7 +316,10 @@ const applyStatus = async (sale, next) => {
   // Cancelling is terminal — isLocked() blocks every transition out of it — so it
   // is the one choice that asks before acting.
   if (next === 'cancelled'
-    && !window.confirm(`Cancel order #${sale.orderId}? This cannot be undone.`)) {
+    && !window.confirm(
+      `Cancel order #${sale.orderId}? This cannot be undone. `
+      + `"${sale.name}" goes back on sale straight away.`,
+    )) {
     return
   }
 

@@ -146,12 +146,14 @@
       <circle cx="12" cy="8" r="5" />
       <path d="M20 21a8 8 0 0 0-16 0" />
     </svg>
-    <!-- A plain dot, not a count: the number lives on the Listings row inside
-         the dropdown, so this only has to say "something is waiting". -->
-    <span v-if="pendingOfferCount > 0"
+    <!-- A plain dot, not a count: the numbers live on the Listings and Sales
+         Orders rows inside the dropdown, so this only has to say "something is
+         waiting". One dot for both, since two would overlap and neither would
+         say more than the one does. -->
+    <span v-if="attentionCount > 0"
       class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full ring-2 ring-white"
       style="background-color: #C9A96E;"
-      :title="`${pendingOfferCount} offer${pendingOfferCount > 1 ? 's' : ''} waiting`"></span>
+      :title="attentionLabel"></span>
   </button>
 
   <!-- Dropdown -->
@@ -224,12 +226,17 @@
     </RouterLink>
 
     <RouterLink to="/sales-orders"
-  class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition">
-  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 012-2h2a2 2 0 012 2v6m-6 0h6m-6 0H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2"/>
-  </svg>
-  Sales Orders
-</RouterLink>
+      class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 012-2h2a2 2 0 012 2v6m-6 0h6m-6 0H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2"/>
+      </svg>
+      Sales Orders
+      <span v-if="newSalesCount > 0"
+        class="ml-auto text-white rounded-full px-1.5 min-w-4 h-4 flex items-center justify-center"
+        style="background-color: #C9A96E; font-size: 10px;">
+        {{ newSalesCount }}
+      </span>
+    </RouterLink>
 
     <RouterLink to="/wallet"
       class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition">
@@ -353,6 +360,7 @@ import { cartCount } from '../cart.js'
 import { displayName, isAuthenticated, signOut } from '../lib/auth.js'
 import { wishlistCount } from '../lib/wishlist.js'
 import { pendingOfferCount, pendingOffersByListing, refreshPendingOffers } from '../lib/offers.js'
+import { newSalesCount, refreshNewSales } from '../lib/salesOrders.js'
 import CartDrawer from './CartDrawer.vue'
 
 const props = defineProps({
@@ -450,7 +458,27 @@ watch(() => route.fullPath, () => {
   // Navigating is the shopper's way of dismissing the sheet — it stays mounted
   // across route changes otherwise, since the bar itself never unmounts.
   mobileOpen.value = false
-  if (isAuthenticated.value) refreshPendingOffers()
+  if (isAuthenticated.value) {
+    refreshPendingOffers()
+    // Recounted here too, so a sale that lands while the seller is browsing
+    // shows up on their next click rather than on their next sign-in.
+    refreshNewSales()
+  }
+})
+
+// Offers waiting and sales not yet looked at both mean "open the dropdown".
+// One dot carries both; the dropdown rows say which.
+const attentionCount = computed(() => pendingOfferCount.value + newSalesCount.value)
+
+const attentionLabel = computed(() => {
+  const parts = []
+  if (newSalesCount.value > 0) {
+    parts.push(`${newSalesCount.value} new ${newSalesCount.value > 1 ? 'orders' : 'order'}`)
+  }
+  if (pendingOfferCount.value > 0) {
+    parts.push(`${pendingOfferCount.value} offer${pendingOfferCount.value > 1 ? 's' : ''} waiting`)
+  }
+  return parts.join(', ')
 })
 
 onMounted(() => {

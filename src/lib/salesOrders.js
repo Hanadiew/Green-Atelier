@@ -1,4 +1,6 @@
+import { ref, watch } from 'vue'
 import { supabase } from '../supabase.js'
+import { profile, userId } from './auth.js'
 
 export const ORDER_ITEM_STATUSES = ['processing', 'shipped', 'delivered', 'cancelled']
 
@@ -115,3 +117,88 @@ export async function updateSaleStatus(orderItemId, currentStatus, nextStatus) {
   if (error) throw new Error(error.message.replace(/^.*?:\s*/, ''))
   return data
 }
+
+// =============================================================================
+// NEW SALES BADGE
+// =============================================================================
+// Shared module state, the same shape as pendingOfferCount in offers.js, so the
+// navbar dot and the dropdown count read from one query rather than two.
+//
+// A sale used to be invisible until the seller thought to go and look. This is
+// the dot that tells them to.
+
+/** Order items that arrived since the seller last opened Sales Orders. */
+export const newSalesCount = ref(0)
+
+/**
+ * Recounts the badge.
+ *
+ * Only 'processing' items count. That is the status finalize_paid_order() moves
+ * an item to once Stripe confirms payment, so it means "paid, and the seller has
+ * not acted on it yet". It also excludes items still 'pending', which belong to
+ * a buyer part-way through checkout and are not a sale yet.
+ */
+export async function refreshNewSales() {
+  if (!userId.value) {
+    newSalesCount.value = 0
+    return
+  }
+
+  try {
+    let query = supabase
+      .from('order_items')
+      .select('id', { count: 'exact', head: true })
+      .eq('seller_id', userId.value)
+      .eq('status', 'processing')
+
+    // Absent only in the moment between sign-in and the profile arriving. Count
+    // nothing rather than everything: a dot that appears and then corrects
+    // itself downward is worse than one that appears a beat late.
+    const seenAt = profile.value?.sales_seen_at
+    if (!seenAt) return
+    query = query.gt('created_at', seenAt)
+
+    const { count, error } = await query
+    if (error) throw error
+    newSalesCount.value = count ?? 0
+  } catch (error) {
+    // A badge is not worth breaking a page over. Leave the last known count.
+    console.error('Could not count new sales:', error?.message ?? error)
+  }
+}
+
+/**
+ * Stamps "seen" and clears the dot. Called when the seller opens Sales Orders,
+ * which is the point at which they have in fact seen them.
+ */
+export async function markSalesSeen() {
+  if (!userId.value) return
+
+  const seenAt = new Date().toISOString()
+  const { error } = await supabase
+    .from('profiles')
+    .update({ sales_seen_at: seenAt })
+    .eq('id', userId.value)
+
+  if (error) {
+    console.error('Could not mark sales as seen:', error.message)
+    return
+  }
+
+  // Kept in step locally so the dot clears now rather than on the next profile
+  // load, and so refreshNewSales() compares against the new mark.
+  if (profile.value) profile.value.sales_seen_at = seenAt
+  newSalesCount.value = 0
+}
+
+// Follows the profile rather than the session, because the count needs
+// sales_seen_at and loadProfile() resolves a tick after sign-in. Same reason
+// wishlist.js watches userId directly: no page should have to remember to ask.
+watch(
+  () => profile.value?.sales_seen_at,
+  (seenAt) => {
+    if (seenAt) refreshNewSales()
+    else newSalesCount.value = 0
+  },
+  { immediate: true },
+)
