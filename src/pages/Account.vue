@@ -508,7 +508,6 @@ const user = ref({
 const emailPrefs = ref([
   { key: 'email_offers', label: 'Offers & promotions', desc: 'Receive news about sales and exclusive deals.', enabled: true },
   { key: 'email_orders', label: 'Order updates', desc: 'Get notified about your order status.', enabled: true },
-  { key: 'email_messages', label: 'Messages', desc: 'Be notified when you receive a new message.', enabled: true },
   { key: 'email_newsletter', label: 'Newsletter', desc: 'Receive our weekly curated fashion digest.', enabled: false },
 ])
 
