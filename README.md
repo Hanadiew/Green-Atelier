@@ -165,6 +165,8 @@ Roughly what they build, oldest to newest:
 | `…091300` – `…091400` | Reports, contact inbox, admin views |
 | `…0804…` | Seller listing lifecycle (no self-publishing, real deletes) |
 | `…0805…` | Stripe payments, auto-settled payouts, accepted-offer pricing, flat fee |
+| `…0808…` | Seller reviews, order status sync, deletable accounts |
+| `…0812…` | Relisting cancelled items, sales-seen tracking, messaging removal, suspension records |
 
 Every file is idempotent, so re-running one is safe. If you must use the dashboard
 **SQL Editor** instead, run them in the same filename order and execute the
@@ -341,6 +343,7 @@ The order stays paid, no second order appears, and the log says the duplicate wa
 | `profiles` | Public user profile, 1:1 with `auth.users`. Deliberately holds **nothing private** — it is world-readable so seller cards and public profiles work for signed-out visitors. |
 | `user_settings` | Email notification preferences. Owner-only. |
 | `user_roles` | Grants `admin` / `moderator`. Has **no write policy at all**, so a role can only be granted with the `service_role` key. |
+| `account_suspensions` | Why an account was suspended, for how long, by whom, and when access was restored. Staff read only, and **no write policy at all** — the `admin-manage-user` function is the only way in, which is what makes a reason mandatory. `auth.users.banned_until` still decides whether sign-in is blocked; this explains it. The suspended member reads the reason and end date of the current suspension through `suspension_notice()` (see *Security model*), never the table. |
 | `brands` | Reference list of luxury houses. Public read, admin write. |
 | `listings` | Items for sale. Includes a generated `co2_saved_kg` (the sustainability calculator) and a generated `search_vector` with a GIN index powering the shop search. |
 | `listing_verification` | Serial numbers and authenticity documents. **Separate table with no public read policy**, because the Sell wizard promises sellers this stays private. Also holds the private TrustCheck OCR text and document paths (see below). |
@@ -372,6 +375,16 @@ The anon key is public, so **RLS is the security boundary.** Two things RLS alon
 * A buyer cannot edit `payment_status`, `paid_at`, the Stripe identifiers, or any money column on their own order (`guard_order_payment_fields`). Without this, `orders_update_buyer` would have allowed it.
 * A buyer cannot accept **their own** offer. Only the seller may accept or decline; only the buyer may withdraw; the amount freezes once answered (`guard_offer_transition`). This matters because an accepted offer sets the price — see *Offers* below.
 * A seller cannot move an unpaid order item to shipped, and unpaid orders are invisible to them entirely (`order_awaiting_payment`).
+
+One function is deliberately callable with no session at all: `suspension_notice(email)`,
+which the sign-in page uses to tell a suspended member why they are locked out and
+until when. Whoever is reading that notice cannot sign in by definition, so there is
+no session to check. It returns those two fields and nothing else, only while the ban
+is in force, and an empty result for any address that is not suspended — so it cannot
+be used to test which addresses are registered. GoTrue already answers *"is this
+address suspended?"* to anyone who asks, in the `user_banned` error on a failed
+sign-in, so what this adds for a prober is the reason text. That is a knowing trade
+for not stranding a member on an unexplained error.
 
 ### Checkout
 

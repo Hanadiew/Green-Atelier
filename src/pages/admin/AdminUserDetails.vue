@@ -214,19 +214,53 @@
                 Suspending blocks sign-in and keeps every record intact.
               </span>
             </p>
-            <button v-if="!isSuspended" @click="showSuspend = true" :disabled="busy === 'suspend'"
-              class="w-full px-4 py-2 border border-red-300 text-red-700 rounded-lg text-sm hover:bg-red-50 transition disabled:opacity-50">
-              {{ busy === 'suspend' ? 'Suspending…' : 'Suspend account' }}
-            </button>
-            <template v-else>
-              <p class="text-sm text-red-700 mb-2">
-                Suspended until {{ formatDate(user.bannedUntil) }}.
-              </p>
-              <button @click="reactivate" :disabled="busy === 'reactivate'"
-                class="w-full px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700 transition disabled:opacity-50">
-                {{ busy === 'reactivate' ? 'Restoring…' : 'Restore access' }}
+            <template v-if="!isSuspended">
+              <button @click="showSuspend = true" :disabled="busy === 'suspend'"
+                class="w-full px-4 py-2 border border-red-300 text-red-700 rounded-lg text-sm hover:bg-red-50 transition disabled:opacity-50">
+                {{ busy === 'suspend' ? 'Suspending…' : 'Suspend account' }}
               </button>
+              <!-- An account that came back is still worth knowing about, so the
+                   last suspension stays readable after access is restored. -->
+              <p v-if="user.suspension" class="text-xs text-gray-400 mt-2 leading-relaxed">
+                Last suspended {{ formatDate(user.suspension.startedAt) }} for
+                “{{ user.suspension.reason }}”.
+                {{ user.suspension.liftedAt
+                  ? `Access restored ${formatDate(user.suspension.liftedAt)}.`
+                  : 'That suspension has since expired.' }}
+              </p>
             </template>
+            <div v-else class="rounded-lg bg-red-50 border border-red-200 p-3 mb-3">
+              <p class="text-sm font-semibold text-red-800">
+                {{ suspensionEnds ? `Suspended until ${formatDate(suspensionEnds)}` : 'Suspended indefinitely' }}
+              </p>
+              <p class="text-xs text-red-700 mt-0.5">{{ suspensionLength }}</p>
+
+              <dl class="mt-3 pt-3 border-t border-red-200 space-y-2">
+                <div>
+                  <dt class="text-xs text-red-700">Reason</dt>
+                  <dd v-if="suspensionRecord" class="text-sm text-red-900 whitespace-pre-wrap leading-relaxed">
+                    {{ suspensionRecord.reason }}
+                  </dd>
+                  <!-- A ban imposed before 20260812000400, or straight from the
+                       Supabase dashboard, has a date and nothing else. Saying so
+                       beats an empty line. -->
+                  <dd v-else class="text-sm text-red-900 italic">
+                    Not recorded — this ban was not imposed from this page.
+                  </dd>
+                </div>
+                <div v-if="suspensionRecord">
+                  <dt class="text-xs text-red-700">Imposed</dt>
+                  <dd class="text-sm text-red-900">
+                    {{ formatDateTime(suspensionRecord.startedAt) }}
+                    {{ suspensionRecord.by ? `by ${suspensionRecord.by}` : '' }}
+                  </dd>
+                </div>
+              </dl>
+            </div>
+            <button v-if="isSuspended" @click="reactivate" :disabled="busy === 'reactivate'"
+              class="w-full px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700 transition disabled:opacity-50">
+              {{ busy === 'reactivate' ? 'Restoring…' : 'Restore access' }}
+            </button>
           </div>
 
           <div class="pt-4 border-t border-gray-200">
@@ -249,7 +283,35 @@
 
     <AdminConfirmDialog v-model="showSuspend" title="Suspend this account?"
       message="They will not be able to sign in. Their listings, orders and payouts are all kept, and you can restore access at any time."
-      confirm-label="Suspend" variant="danger" :loading="busy === 'suspend'" @confirm="suspend" />
+      confirm-label="Suspend" variant="danger" :loading="busy === 'suspend'"
+      :confirm-disabled="suspendReason.trim().length < 3" @confirm="suspend">
+      <div class="space-y-4">
+        <div>
+          <label for="suspend-days" class="block text-sm font-medium text-gray-700 mb-1">
+            How long
+          </label>
+          <select id="suspend-days" v-model="suspendDays"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
+            <option v-for="option in DURATIONS" :key="option.label" :value="option.days">
+              {{ option.label }}
+            </option>
+          </select>
+        </div>
+
+        <div>
+          <label for="suspend-reason" class="block text-sm font-medium text-gray-700 mb-1">
+            Reason
+          </label>
+          <textarea id="suspend-reason" v-model="suspendReason" rows="3" maxlength="500"
+            placeholder="What did they do? Write it so the member themselves can read it."
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500"></textarea>
+          <p class="text-xs text-gray-400 mt-1">
+            Shown on this page, and to the member when they try to sign in — so write
+            it for both. Nothing else about the suspension reaches them.
+          </p>
+        </div>
+      </div>
+    </AdminConfirmDialog>
 
     <AdminConfirmDialog v-model="showDelete" title="Delete permanently?"
       message="This cannot be undone. It removes the account and everything belonging to it: listings, wishlist, cart, addresses, and their own orders and payment records. Buyers who bought from this seller keep their order history."
@@ -284,11 +346,59 @@ const actionDone = ref('')
 const showSuspend = ref(false)
 const showDelete = ref(false)
 
+// null is indefinite. Days, not hours — the Edge Function converts.
+const DURATIONS = [
+  { label: '7 days', days: 7 },
+  { label: '30 days', days: 30 },
+  { label: '90 days', days: 90 },
+  { label: 'Indefinitely', days: null },
+]
+
+const suspendDays = ref(30)
+const suspendReason = ref('')
+
 // banned_until is also set to a past date once a ban is lifted, so the date has
 // to be compared rather than merely present.
 const isSuspended = computed(
   () => Boolean(user.value?.bannedUntil) && new Date(user.value.bannedUntil) > new Date(),
 )
+
+// The stored record only explains the ban in force if it has not been closed.
+// A ban applied straight from the Supabase dashboard writes no record at all, and
+// the last one — already lifted — must not be read as describing this one.
+const suspensionRecord = computed(() => {
+  const record = user.value?.suspension
+  if (!record) return null
+  if (record.liftedAt) return null
+  // Likewise if it has run its course: a still-blocked account whose last record
+  // already expired was blocked by some other route, and that record's reason is
+  // not the reason for this.
+  if (record.endsAt && new Date(record.endsAt) < new Date()) return null
+  return record
+})
+
+// An indefinite suspension is stored as a century-long ban in auth.users, so
+// banned_until always holds a date. The record's own ends_at is the only place
+// that distinguishes "until this date" from "until further notice", which leaves
+// banned_until as the fallback for a ban with no record behind it.
+const suspensionEnds = computed(() =>
+  suspensionRecord.value ? suspensionRecord.value.endsAt : (user.value?.bannedUntil ?? null),
+)
+
+/** 'Indefinitely' or '30 days — 12 left'. */
+const suspensionLength = computed(() => {
+  const ends = suspensionEnds.value
+  if (!ends) return 'No end date — access stays blocked until restored by hand.'
+
+  const daysLeft = Math.max(0, Math.ceil((new Date(ends) - new Date()) / 86_400_000))
+  const remaining = `${daysLeft} ${daysLeft === 1 ? 'day' : 'days'} left`
+
+  const startedAt = suspensionRecord.value?.startedAt
+  if (!startedAt) return remaining
+
+  const total = Math.round((new Date(ends) - new Date(startedAt)) / 86_400_000)
+  return `${total} ${total === 1 ? 'day' : 'days'} — ${remaining}`
+})
 
 const load = async () => {
   try {
@@ -329,9 +439,19 @@ const toggleTrusted = () =>
   )
 
 const suspend = async () => {
-  const ok = await run('suspend', () => suspendUser(user.value.id), 'Account suspended.')
+  const ok = await run(
+    'suspend',
+    () => suspendUser(user.value.id, { reason: suspendReason.value.trim(), days: suspendDays.value }),
+    'Account suspended.',
+  )
   showSuspend.value = false
-  if (ok) await load()
+  // Only cleared on success, so a failed attempt does not make the admin retype
+  // the reason they just wrote.
+  if (ok) {
+    suspendReason.value = ''
+    suspendDays.value = 30
+    await load()
+  }
 }
 
 const reactivate = async () => {

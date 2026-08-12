@@ -423,31 +423,46 @@ export async function getAdminUser(userId) {
   // Everything else a moderator needs on one screen: the saved addresses, the
   // bank details a payout would go to, and what is owed. Each is read separately
   // and tolerated failing — one missing panel beats a blank page.
-  const [statsResult, addressResult, bankResult, payoutResult] = await Promise.all([
-    supabase.from('profile_stats').select('*').eq('user_id', userId).maybeSingle(),
-    supabase
-      .from('addresses')
-      .select(
-        `id, address_type, first_name, surname, company, phone_code, phone,
-         street_address, apartment, city, state, postcode, country, is_default`,
-      )
-      .eq('user_id', userId)
-      .order('is_default', { ascending: false }),
-    // Admin read is allowed by seller_payout_accounts_own; addresses needed a new
-    // policy (see 20260805000300) because that one was owner-only.
-    supabase
-      .from('seller_payout_accounts')
-      .select('id, bank_name, account_holder_name, account_number, is_default, created_at')
-      .eq('user_id', userId)
-      .order('is_default', { ascending: false }),
-    supabase.from('payouts').select('amount, status').eq('seller_id', userId),
-  ])
+  const [statsResult, addressResult, bankResult, payoutResult, suspensionResult] =
+    await Promise.all([
+      supabase.from('profile_stats').select('*').eq('user_id', userId).maybeSingle(),
+      supabase
+        .from('addresses')
+        .select(
+          `id, address_type, first_name, surname, company, phone_code, phone,
+           street_address, apartment, city, state, postcode, country, is_default`,
+        )
+        .eq('user_id', userId)
+        .order('is_default', { ascending: false }),
+      // Admin read is allowed by seller_payout_accounts_own; addresses needed a new
+      // policy (see 20260805000300) because that one was owner-only.
+      supabase
+        .from('seller_payout_accounts')
+        .select('id, bank_name, account_holder_name, account_number, is_default, created_at')
+        .eq('user_id', userId)
+        .order('is_default', { ascending: false }),
+      supabase.from('payouts').select('amount, status').eq('seller_id', userId),
+      // Why access was blocked, for how long and by whom. banned_until on its own
+      // only answers the "until when" part. Newest first and one row: the table is
+      // append-only, so the latest row is the account's current standing.
+      supabase
+        .from('account_suspensions')
+        .select(
+          `id, reason, ends_at, created_at, lifted_at,
+           author:profiles!account_suspensions_created_by_fkey(username, full_name, first_name, last_name)`,
+        )
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+    ])
 
   for (const [name, result] of Object.entries({
     stats: statsResult,
     addresses: addressResult,
     bank: bankResult,
     payouts: payoutResult,
+    suspension: suspensionResult,
   })) {
     if (result.error) console.error(`Admin user "${name}" lookup failed:`, result.error.message)
   }
@@ -464,6 +479,7 @@ export async function getAdminUser(userId) {
     emailConfirmedAt: data.email_confirmed_at,
     lastSignInAt: data.last_sign_in_at,
     bannedUntil: data.banned_until,
+    suspension: formatSuspension(suspensionResult.data),
     updatedAt: data.updated_at,
     stats: statsData
       ? {
@@ -496,6 +512,27 @@ export async function getAdminUser(userId) {
       failed: sumBy('failed'),
       count: payouts.length,
     },
+  }
+}
+
+/**
+ * The account's most recent suspension, or null if it has never been suspended.
+ *
+ * Also null for an account suspended before account_suspensions existed: those
+ * have a banned_until and nothing to go with it, which the page says outright
+ * rather than leaving a blank where a reason should be.
+ */
+function formatSuspension(row) {
+  if (!row) return null
+  return {
+    id: row.id,
+    reason: row.reason,
+    // null means indefinite, not missing.
+    endsAt: row.ends_at,
+    startedAt: row.created_at,
+    liftedAt: row.lifted_at,
+    // The admin account may since have been deleted, taking created_by to null.
+    by: row.author ? personName(row.author) || `@${row.author.username}` : null,
   }
 }
 
@@ -537,11 +574,22 @@ async function manageUser(action, userId, extra = {}) {
   return data
 }
 
-/** Blocks sign-in without touching any records. The reversible option. */
-export function suspendUser(userId, days = 3650) {
-  return manageUser('suspend', userId, { days })
+/**
+ * Blocks sign-in without touching any records. The reversible option.
+ *
+ * The reason is required, and the function refuses the call again server-side:
+ * it is the only thing that will explain this suspension to whoever opens the
+ * account next. `days` of null suspends indefinitely.
+ *
+ * Note the unit — days, converted to the hours GoTrue wants inside the function.
+ * The old signature took `days` too but passed the number straight through as
+ * hours, so its 3650-day default was really 152 days.
+ */
+export function suspendUser(userId, { reason, days = null } = {}) {
+  return manageUser('suspend', userId, { reason, days })
 }
 
+/** Lifts a ban and closes the open suspension record. */
 export function reactivateUser(userId) {
   return manageUser('reactivate', userId)
 }

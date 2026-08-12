@@ -66,7 +66,9 @@ serve(async (req) => {
       return json({ error: 'Only an administrator can manage accounts.' }, 403)
     }
 
-    const { action, userId, days = 3650 } = (await req.json().catch(() => ({}))) ?? {}
+    // days: null means indefinite. reason is required for a suspension and
+    // ignored by the other two actions.
+    const { action, userId, days = null, reason = '' } = (await req.json().catch(() => ({}))) ?? {}
     if (!userId) return json({ error: 'userId is required.' }, 400)
     if (userId === caller.id) {
       return json({ error: 'You cannot suspend or delete your own account.' }, 400)
@@ -86,11 +88,51 @@ serve(async (req) => {
     }
 
     if (action === 'suspend') {
+      // Refused here as well as in the browser. banned_until alone cannot explain
+      // itself, so an unexplained suspension is one nobody can review later.
+      const suspensionReason = String(reason ?? '').trim()
+      if (suspensionReason.length < 3) {
+        return json({ error: 'Give a reason for the suspension.' }, 400)
+      }
+      if (suspensionReason.length > 500) {
+        return json({ error: 'Keep the reason under 500 characters.' }, 400)
+      }
+
+      const suspensionDays = days === null || days === undefined ? null : Math.trunc(Number(days))
+      if (suspensionDays !== null && (!Number.isFinite(suspensionDays) || suspensionDays < 1)) {
+        return json({ error: 'A suspension must run for at least one day.' }, 400)
+      }
+
+      const endsAt =
+        suspensionDays === null
+          ? null
+          : new Date(Date.now() + suspensionDays * 86_400_000).toISOString()
+
+      // ban_duration is a Go duration string, where hours is the largest unit
+      // available — hence the conversion from the days the moderator picked. An
+      // indefinite suspension is a century rather than a special value, because
+      // GoTrue has no way to express "forever".
       const { error } = await supabaseAdmin.auth.admin.updateUserById(userId, {
-        ban_duration: `${Math.max(1, Number(days))}h`,
+        ban_duration: `${(suspensionDays ?? 36_500) * 24}h`,
       })
       if (error) throw error
-      return json({ ok: true, action: 'suspend' })
+
+      const { error: recordError } = await supabaseAdmin.from('account_suspensions').insert({
+        user_id: userId,
+        reason: suspensionReason,
+        ends_at: endsAt,
+        created_by: caller.id,
+      })
+
+      // The ban and its explanation are one action, so a half-completed one is
+      // undone rather than left standing: an account blocked with no readable
+      // reason is exactly the state this feature exists to remove.
+      if (recordError) {
+        await supabaseAdmin.auth.admin.updateUserById(userId, { ban_duration: 'none' })
+        throw recordError
+      }
+
+      return json({ ok: true, action: 'suspend', endsAt })
     }
 
     if (action === 'reactivate') {
@@ -99,6 +141,20 @@ serve(async (req) => {
         ban_duration: 'none',
       })
       if (error) throw error
+
+      // Close any open record so the history reads as suspended-then-restored,
+      // rather than as a suspension that is somehow still running. Unlike the
+      // suspend path this failure is only logged: access has already been given
+      // back, and refusing the whole call would tell the admin it had not been.
+      const { error: recordError } = await supabaseAdmin
+        .from('account_suspensions')
+        .update({ lifted_at: new Date().toISOString(), lifted_by: caller.id })
+        .eq('user_id', userId)
+        .is('lifted_at', null)
+      if (recordError) {
+        console.error('ADMIN MANAGE USER: could not close suspension record:', recordError.message)
+      }
+
       return json({ ok: true, action: 'reactivate' })
     }
 

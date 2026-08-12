@@ -15,6 +15,12 @@
 
         <div class="px-6 py-4">
           <p class="text-gray-600">{{ message }}</p>
+          <!-- For actions that need an answer before they can be confirmed, such
+               as the reason a suspension is being imposed. Unused by the plain
+               yes/no dialogs, which is most of them. -->
+          <div v-if="$slots.default" class="mt-4">
+            <slot />
+          </div>
         </div>
 
         <div class="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
@@ -26,7 +32,7 @@
           </button>
           <button
             @click="handleConfirm"
-            :disabled="loading"
+            :disabled="loading || confirmDisabled"
             :class="[
               'px-4 py-2 text-sm font-medium text-white rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed',
               variantClass,
@@ -70,6 +76,11 @@ const props = defineProps({
     default: 'danger',
   },
   loading: {
+    type: Boolean,
+    default: false,
+  },
+  // Holds the confirm button shut while the slot's form is incomplete.
+  confirmDisabled: {
     type: Boolean,
     default: false,
   },

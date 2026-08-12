@@ -47,6 +47,26 @@
       <!-- Error message -->
       <p v-if="errorMsg" class="text-red-400 text-xs mb-4 text-center">{{ errorMsg }}</p>
 
+      <!-- Suspension notice. Its own panel rather than the one-line error above:
+           this is the one failure the member cannot fix by retyping, and the
+           reason is the whole point of showing it. -->
+      <div v-if="suspension" class="rounded-lg bg-red-50 border border-red-100 p-4 mb-4">
+        <p class="text-xs font-semibold text-red-800">
+          {{ suspension.endsAt
+            ? `Your account is suspended until ${formatNoticeDate(suspension.endsAt)}.`
+            : 'Your account is suspended until further notice.' }}
+        </p>
+        <p v-if="suspension.reason" class="text-xs text-red-700 mt-2 leading-relaxed">
+          <span class="font-medium">Reason:</span> {{ suspension.reason }}
+        </p>
+        <p class="text-xs text-red-600 mt-3 leading-relaxed">
+          Nothing has been deleted — your listings, orders and payouts are all still
+          there, and sign-in returns when the suspension ends. If you think this is a
+          mistake, email
+          <a href="mailto:support@greenatelier.com" class="underline">support@greenatelier.com</a>.
+        </p>
+      </div>
+
       <!-- Continue Button -->
       <button
         @click="handleLogin"
@@ -83,6 +103,7 @@ import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { signIn, signUpWithPassword } from '../lib/auth.js'
 import { isAdmin } from '../lib/admin.js'
+import { supabase } from '../lib/supabase.js'
 import TermsDialog from '../components/TermsDialog.vue'
 
 const router = useRouter()
@@ -93,6 +114,8 @@ const email = ref('')
 const password = ref('')
 const showPassword = ref(false)
 const errorMsg = ref('')
+// { reason, endsAt } once a sign-in has been refused as suspended, else null.
+const suspension = ref(null)
 const loading = ref(false)
 
 const configuredAdminEmails = (import.meta.env.VITE_ADMIN_EMAILS || '')
@@ -109,8 +132,55 @@ function matchesConfiguredAdminLogin(inputEmail, inputPassword) {
   return directMatch || envMatch
 }
 
+function isBanned(error) {
+  return error?.code === 'user_banned' || /user is banned/i.test(error?.message ?? '')
+}
+
+/**
+ * GoTrue's own wording for a suspended account is "User is banned", which tells
+ * someone locked out neither that it was deliberate nor who to ask about it. The
+ * panel above replaces it, so the banned case says nothing here.
+ */
+function loginErrorMessage(error) {
+  if (isBanned(error)) return ''
+  if (error?.message === 'Invalid login credentials') {
+    return 'That email and password do not match an account.'
+  }
+  return error?.message ?? 'Could not sign you in. Please try again.'
+}
+
+function formatNoticeDate(value) {
+  return new Date(value).toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+}
+
+/**
+ * Fetches what the member is allowed to know about their own suspension.
+ *
+ * Always resolves to something, because a notice with no detail still beats "User
+ * is banned": a ban applied straight from the Supabase dashboard has no record
+ * behind it, and the lookup itself can fail, and in both cases the account is
+ * genuinely suspended and the member should be told that much.
+ */
+async function loadSuspensionNotice(address) {
+  try {
+    const { data, error } = await supabase
+      .rpc('suspension_notice', { account_email: address.trim() })
+      .maybeSingle()
+    if (error) throw error
+    return { reason: data?.reason ?? '', endsAt: data?.ends_at ?? null }
+  } catch (lookupError) {
+    console.error('Could not read the suspension notice:', lookupError.message)
+    return { reason: '', endsAt: null }
+  }
+}
+
 const handleLogin = async () => {
   errorMsg.value = ''
+  suspension.value = null
 
   if (!email.value || !password.value) {
     errorMsg.value = 'Please fill in both fields.'
@@ -140,10 +210,8 @@ const handleLogin = async () => {
     const adminAccess = await isAdmin()
     router.push(adminAccess ? '/admin/dashboard' : route.query.redirect || '/home')
   } catch (error) {
-    errorMsg.value =
-      error.message === 'Invalid login credentials'
-        ? 'That email and password do not match an account.'
-        : error.message
+    errorMsg.value = loginErrorMessage(error)
+    if (isBanned(error)) suspension.value = await loadSuspensionNotice(email.value)
   } finally {
     loading.value = false
   }
