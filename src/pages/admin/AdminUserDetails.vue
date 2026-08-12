@@ -235,8 +235,9 @@
               {{ busy === 'delete' ? 'Deleting…' : 'Delete permanently' }}
             </button>
             <p class="text-xs text-gray-400 mt-2 leading-relaxed">
-              Only possible for accounts with no orders and no sales. Anything else is
-              refused, because deleting would erase records belonging to other people.
+              Removes the account and its own data: listings, wishlist, cart, addresses,
+              and their orders as a buyer. Buyers who bought from this seller keep their
+              order history, since each line snapshots the piece at checkout.
             </p>
           </div>
 
