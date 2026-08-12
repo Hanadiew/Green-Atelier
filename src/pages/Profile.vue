@@ -958,7 +958,11 @@ const visibleTabs = computed(() => (isOwnProfile.value ? tabs : ['Listings', 'Re
 // and the template omits the badge entirely in that case: "Orders 0" reads as
 // something being wrong, where "Orders" alone reads as nothing to see yet.
 const tabCount = (tab) => ({
-  Listings: listings.value.length,
+  // Active only, matching "N items for sale" in the header above. Counting
+  // every row put sold pieces, drafts and items still in review into the same
+  // number, so the tab and the header disagreed on the same screen. This is
+  // the count a seller means by "my listings": what is currently on the shop.
+  Listings: listings.value.filter((item) => item.status === 'active').length,
   Wishlist: wishlist.value.length,
   Orders: orders.value.length,
   Reports: myReports.value.length,
