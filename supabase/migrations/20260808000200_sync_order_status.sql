@@ -30,16 +30,19 @@ set search_path = ''
 as $$
 declare
   target_order uuid := coalesce(new.order_id, old.order_id);
-  next_status text;
+  -- Typed as the enum, not text. A case expression built from bare literals
+  -- resolves to text, and there is no text = order_status operator, so both the
+  -- assignment and the comparison below fail at runtime with 42883.
+  next_status public.order_status;
 begin
-  select case
+  select (case
            -- Every line cancelled: so is the order.
            when count(*) filter (where status <> 'cancelled') = 0 then 'cancelled'
            -- Otherwise the least-advanced line that is still live.
            when count(*) filter (where status = 'processing') > 0 then 'processing'
            when count(*) filter (where status = 'shipped') > 0 then 'shipped'
            else 'delivered'
-         end
+         end)::public.order_status
     into next_status
     from public.order_items
    where order_id = target_order;
@@ -69,12 +72,14 @@ update public.orders o
    set status = sub.derived
   from (
     select order_id,
-           case
+           -- Cast for the same reason as in the function above: without it this
+           -- column is text and the comparison against o.status has no operator.
+           (case
              when count(*) filter (where status <> 'cancelled') = 0 then 'cancelled'
              when count(*) filter (where status = 'processing') > 0 then 'processing'
              when count(*) filter (where status = 'shipped') > 0 then 'shipped'
              else 'delivered'
-           end as derived
+           end)::public.order_status as derived
       from public.order_items
      group by order_id
   ) sub
