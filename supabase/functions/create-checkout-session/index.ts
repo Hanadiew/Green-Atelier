@@ -21,7 +21,18 @@ const corsHeaders = {
 }
 
 const STRIPE_SECRET_KEY = Deno.env.get('STRIPE_SECRET_KEY') ?? ''
-const SITE_URL = Deno.env.get('SITE_URL') ?? 'http://localhost:5173'
+// Accepts one origin or a comma-separated list, so the production site and any
+// preview deployment can each send their buyers back to themselves.
+//
+// Trailing slashes are stripped: an Origin header never carries one, so
+// "https://site.com/" would fail every comparison below and quietly send the
+// whole world to the fallback.
+const SITE_URLS = (Deno.env.get('SITE_URL') ?? '')
+  .split(',')
+  .map((value) => value.trim().replace(/\/+$/, ''))
+  .filter(Boolean)
+
+const SITE_URL = SITE_URLS[0] ?? 'http://localhost:5173'
 const CURRENCY = 'myr'
 
 // Stripe's shortest allowed session lifetime. create_pending_order() releases a
@@ -55,24 +66,44 @@ function toMinorUnits(amount: number) {
  *
  * Prefers the origin the request actually came from, so a dev server on a
  * non-default port still gets the buyer home without anyone having to keep
- * SITE_URL in sync. Deliberately narrow about it: only localhost, or an exact
- * match for SITE_URL. Echoing an arbitrary Origin back into success_url would be
- * an open redirect, and while the redirect carries no secret and never settles a
+ * SITE_URL in sync. Deliberately narrow about it: an allowed origin, or
+ * localhost. Echoing an arbitrary Origin back into success_url would be an open
+ * redirect, and while the redirect carries no secret and never settles a
  * payment, it is not worth the hole.
+ *
+ * The fallback is the dangerous path and it is logged loudly. Sending a buyer on
+ * the deployed site back to http://localhost is not a broken page. It is a
+ * browser "cannot connect" error on a machine running no server, seconds after
+ * they were charged. Whoever reads the logs needs to see that immediately, and
+ * not have to guess from a screenshot.
  */
 function resolveReturnOrigin(req: Request) {
-  const origin = req.headers.get('Origin')
-  if (!origin) return SITE_URL
+  const origin = req.headers.get('Origin')?.replace(/\/+$/, '')
 
-  if (origin === SITE_URL) return origin
+  if (origin) {
+    if (SITE_URLS.includes(origin)) return origin
 
-  try {
-    const { hostname, protocol } = new URL(origin)
-    if ((hostname === 'localhost' || hostname === '127.0.0.1') && protocol === 'http:') {
-      return origin
+    try {
+      const { hostname, protocol } = new URL(origin)
+      if ((hostname === 'localhost' || hostname === '127.0.0.1') && protocol === 'http:') {
+        return origin
+      }
+    } catch {
+      // Unparseable Origin, so fall through to the warning below.
     }
-  } catch {
-    // Unparseable Origin — fall through to the configured value.
+  }
+
+  if (SITE_URLS.length === 0) {
+    console.error(
+      `SITE_URL is not set. Buyers from ${origin ?? 'an unknown origin'} will be ` +
+      `returned to ${SITE_URL}, which on their machine is nothing at all. ` +
+      `Run: supabase secrets set SITE_URL=https://<your-domain>`,
+    )
+  } else if (origin) {
+    console.warn(
+      `Origin ${origin} is not in SITE_URL (${SITE_URLS.join(', ')}). ` +
+      `Returning the buyer to ${SITE_URL} instead.`,
+    )
   }
 
   return SITE_URL
