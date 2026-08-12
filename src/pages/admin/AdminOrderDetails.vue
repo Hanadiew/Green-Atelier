@@ -127,7 +127,7 @@
     <AdminConfirmDialog
       v-model="showConfirm"
       title="Cancel this order?"
-      message="This cancels every item on the order and cannot be undone. The seller will see it as cancelled on their Sales Orders page."
+      message="This cancels every item on the order and cannot be undone. The seller will see it as cancelled on their Sales Orders page, and each piece goes back on sale."
       confirm-label="Cancel order"
       variant="danger"
       :loading="saving"
