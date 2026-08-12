@@ -1,4 +1,4 @@
-import { supabase } from '../supabase.js'
+import { supabase } from './supabase.js'
 
 const STATUS_LABELS = {
   // 'pending' means the order exists but payment has not been confirmed yet.

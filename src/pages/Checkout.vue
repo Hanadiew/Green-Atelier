@@ -387,7 +387,7 @@
 import Icon from '../components/Icon.vue'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { cartItems, cartSubtotal, removeFromCart, sellerDisplayName } from '../cart.js'
+import { cartItems, cartSubtotal, removeFromCart, sellerDisplayName } from '../lib/cart.js'
 import { userId } from '../lib/auth.js'
 import { createAddress, fetchAddresses, toDisplay } from '../lib/addresses.js'
 import { validatePromoCode } from '../lib/orders.js'

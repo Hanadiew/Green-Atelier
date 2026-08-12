@@ -1,5 +1,5 @@
 import { ref, watch } from 'vue'
-import { supabase } from '../supabase.js'
+import { supabase } from './supabase.js'
 import { profile, userId } from './auth.js'
 
 export const ORDER_ITEM_STATUSES = ['processing', 'shipped', 'delivered', 'cancelled']

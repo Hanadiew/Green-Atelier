@@ -1,4 +1,4 @@
-import { supabase } from '../supabase.js'
+import { supabase } from './supabase.js'
 
 const SELLER_FIELDS =
   'id, username, first_name, last_name, full_name, avatar_url, is_trusted_seller, city, state'

@@ -5,7 +5,7 @@
 // thresholds, OCR origin matching, and that no "authentic/fake/counterfeit"
 // vocabulary leaked into the schema or UI copy.
 //
-// Run: node verify.mjs
+// Run: node scripts/verify.mjs  (from anywhere; paths resolve off this file)
 
 import {
   EVIDENCE_WEIGHTS,
@@ -14,11 +14,16 @@ import {
   statusForScore,
   assessEvidence,
   hasRequiredEvidence,
-} from './src/lib/trustcheck/scoring.js'
-import { matchesOrigin } from './src/lib/trustcheck/ocr.js'
-import { REFERENCE_MODELS, findReference, matchBrand } from './src/lib/trustcheck/reference/index.js'
+} from '../src/lib/trustcheck/scoring.js'
+import { matchesOrigin } from '../src/lib/trustcheck/ocr.js'
+import { REFERENCE_MODELS, findReference, matchBrand } from '../src/lib/trustcheck/reference/index.js'
 import fs from 'node:fs'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+// Resolved from this file rather than the working directory, so the suite runs
+// the same from the repo root as from inside scripts/.
+const repoRoot = fileURLToPath(new URL('..', import.meta.url))
 
 let failures = 0
 let checks = 0
@@ -39,7 +44,7 @@ function check(label, condition) {
 console.log('\n--- Weights ---')
 check('MAX_SCORE is 100', MAX_SCORE === 100)
 
-const sqlPath = path.join(process.cwd(), 'supabase/migrations/20260730090800_trustcheck.sql')
+const sqlPath = path.join(repoRoot, 'supabase/migrations/20260730090800_trustcheck.sql')
 const sql = fs.readFileSync(sqlPath, 'utf8')
 
 // Pull the SQL scoring function body and extract "when p_has_x then N" pairs.
@@ -169,7 +174,7 @@ const bannedPhrases = [
 // files' own "NOT authentication" disclaimer comments.
 const notAuthenticRe = /\bnot authentic\b(?!ation)/
 for (const rel of filesToScan) {
-  const full = path.join(process.cwd(), rel)
+  const full = path.join(repoRoot, rel)
   if (!fs.existsSync(full)) { check(`${rel} exists`, false); continue }
   const text = fs.readFileSync(full, 'utf8').toLowerCase()
   const hits = bannedPhrases.filter((p) => text.includes(p))

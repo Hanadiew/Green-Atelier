@@ -1,4 +1,4 @@
-import { supabase } from '../supabase.js'
+import { supabase } from './supabase.js'
 
 /** Formats an address row for the summary cards used across the app. */
 export function toDisplay(row) {

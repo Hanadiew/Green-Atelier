@@ -5,7 +5,7 @@
 ---
 
 ## 🍃 Core Sustainable Mission
-Reselling a single garment extends its active life by an average of 2.2 years, reducing its carbon, waste, and water footprint by **73%**. Green Atelier aims to connect conscious buyers and sellers through an authenticated marketplace, combining high-end luxury aesthetics with zero-waste principles.
+Nine extra months of wear cuts a garment's carbon, water and waste footprint by **20 to 30%** ([WRAP](https://www.wrap.ngo)). Green Atelier connects conscious buyers and sellers through an authenticated marketplace, pairing luxury resale with circular principles.
 
 ---
 
@@ -22,54 +22,72 @@ Reselling a single garment extends its active life by an average of 2.2 years, r
 
 ## 📁 Project Structure
 
+Grouped by what a file does, not by its extension. `.js` under `src/lib/` is
+data access; `.js` at the root is build and tooling configuration, and has to
+stay there because npm, Vite, Vercel and the linters each look for their file
+in the project root by name.
+
 ```
 GAFS/
 ├── src/
 │   ├── assets/               # Local static image and icon assets
-│   ├── components/
-│   │   ├── Navbar.vue        # Main navigation, search & profile dropdowns, offer badges
-│   │   ├── Footer.vue        # Styled platform footer link list
-│   │   ├── HeroSection.vue   # Top banner landing components
-│   │   ├── CartDrawer.vue    # Slide-over shopping cart panel
+│   ├── components/           # Shared UI, used by more than one page
+│   │   ├── Navbar.vue        # Navigation, shop/profile dropdowns, cart and seller badges
+│   │   ├── Footer.vue        # Platform footer link list
+│   │   ├── CartDrawer.vue    # Slide-over shopping bag panel
+│   │   ├── HowItWorks.vue    # The three-step explainer, reused across pages
+│   │   ├── TestimonialRail.vue   # Self-scrolling review rail on the home page
+│   │   ├── FaqAccordion.vue  # Contact-page FAQ: search, topic pills, panels
+│   │   ├── RichTextEditor.vue    # Listing description editor (sanitised on save)
+│   │   ├── StarRating.vue    # Read-only and interactive star ratings
+│   │   ├── TrustCheckCard.vue / TrustCheckPanel.vue   # Evidence display
 │   │   ├── ToggleSwitch.vue  # The one switch component — see "Toggles" below
 │   │   ├── PromoTab.vue      # Slide-out "Offers" drawer on the right edge
 │   │   ├── WelcomePromoDialog.vue  # First-order welcome code popup
-│   │   └── admin/            # Admin-portal chrome (sidebar, header, table frame, badges)
-│   ├── pages/
-│   │   ├── Home.vue          # Platform landing page with carousel and sustainability stats
-│   │   ├── Shop.vue          # Catalog with dynamic filter and sort features
-│   │   ├── Product.vue       # Detail page with sizing and authenticity specifications
-│   │   ├── Sell.vue          # Start wizard for listing an item
-│   │   ├── SellDetails.vue   # Multi-step submission form for detailed item specifications
-│   │   ├── login.vue         # Client auth credentials login portal
-│   │   ├── signup.vue        # Multi-step signup form (Email -> OTP Verification -> Password)
-│   │   ├── Profile.vue       # Public profile: listings, wishlist, orders, reports
+│   │   ├── Icon.vue          # Single inline-SVG icon set
+│   │   ├── admin/            # Admin-portal chrome (sidebar, header, table frame, badges)
+│   │   └── sustainable/      # Sections specific to the Sustainable page
+│   ├── pages/                # One file per route, registered in main.js
+│   │   ├── Home.vue          # Landing page: collections, brands, reviews
+│   │   ├── Shop.vue          # Catalogue with filters and sort
+│   │   ├── Product.vue       # Detail page, offers, TrustCheck evidence
+│   │   ├── Sell.vue          # The pitch, open to signed-out visitors
+│   │   ├── SellDetails.vue   # Multi-step listing form (gated)
+│   │   ├── login.vue         # Sign-in
+│   │   ├── signup.vue        # Multi-step signup (email → OTP → password)
+│   │   ├── Profile.vue       # Listings, reviews, wishlist, orders, reports
 │   │   ├── Account.vue       # Settings: profile, preferences, addresses, payout, cards
 │   │   ├── Checkout.vue      # Bag → shipping → payment, then off to Stripe
 │   │   ├── PaymentSuccess.vue    # Stripe success_url — confirms, then polls
 │   │   ├── PaymentCancelled.vue  # Stripe cancel_url — releases the reservation
 │   │   ├── SalesOrders.vue   # Seller's incoming sales and fulfilment status
 │   │   ├── Wallet.vue        # Seller earnings and payout history
+│   │   ├── About.vue / Sustainable.vue / Contact.vue   # Editorial pages
 │   │   └── admin/            # 16 admin pages (listings, users, orders, reports, …)
-│   ├── lib/                  # Data-access layer (all Supabase queries live here)
+│   ├── lib/                  # Data-access layer — every Supabase query lives here
+│   │   ├── supabase.js       # The client, configured from .env
 │   │   ├── auth.js           # Reactive session + profile, sign up / in / out
+│   │   ├── cart.js           # DB-backed when signed in, localStorage as a guest
 │   │   ├── listings.js       # Catalogue queries, Storage uploads, listing creation
 │   │   ├── profiles.js       # Profile editing, avatars, stats
 │   │   ├── addresses.js      # Address CRUD
 │   │   ├── wishlist.js       # Saved items
-│   │   ├── orders.js         # Order & sales history
+│   │   ├── orders.js         # Buyer order history
+│   │   ├── salesOrders.js    # Seller-side orders + the new-sale badge
 │   │   ├── payments.js       # Stripe session, payment state, saved cards
+│   │   ├── payouts.js        # Payout accounts, earnings, payout history
 │   │   ├── promos.js         # Live promo discovery and best-code selection
 │   │   ├── offers.js         # Price negotiation + seller notification badges
-│   │   ├── payouts.js        # Payout accounts, earnings, payout history
-│   │   ├── salesOrders.js    # Seller-side order management
+│   │   ├── reviews.js        # Buyer reviews of sellers
+│   │   ├── contact.js        # Contact form submissions
 │   │   ├── admin.js          # Every admin-portal query
-│   │   ├── trustcheck/       # Evidence scoring, OCR, reference models
-│   │   ├── brands.js         # Brand reference data
-│   │   └── contact.js        # Contact form submissions
-│   ├── cart.js               # Cart state: DB-backed when signed in, localStorage as guest
-│   ├── supabase.js           # Supabase client, configured from .env
-│   └── main.js               # Routes, auth guards, app bootstrap
+│   │   ├── sanitiseHtml.js   # Allowlist sanitiser for stored descriptions
+│   │   ├── motion.js / smoothScroll.js / loading.js / toast.js
+│   │   ├── originButton.js / heroField.js    # Pointer-driven visual effects
+│   │   └── trustcheck/       # Evidence scoring, OCR, reference models
+│   ├── App.vue               # Root component
+│   ├── main.js               # Routes, auth guards, app bootstrap
+│   └── style.css             # Tailwind theme tokens and shared classes
 ├── supabase/
 │   ├── migrations/           # Versioned schema, RLS and Storage definitions
 │   ├── functions/            # Edge Functions (Deno) — anything needing a secret
@@ -81,12 +99,18 @@ GAFS/
 │   │   └── admin-manage-user/        # Suspend / restore / delete an account
 │   ├── seed.sql              # Brands, promo codes, demo seller and catalogue
 │   └── config.toml           # Supabase CLI project config
-├── docs/                     # Admin portal reference docs (see below)
+├── scripts/
+│   └── verify.mjs            # TrustCheck verification suite (npm run verify)
+├── docs/                     # Deployment and admin reference docs (see below)
 ├── public/demo/              # Images for the seeded demo listings
+├── index.html                # Vite entry template
+├── vite.config.js            # Build and dev-server configuration
+├── vercel.json               # SPA rewrite and asset cache headers
+├── eslint.config.js          # Flat ESLint config
+├── jsconfig.json             # Editor path resolution
+├── .oxlintrc.json / .oxfmtrc.json    # Linter and formatter rules
 ├── .env.example              # Template for local credentials
-├── index.html                # App template shell
-├── package.json              # Script directives & node module dependencies
-└── vite.config.js            # Build plugin configurations
+└── package.json              # Scripts and dependencies
 ```
 
 ---
@@ -492,7 +516,7 @@ An **evidence-completeness check**, not an authentication service. It scores how
 
 **Why the score can't be spoofed:** the browser only ever submits which evidence *exists* (boolean flags), never a numeric score. A `BEFORE INSERT OR UPDATE` trigger (`trustcheck_apply_score()`) recomputes the score from those flags server-side, and additionally corrects a claimed front/back/interior photo against the listing's *actual* stored image count — so a seller can't claim 3 required photos exist by submitting the flags alone.
 
-**Verifying the scoring logic:** `node verify.mjs` runs a standalone check (no dev server or Supabase connection needed) that:
+**Verifying the scoring logic:** `npm run verify` runs a standalone check (no dev server or Supabase connection needed) that:
 - confirms the JS evidence weights match the SQL function's constants exactly;
 - checks all 128 possible evidence combinations (2⁷ flags) produce the same status in JS and SQL;
 - exercises `assessEvidence()` against known score/status pairs (e.g. 3 photos → 45/Insufficient, + receipt → 65/Needs Review, + serial + origin match → 90/Likely Consistent);
@@ -500,7 +524,7 @@ An **evidence-completeness check**, not an authentication service. It scores how
 - scans the TrustCheck source and migration for verdict-on-item wording ("is authentic", "is fake", etc.).
 
 ```sh
-node verify.mjs
+npm run verify
 ```
 
 This does **not** replace a browser test of the full flow — see the "Seller flow" checklist below.
@@ -522,6 +546,7 @@ The admin portal has its own reference material in [`docs/`](docs/):
 
 | Document | Covers |
 |---|---|
+| [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Deploying the whole app to Vercel and Supabase |
 | [ADMIN_IMPLEMENTATION.md](docs/ADMIN_IMPLEMENTATION.md) | Architecture overview — start here |
 | [ADMIN_DEPLOYMENT.md](docs/ADMIN_DEPLOYMENT.md) | Step-by-step deployment |
 | [ADMIN_API_REFERENCE.md](docs/ADMIN_API_REFERENCE.md) | Every function in `src/lib/admin.js` |

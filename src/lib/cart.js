@@ -1,6 +1,6 @@
 import { computed, ref, watch } from 'vue'
 import { supabase } from './supabase.js'
-import { isAuthenticated, userId } from './lib/auth.js'
+import { isAuthenticated, userId } from './auth.js'
 
 // Items keep the shape the drawer and checkout already render:
 // { id, name, brand, price, image }

@@ -101,7 +101,7 @@
 
 <script setup>
 import { useRouter } from 'vue-router'
-import { cartItems, cartCount, cartSubtotal, removeFromCart, clearCart } from '../cart.js'
+import { cartItems, cartCount, cartSubtotal, removeFromCart, clearCart } from '../lib/cart.js'
 
 defineProps({ isOpen: Boolean })
 defineEmits(['close'])

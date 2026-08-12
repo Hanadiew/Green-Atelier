@@ -1,6 +1,6 @@
 // Green Atelier TrustCheck™ — public module surface.
 
-import { supabase } from '../../supabase.js'
+import { supabase } from '../../lib/supabase.js'
 import { uploadAuthenticityDoc } from '../listings.js'
 import { assessEvidence, CHECKLIST_ITEMS, EVIDENCE_WEIGHTS, MAX_SCORE, STATUS, STATUS_BLURBS, STATUS_LABELS, DISCLAIMER } from './scoring.js'
 import { extractTextFromFiles, matchesOrigin, summariseText, terminateOcr } from './ocr.js'

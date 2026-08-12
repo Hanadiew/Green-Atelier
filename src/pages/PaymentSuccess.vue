@@ -127,7 +127,7 @@ import { useRoute } from 'vue-router'
 import Footer from '../components/Footer.vue'
 import { confirmCheckoutSession, fetchPaymentState } from '../lib/payments.js'
 import { statusLabel } from '../lib/orders.js'
-import { syncCart } from '../cart.js'
+import { syncCart } from '../lib/cart.js'
 
 const route = useRoute()
 

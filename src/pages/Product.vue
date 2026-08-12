@@ -452,7 +452,7 @@
 import Icon from '../components/Icon.vue'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { addToCart, cartItems } from '../cart.js'
+import { addToCart, cartItems } from '../lib/cart.js'
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue'
 import LoadingPanel from '../components/LoadingPanel.vue'

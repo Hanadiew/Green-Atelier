@@ -1,4 +1,4 @@
-import { supabase } from '../supabase.js'
+import { supabase } from './supabase.js'
 import { fetchOrders, fetchSales } from './orders.js'
 
 // --- Payout account ----------------------------------------------------------

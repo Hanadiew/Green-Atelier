@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import { supabase } from '../supabase.js'
+import { supabase } from './supabase.js'
 import { userId } from './auth.js'
 
 /**

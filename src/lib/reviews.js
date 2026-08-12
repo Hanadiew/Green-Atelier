@@ -7,7 +7,7 @@
    decides is only what the interface offers. See
    supabase/migrations/20260808000100_seller_reviews.sql. */
 
-import { supabase } from '../supabase.js'
+import { supabase } from './supabase.js'
 
 /** Reviews written about a seller, newest first, with the reviewer's name. */
 export async function fetchSellerReviews(sellerId) {

@@ -3,9 +3,9 @@ import { createRouter, createWebHistory } from 'vue-router'
 import './style.css'
 import App from './App.vue'
 import { initAuth, isAuthenticated } from './lib/auth.js'
-import { supabase } from './supabase.js'
+import { supabase } from './lib/supabase.js'
 import { isAdmin } from './lib/admin.js'
-import { initCart } from './cart.js'
+import { initCart } from './lib/cart.js'
 import { scrollToElement, scrollToTop } from './lib/smoothScroll.js'
 import { beginRouteLoading, endRouteLoading } from './lib/loading.js'
 import { initOriginButtons } from './lib/originButton.js'
@@ -89,8 +89,8 @@ const router = createRouter({
         { path: 'trustcheck/:id', name: 'admin-trustcheck-details', component: () => import('./pages/admin/AdminTrustCheckDetails.vue') },
         { path: 'brands', name: 'admin-brands', component: () => import('./pages/admin/AdminBrands.vue') },
         { path: 'promos', name: 'admin-promos', component: () => import('./pages/admin/AdminPromos.vue') },
-        // "Enquiries" is the Contact Us inbox — not the buyer/seller chat,
-        // which stays entirely between the two of them.
+        // "Enquiries" is the Contact Us inbox. Buyer and seller negotiate
+        // through offers, not free-text chat.
         { path: 'enquiries', name: 'admin-enquiries', component: () => import('./pages/admin/AdminEnquiries.vue') },
         { path: 'enquiries/:id', name: 'admin-enquiry-details', component: () => import('./pages/admin/AdminEnquiryDetails.vue') },
       ],

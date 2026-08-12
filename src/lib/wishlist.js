@@ -1,5 +1,5 @@
 import { computed, ref, watch } from 'vue'
-import { supabase } from '../supabase.js'
+import { supabase } from './supabase.js'
 import { userId } from './auth.js'
 import { toCard } from './listings.js'
 

@@ -1,4 +1,4 @@
-import { supabase } from '../supabase.js'
+import { supabase } from './supabase.js'
 
 /** Works for signed-out visitors too — `user_id` is simply left null. */
 export async function submitContactMessage({ name, email, subject, message }, userId = null) {

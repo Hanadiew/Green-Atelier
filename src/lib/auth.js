@@ -1,5 +1,5 @@
 import { computed, ref } from 'vue'
-import { supabase } from '../supabase.js'
+import { supabase } from './supabase.js'
 
 export const session = ref(null)
 export const profile = ref(null)

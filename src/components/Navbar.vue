@@ -356,7 +356,7 @@
 <script setup>
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { cartCount } from '../cart.js'
+import { cartCount } from '../lib/cart.js'
 import { displayName, isAuthenticated, signOut } from '../lib/auth.js'
 import { wishlistCount } from '../lib/wishlist.js'
 import { pendingOfferCount, pendingOffersByListing, refreshPendingOffers } from '../lib/offers.js'

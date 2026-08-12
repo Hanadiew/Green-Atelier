@@ -1,4 +1,4 @@
-import { supabase } from '../supabase.js'
+import { supabase } from './supabase.js'
 import { userId } from './auth.js'
 import { deriveOrderStatus } from './orders.js'
 
