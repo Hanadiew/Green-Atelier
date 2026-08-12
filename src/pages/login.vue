@@ -56,10 +56,13 @@
         {{ loading ? 'Signing in…' : 'Continue' }}
       </button>
 
-      <!-- Terms -->
+      <!-- Terms. A button rather than an anchor: this opens a panel over the
+           form, and href="#" was navigating away from a part-filled sign-in. -->
       <p class="text-center text-xs text-gray-400 mt-4">
         By continuing, you agree to our
-        <a href="#" class="underline" style="color: #C9A96E;">Terms of service</a>
+        <button type="button" class="underline" style="color: #C9A96E;" @click="showTerms = true">
+          Terms of service
+        </button>
       </p>
 
     </div>
@@ -70,6 +73,8 @@
       <RouterLink to="/signup" class="font-bold text-gray-800">Sign Up</RouterLink>
     </p>
 
+    <TermsDialog v-model="showTerms" />
+
   </div>
 </template>
 
@@ -78,9 +83,11 @@ import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { signIn, signUpWithPassword } from '../lib/auth.js'
 import { isAdmin } from '../lib/admin.js'
+import TermsDialog from '../components/TermsDialog.vue'
 
 const router = useRouter()
 const route = useRoute()
+const showTerms = ref(false)
 
 const email = ref('')
 const password = ref('')

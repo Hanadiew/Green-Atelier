@@ -31,9 +31,13 @@
           Continue
         </button>
 
+        <!-- A button, not an anchor: opening this must not take someone out of
+             a sign-up they are part way through. -->
         <p class="text-center text-xs text-gray-400 mt-4">
           By continuing, you agree to our
-          <a href="#" class="underline" style="color: #C9A96E;">Terms of service</a>
+          <button type="button" class="underline" style="color: #C9A96E;" @click="showTerms = true">
+            Terms of service
+          </button>
         </p>
       </div>
 
@@ -126,6 +130,8 @@
       <RouterLink to="/login" class="font-bold text-gray-800">Log In</RouterLink>
     </p>
 
+    <TermsDialog v-model="showTerms" />
+
   </div>
 </template>
 
@@ -134,9 +140,11 @@ import Icon from '../components/Icon.vue'
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { signUpWithPassword } from '../lib/auth.js'
+import TermsDialog from '../components/TermsDialog.vue'
 
 const router = useRouter()
 const route = useRoute()
+const showTerms = ref(false)
 
 const step = ref(1)
 const email = ref('')
@@ -182,11 +190,11 @@ const handleCreateAccount = async () => {
     const { signedIn } = await signUpWithPassword(email.value, password.value)
     if (signedIn) {
       // "Confirm email" is off, so the account is usable immediately.
-      // ?redirect returns them to whatever sent them here — the Sell gate uses it
+      // ?redirect returns them to whatever sent them here. The Sell gate uses it
       // to hand back the part-finished listing. Matches login.vue.
       router.push(route.query.redirect || '/home')
     } else {
-      // Confirmation is required — send them to check their inbox.
+      // Confirmation is required, so send them to check their inbox.
       step.value = 3
     }
   } catch (error) {
